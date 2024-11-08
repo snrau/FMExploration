@@ -1,4 +1,3 @@
-import angular from 'angular';
 
 var _ = require('lodash');
 var Angular = require('angular');
@@ -16,6 +15,7 @@ var Reverb = require('./reverb');
 
 var config = require('./config');
 var defaultPresets = require('./default-presets');
+
 
 var PARAM_START_MANIPULATION = 'param-start-manipulation';
 var PARAM_STOP_MANIPULATION = 'param-stop-manipulation';
@@ -616,5 +616,4 @@ app.controller('PresetCtrl', ['$scope', '$localStorage', '$http', function ($sco
 
 }]);
 
-
-export default app;
+//window.angularApp = angular.module('Synth');

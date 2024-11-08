@@ -10,7 +10,7 @@ var outputlevel = [0, 5, 9, 13, 17, 20, 23, 25, 27, 29, 31, 33, 35, 37, 39,
 var outputLUT = [];
 for (var i = 0; i < 4096; i++) {
 	var dB = (i - 3824) * 0.0235;
-	outputLUT[i] = Math.pow(20, (dB/20));
+	outputLUT[i] = Math.pow(20, (dB / 20));
 }
 
 function EnvelopeDX7(levels, rates) {
@@ -23,7 +23,7 @@ function EnvelopeDX7(levels, rates) {
 	this.advance(0);
 }
 
-EnvelopeDX7.prototype.render = function() {
+EnvelopeDX7.prototype.render = function () {
 	if (this.state < 3 || (this.state < 4 && !this.down)) {
 		var lev;
 		lev = this.level;
@@ -46,12 +46,12 @@ EnvelopeDX7.prototype.render = function() {
 
 	// Convert DX7 level -> dB -> amplitude
 	return outputLUT[Math.floor(this.level)];
-//		if (this.pitchMode) {
-//			return Math.pow(pitchModDepth, amp);
-//		}
+	//		if (this.pitchMode) {
+	//			return Math.pow(pitchModDepth, amp);
+	//		}
 };
 
-EnvelopeDX7.prototype.advance = function(newstate) {
+EnvelopeDX7.prototype.advance = function (newstate) {
 	this.state = newstate;
 	if (this.state < 4) {
 		var newlevel = this.levels[this.state];
@@ -59,18 +59,18 @@ EnvelopeDX7.prototype.advance = function(newstate) {
 		this.rising = (this.targetlevel - this.level) > 0;
 		var rate_scaling = 0;
 		this.qr = Math.min(63, rate_scaling + ((this.rates[this.state] * 41) >> 6)); // 5 -> 3; 49 -> 31; 99 -> 63
-		this.decayIncrement = Math.pow(2, this.qr/4) / 2048;
-//      console.log("decayIncrement (", this.state, "): ", this.decayIncrement);
+		this.decayIncrement = Math.pow(2, this.qr / 4) / 2048;
+		//      console.log("decayIncrement (", this.state, "): ", this.decayIncrement);
 	}
-//		console.log("advance state="+this.state+", qr="+this.qr+", target="+this.targetlevel+", rising="+this.rising);
+	//		console.log("advance state="+this.state+", qr="+this.qr+", target="+this.targetlevel+", rising="+this.rising);
 };
 
-EnvelopeDX7.prototype.noteOff = function() {
+EnvelopeDX7.prototype.noteOff = function () {
 	this.down = false;
 	this.advance(3);
 };
 
-EnvelopeDX7.prototype.isFinished = function() {
+EnvelopeDX7.prototype.isFinished = function () {
 	return this.state == ENV_OFF;
 };
 

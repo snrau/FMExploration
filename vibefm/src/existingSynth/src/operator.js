@@ -15,16 +15,16 @@ function Operator(params, baseFrequency, envelope, lfo) {
 	this.updateFrequency(baseFrequency);
 }
 
-Operator.prototype.updateFrequency = function(baseFrequency) {
+Operator.prototype.updateFrequency = function (baseFrequency) {
 	var frequency = this.params.oscMode ?
 		this.params.freqFixed :
 		baseFrequency * this.params.freqRatio * Math.pow(OCTAVE_1024, this.params.detune);
 	this.phaseStep = PERIOD * frequency / config.sampleRate; // radians per sample
 };
 
-Operator.prototype.render = function(mod) {
+Operator.prototype.render = function (mod) {
 	this.val = Math.sin(this.phase + mod) * this.envelope.render() * this.lfo.renderAmp();
-//	this.phase += this.phaseStep * this.pitchEnvelope.render() * this.lfo.render();
+	//	this.phase += this.phaseStep * this.pitchEnvelope.render() * this.lfo.render();
 	this.phase += this.phaseStep * this.lfo.render();
 	if (this.phase >= PERIOD) {
 		this.phase -= PERIOD;
@@ -32,11 +32,11 @@ Operator.prototype.render = function(mod) {
 	return this.val;
 };
 
-Operator.prototype.noteOff = function() {
+Operator.prototype.noteOff = function () {
 	this.envelope.noteOff();
 };
 
-Operator.prototype.isFinished = function() {
+Operator.prototype.isFinished = function () {
 	return this.envelope.isFinished();
 };
 

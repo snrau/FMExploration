@@ -32,38 +32,38 @@ var OL_TO_MOD_TABLE = [ // TODO: use output level to modulation index table
 	12.88390, 14.05000, 15.32170, 16.70840, 18.22060, 19.86970, 21.66810, 23.62920
 ];
 var ALGORITHMS = [
-	{ outputMix: [0,2],         modulationMatrix: [[1], [], [3], [4], [5], [5]] },    //1
-	{ outputMix: [0,2],         modulationMatrix: [[1], [1], [3], [4], [5], []] },    //2
-	{ outputMix: [0,3],         modulationMatrix: [[1], [2], [], [4], [5], [5]] },    //3
-	{ outputMix: [0,3],         modulationMatrix: [[1], [2], [], [4], [5], [3]] },    //4
-	{ outputMix: [0,2,4],       modulationMatrix: [[1], [], [3], [], [5], [5]] },     //5
-	{ outputMix: [0,2,4],       modulationMatrix: [[1], [], [3], [], [5], [4]] },     //6
-	{ outputMix: [0,2],         modulationMatrix: [[1], [], [3,4], [], [5], [5]] },   //7
-	{ outputMix: [0,2],         modulationMatrix: [[1], [], [3,4], [3], [5], []] },   //8
-	{ outputMix: [0,2],         modulationMatrix: [[1], [1], [3,4], [], [5], []] },   //9
-	{ outputMix: [0,3],         modulationMatrix: [[1], [2], [2], [4,5], [], []] },   //10
-	{ outputMix: [0,3],         modulationMatrix: [[1], [2], [], [4,5], [], [5]] },   //11
-	{ outputMix: [0,2],         modulationMatrix: [[1], [1], [3,4,5], [], [], []] },  //12
-	{ outputMix: [0,2],         modulationMatrix: [[1], [], [3,4,5], [], [], [5]] },  //13
-	{ outputMix: [0,2],         modulationMatrix: [[1], [], [3], [4,5], [], [5]] },   //14
-	{ outputMix: [0,2],         modulationMatrix: [[1], [1], [3], [4,5], [], []] },   //15
-	{ outputMix: [0],           modulationMatrix: [[1,2,4], [], [3], [], [5], [5]] }, //16
-	{ outputMix: [0],           modulationMatrix: [[1,2,4], [1], [3], [], [5], []] }, //17
-	{ outputMix: [0],           modulationMatrix: [[1,2,3], [], [2], [4], [5], []] }, //18
-	{ outputMix: [0,3,4],       modulationMatrix: [[1], [2], [], [5], [5], [5]] },    //19
-	{ outputMix: [0,1,3],       modulationMatrix: [[2], [2], [2], [4,5], [], []] },   //20
-	{ outputMix: [0,1,3,4],     modulationMatrix: [[2], [2], [2], [5], [5], []] },    //21
-	{ outputMix: [0,2,3,4],     modulationMatrix: [[1], [], [5], [5], [5], [5]] },    //22
-	{ outputMix: [0,1,3,4],     modulationMatrix: [[], [2], [], [5], [5], [5]] },     //23
-	{ outputMix: [0,1,2,3,4],   modulationMatrix: [[], [], [5], [5], [5], [5]] },     //24
-	{ outputMix: [0,1,2,3,4],   modulationMatrix: [[], [], [], [5], [5], [5]] },      //25
-	{ outputMix: [0,1,3],       modulationMatrix: [[], [2], [], [4,5], [], [5]] },    //26
-	{ outputMix: [0,1,3],       modulationMatrix: [[], [2], [2], [4,5], [], []] },    //27
-	{ outputMix: [0,2,5],       modulationMatrix: [[1], [], [3], [4], [4], []] },     //28
-	{ outputMix: [0,1,2,4],     modulationMatrix: [[], [], [3], [], [5], [5]] },      //29
-	{ outputMix: [0,1,2,5],     modulationMatrix: [[], [], [3], [4], [4], []] },      //30
-	{ outputMix: [0,1,2,3,4],   modulationMatrix: [[], [], [], [], [5], [5]] },       //31
-	{ outputMix: [0,1,2,3,4,5], modulationMatrix: [[], [], [], [], [], [5]] }         //32
+	{ outputMix: [0, 2], modulationMatrix: [[1], [], [3], [4], [5], [5]] },    //1
+	{ outputMix: [0, 2], modulationMatrix: [[1], [1], [3], [4], [5], []] },    //2
+	{ outputMix: [0, 3], modulationMatrix: [[1], [2], [], [4], [5], [5]] },    //3
+	{ outputMix: [0, 3], modulationMatrix: [[1], [2], [], [4], [5], [3]] },    //4
+	{ outputMix: [0, 2, 4], modulationMatrix: [[1], [], [3], [], [5], [5]] },     //5
+	{ outputMix: [0, 2, 4], modulationMatrix: [[1], [], [3], [], [5], [4]] },     //6
+	{ outputMix: [0, 2], modulationMatrix: [[1], [], [3, 4], [], [5], [5]] },   //7
+	{ outputMix: [0, 2], modulationMatrix: [[1], [], [3, 4], [3], [5], []] },   //8
+	{ outputMix: [0, 2], modulationMatrix: [[1], [1], [3, 4], [], [5], []] },   //9
+	{ outputMix: [0, 3], modulationMatrix: [[1], [2], [2], [4, 5], [], []] },   //10
+	{ outputMix: [0, 3], modulationMatrix: [[1], [2], [], [4, 5], [], [5]] },   //11
+	{ outputMix: [0, 2], modulationMatrix: [[1], [1], [3, 4, 5], [], [], []] },  //12
+	{ outputMix: [0, 2], modulationMatrix: [[1], [], [3, 4, 5], [], [], [5]] },  //13
+	{ outputMix: [0, 2], modulationMatrix: [[1], [], [3], [4, 5], [], [5]] },   //14
+	{ outputMix: [0, 2], modulationMatrix: [[1], [1], [3], [4, 5], [], []] },   //15
+	{ outputMix: [0], modulationMatrix: [[1, 2, 4], [], [3], [], [5], [5]] }, //16
+	{ outputMix: [0], modulationMatrix: [[1, 2, 4], [1], [3], [], [5], []] }, //17
+	{ outputMix: [0], modulationMatrix: [[1, 2, 3], [], [2], [4], [5], []] }, //18
+	{ outputMix: [0, 3, 4], modulationMatrix: [[1], [2], [], [5], [5], [5]] },    //19
+	{ outputMix: [0, 1, 3], modulationMatrix: [[2], [2], [2], [4, 5], [], []] },   //20
+	{ outputMix: [0, 1, 3, 4], modulationMatrix: [[2], [2], [2], [5], [5], []] },    //21
+	{ outputMix: [0, 2, 3, 4], modulationMatrix: [[1], [], [5], [5], [5], [5]] },    //22
+	{ outputMix: [0, 1, 3, 4], modulationMatrix: [[], [2], [], [5], [5], [5]] },     //23
+	{ outputMix: [0, 1, 2, 3, 4], modulationMatrix: [[], [], [5], [5], [5], [5]] },     //24
+	{ outputMix: [0, 1, 2, 3, 4], modulationMatrix: [[], [], [], [5], [5], [5]] },      //25
+	{ outputMix: [0, 1, 3], modulationMatrix: [[], [2], [], [4, 5], [], [5]] },    //26
+	{ outputMix: [0, 1, 3], modulationMatrix: [[], [2], [2], [4, 5], [], []] },    //27
+	{ outputMix: [0, 2, 5], modulationMatrix: [[1], [], [3], [4], [4], []] },     //28
+	{ outputMix: [0, 1, 2, 4], modulationMatrix: [[], [], [3], [], [5], [5]] },      //29
+	{ outputMix: [0, 1, 2, 5], modulationMatrix: [[], [], [3], [4], [4], []] },      //30
+	{ outputMix: [0, 1, 2, 3, 4], modulationMatrix: [[], [], [], [], [5], [5]] },       //31
+	{ outputMix: [0, 1, 2, 3, 4, 5], modulationMatrix: [[], [], [], [], [], [5]] }         //32
 ];
 
 var params = {};
@@ -98,24 +98,24 @@ FMVoice.aftertouch = 0;
 FMVoice.mod = 0;
 FMVoice.bend = 0;
 
-FMVoice.frequencyFromNoteNumber = function(note) {
-	return 440 * Math.pow(2,(note-69)/12);
+FMVoice.frequencyFromNoteNumber = function (note) {
+	return 440 * Math.pow(2, (note - 69) / 12);
 };
 
-FMVoice.setParams = function(globalParams) {
+FMVoice.setParams = function (globalParams) {
 	LfoDX7.setParams(globalParams);
 	params = globalParams;
 };
 
-FMVoice.setFeedback = function(value) {
+FMVoice.setFeedback = function (value) {
 	params.fbRatio = Math.pow(2, (value - 7)); // feedback of range 0 to 7
 };
 
-FMVoice.setOutputLevel = function(operatorIndex, value) {
+FMVoice.setOutputLevel = function (operatorIndex, value) {
 	params.operators[operatorIndex].outputLevel = this.mapOutputLevel(value);
 };
 
-FMVoice.updateFrequency = function(operatorIndex) {
+FMVoice.updateFrequency = function (operatorIndex) {
 	var op = params.operators[operatorIndex];
 	if (op.oscMode == 0) {
 		var freqCoarse = op.freqCoarse || 0.5; // freqCoarse of 0 is used for ratio of 0.5
@@ -125,41 +125,41 @@ FMVoice.updateFrequency = function(operatorIndex) {
 	}
 };
 
-FMVoice.updateLFO = function() {
+FMVoice.updateLFO = function () {
 	LfoDX7.update();
 };
 
-FMVoice.setPan = function(operatorIndex, value) {
+FMVoice.setPan = function (operatorIndex, value) {
 	var op = params.operators[operatorIndex];
 	op.ampL = Math.cos(Math.PI / 2 * (value + 50) / 100);
 	op.ampR = Math.sin(Math.PI / 2 * (value + 50) / 100);
 };
 
-FMVoice.mapOutputLevel = function(input) {
+FMVoice.mapOutputLevel = function (input) {
 	var idx = Math.min(99, Math.max(0, Math.floor(input)));
 	return OUTPUT_LEVEL_TABLE[idx] * 1.27;
 };
 
-FMVoice.channelAftertouch = function(value) {
+FMVoice.channelAftertouch = function (value) {
 	FMVoice.aftertouch = value;
 	FMVoice.updateMod();
 };
 
-FMVoice.modulationWheel = function(value) {
+FMVoice.modulationWheel = function (value) {
 	FMVoice.mod = value;
 	FMVoice.updateMod();
 };
 
-FMVoice.updateMod = function() {
+FMVoice.updateMod = function () {
 	var aftertouch = params.aftertouchEnabled ? FMVoice.aftertouch : 0;
 	params.controllerModVal = Math.min(1.27, aftertouch + FMVoice.mod); // Allow 27% overdrive
 };
 
-FMVoice.pitchBend = function(value) {
+FMVoice.pitchBend = function (value) {
 	this.bend = value;
 };
 
-FMVoice.prototype.render = function() {
+FMVoice.prototype.render = function () {
 	var algorithmIdx = params.algorithm - 1;
 	var modulationMatrix = ALGORITHMS[algorithmIdx].modulationMatrix;
 	var outputMix = ALGORITHMS[algorithmIdx].outputMix;
@@ -197,24 +197,24 @@ FMVoice.prototype.render = function() {
 			outputR += carrierLevel * carrierParams.ampR;
 		}
 	}
-	return [ outputL * outputScaling, outputR * outputScaling ];
+	return [outputL * outputScaling, outputR * outputScaling];
 };
 
-FMVoice.prototype.noteOff = function() {
+FMVoice.prototype.noteOff = function () {
 	this.down = false;
 	for (var i = 0; i < 6; i++) {
 		this.operators[i].noteOff();
 	}
 };
 
-FMVoice.prototype.updatePitchBend = function() {
+FMVoice.prototype.updatePitchBend = function () {
 	var frequency = FMVoice.frequencyFromNoteNumber(this.note + FMVoice.bend);
 	for (var i = 0; i < 6; i++) {
 		this.operators[i].updateFrequency(frequency);
 	}
 };
 
-FMVoice.prototype.isFinished = function() {
+FMVoice.prototype.isFinished = function () {
 	var outputMix = ALGORITHMS[params.algorithm - 1].outputMix;
 	for (var i = 0; i < outputMix.length; i++) {
 		if (!this.operators[outputMix[i]].isFinished()) return false;

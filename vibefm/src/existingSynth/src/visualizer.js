@@ -10,7 +10,7 @@ var WAVE_PIXELS_PER_SAMPLE = 0.4;
 // getByteTimeDomainData polyfill for Safari
 if (global.AnalyserNode && !global.AnalyserNode.prototype.getFloatTimeDomainData) {
 	var uint8 = new Uint8Array(2048);
-	global.AnalyserNode.prototype.getFloatTimeDomainData = function(array) {
+	global.AnalyserNode.prototype.getFloatTimeDomainData = function (array) {
 		this.getByteTimeDomainData(uint8);
 		for (var i = 0, imax = array.length; i < imax; i++) {
 			array[i] = (uint8[i] - 128) * 0.0078125;
@@ -32,7 +32,7 @@ function Visualizer(containerId, width, height, backgroundColor, foregroundColor
 
 	// create a pixi stage and renderer instance
 	this.stage = new PIXI.Container();
-	this.renderer = PIXI.autoDetectRenderer(width, height, {backgroundColor : backgroundColor, resolution: 1 });
+	this.renderer = PIXI.autoDetectRenderer(width, height, { backgroundColor: backgroundColor, resolution: 1 });
 	// Kill PIXI mouse event listeners (https://github.com/pixijs/pixijs/issues/1672).
 	this.renderer.plugins.interaction.destroy()
 	this.el = this.renderer.view;
@@ -48,17 +48,17 @@ function Visualizer(containerId, width, height, backgroundColor, foregroundColor
 	this.setModeWave();
 }
 
-Visualizer.prototype.getAudioNode = function() {
+Visualizer.prototype.getAudioNode = function () {
 	return this.analyzer;
 };
 
-Visualizer.prototype.enable = function() {
+Visualizer.prototype.enable = function () {
 	this.enabled = true;
 	this.el.style.visibility = "visible";
 	requestAnimationFrame(this.render);
 };
 
-Visualizer.prototype.cycleMode = function() {
+Visualizer.prototype.cycleMode = function () {
 	this.mode = (this.mode + 1) % MODE_COUNT;
 	switch (this.mode) {
 		case MODE_DISABLED:
@@ -73,13 +73,13 @@ Visualizer.prototype.cycleMode = function() {
 	}
 };
 
-Visualizer.prototype.setModeDisabled = function() {
+Visualizer.prototype.setModeDisabled = function () {
 	this.mode = MODE_DISABLED;
 	this.enabled = false;
 	this.el.style.visibility = "hidden";
 };
 
-Visualizer.prototype.setModeFFT = function() {
+Visualizer.prototype.setModeFFT = function () {
 	this.mode = MODE_FFT;
 	this.enable();
 	try {
@@ -91,7 +91,7 @@ Visualizer.prototype.setModeFFT = function() {
 	this.data = new Uint8Array(this.analyzer.frequencyBinCount);
 };
 
-Visualizer.prototype.setModeWave = function() {
+Visualizer.prototype.setModeWave = function () {
 	this.mode = MODE_WAVE;
 	this.enable();
 	// Analyzer needs extra data padding to do phase alignment across frames
@@ -99,13 +99,13 @@ Visualizer.prototype.setModeWave = function() {
 	this.floatData = new Float32Array(this.analyzer.frequencyBinCount);
 };
 
-Visualizer.prototype.setPeriod = function(samplePeriod) {
+Visualizer.prototype.setPeriod = function (samplePeriod) {
 	// TODO: make WAVE_PIXELS_PER_SAMPLE dynamic so that low freqs don't get cut off
 	if (this.mode !== MODE_WAVE) return;
 	this.period = samplePeriod;
 };
 
-Visualizer.prototype.render = function() {
+Visualizer.prototype.render = function () {
 
 	var data;
 	var graphics = this.graphics;
@@ -130,16 +130,16 @@ Visualizer.prototype.render = function() {
 			graphics.lineStyle(1, this.foregroundColor, 0.66);
 			for (i = 0, l = data.length; i < l; i++) {
 				if (data[i] === 0) continue;
-				graphics.moveTo(i/4, height);
-				graphics.lineTo(i/4, height - (data[i] >> 3));
+				graphics.moveTo(i / 4, height);
+				graphics.lineTo(i / 4, height - (data[i] >> 3));
 			}
 		} else if (this.mode === MODE_WAVE) {
 			data = this.floatData;
 			this.analyzer.getFloatTimeDomainData(data);
 
 			graphics.lineStyle(1, this.foregroundColor, 0.2);
-			graphics.moveTo(0, height/2);
-			graphics.lineTo(this.width, height/2);
+			graphics.moveTo(0, height / 2);
+			graphics.lineTo(this.width, height / 2);
 
 			// Normalize...
 			var max = 0;

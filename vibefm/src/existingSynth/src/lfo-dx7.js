@@ -5,19 +5,19 @@ var PERIOD_HALF = PERIOD / 2;
 var PERIOD_RECIP = 1 / PERIOD;
 var LFO_SAMPLE_PERIOD = config.lfoSamplePeriod;
 var LFO_FREQUENCY_TABLE = [ // see https://github.com/smbolton/hexter/tree/master/src/dx7_voice.c#L1002
-	0.062506,  0.124815,  0.311474,  0.435381,  0.619784,
-	0.744396,  0.930495,  1.116390,  1.284220,  1.496880,
-	1.567830,  1.738994,  1.910158,  2.081322,  2.252486,
-	2.423650,  2.580668,  2.737686,  2.894704,  3.051722,
-	3.208740,  3.366820,  3.524900,  3.682980,  3.841060,
-	3.999140,  4.159420,  4.319700,  4.479980,  4.640260,
-	4.800540,  4.953584,  5.106628,  5.259672,  5.412716,
-	5.565760,  5.724918,  5.884076,  6.043234,  6.202392,
-	6.361550,  6.520044,  6.678538,  6.837032,  6.995526,
-	7.154020,  7.300500,  7.446980,  7.593460,  7.739940,
-	7.886420,  8.020588,  8.154756,  8.288924,  8.423092,
-	8.557260,  8.712624,  8.867988,  9.023352,  9.178716,
-	9.334080,  9.669644, 10.005208, 10.340772, 10.676336,
+	0.062506, 0.124815, 0.311474, 0.435381, 0.619784,
+	0.744396, 0.930495, 1.116390, 1.284220, 1.496880,
+	1.567830, 1.738994, 1.910158, 2.081322, 2.252486,
+	2.423650, 2.580668, 2.737686, 2.894704, 3.051722,
+	3.208740, 3.366820, 3.524900, 3.682980, 3.841060,
+	3.999140, 4.159420, 4.319700, 4.479980, 4.640260,
+	4.800540, 4.953584, 5.106628, 5.259672, 5.412716,
+	5.565760, 5.724918, 5.884076, 6.043234, 6.202392,
+	6.361550, 6.520044, 6.678538, 6.837032, 6.995526,
+	7.154020, 7.300500, 7.446980, 7.593460, 7.739940,
+	7.886420, 8.020588, 8.154756, 8.288924, 8.423092,
+	8.557260, 8.712624, 8.867988, 9.023352, 9.178716,
+	9.334080, 9.669644, 10.005208, 10.340772, 10.676336,
 	11.011900, 11.963680, 12.915460, 13.867240, 14.819020,
 	15.770800, 16.640240, 17.509680, 18.379120, 19.248560,
 	20.118000, 21.040700, 21.963400, 22.886100, 23.808800,
@@ -81,7 +81,7 @@ function LfoDX7(opParams) {
 	LfoDX7.update();
 }
 
-LfoDX7.prototype.render = function() {
+LfoDX7.prototype.render = function () {
 	var amp;
 	if (this.counter % LFO_SAMPLE_PERIOD === 0) {
 		switch (params.lfoWaveform) {
@@ -142,19 +142,19 @@ LfoDX7.prototype.render = function() {
 	return this.pitchVal;
 };
 
-LfoDX7.prototype.renderAmp = function() {
+LfoDX7.prototype.renderAmp = function () {
 	this.ampVal += this.ampIncrement;
 	return this.ampVal;
 };
 
-LfoDX7.setParams = function(globalParams) {
+LfoDX7.setParams = function (globalParams) {
 	params = globalParams;
 };
 
-LfoDX7.update = function() {
+LfoDX7.update = function () {
 	var frequency = LFO_FREQUENCY_TABLE[params.lfoSpeed];
-	var lfoRate = config.sampleRate/LFO_SAMPLE_PERIOD;
-	phaseStep = PERIOD * frequency/lfoRate; // radians per sample
+	var lfoRate = config.sampleRate / LFO_SAMPLE_PERIOD;
+	phaseStep = PERIOD * frequency / lfoRate; // radians per sample
 	ampModDepth = params.lfoAmpModDepth * 0.01;
 	// ignoring amp mod table for now. it seems shallow LFO_AMP_MOD_TABLE[params.lfoAmpModDepth];
 	delayTimes[LFO_DELAY_ONSET] = (lfoRate * 0.001753 * Math.pow(params.lfoDelay, 3.10454) + 169.344 - 168) / 1000;

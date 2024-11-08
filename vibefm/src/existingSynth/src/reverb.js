@@ -2,7 +2,7 @@
 // LICENSE:
 // https://github.com/burnson/Reverb.js/blob/master/COPYING.md
 var Reverb = {
-  extend : function (audioContext) {
+  extend: function (audioContext) {
     function decodeBase64ToArrayBuffer(input) {
       function encodedValue(input, index) {
         var encodedCharacter, x = input.charCodeAt(index);

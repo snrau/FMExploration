@@ -22,7 +22,7 @@ var SysexDX7 = {
 		var dataStart = 128 * patchId + 6;
 		var dataEnd = dataStart + 128;
 		var voiceData = bankData.substring(dataStart, dataEnd);
-		var operators = [{},{},{},{},{},{}];
+		var operators = [{}, {}, {}, {}, {}, {}];
 
 		for (var i = 5; i >= 0; --i) {
 			var oscStart = (5 - i) * 17;
@@ -46,7 +46,7 @@ var SysexDX7 = {
 			operator.freqCoarse = Math.floor(oscData.charCodeAt(15) >> 1);
 			operator.freqFine = oscData.charCodeAt(16);
 			// Extended/non-standard parameters
-			operator.pan = ((i + 1)%3 - 1) * 25; // Alternate panning: -25, 0, 25, -25, 0, 25
+			operator.pan = ((i + 1) % 3 - 1) * 25; // Alternate panning: -25, 0, 25, -25, 0, 25
 			operator.idx = i;
 			operator.enabled = true;
 		}

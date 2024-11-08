@@ -3,7 +3,7 @@
   import SynthView from "./views/SynthView.svelte";
   import AboutView from "./views/ExpView.svelte";
 
-  let currentView = "about";
+  let currentView = "synth";
 
   function handleNavigation(view) {
     currentView = view;
