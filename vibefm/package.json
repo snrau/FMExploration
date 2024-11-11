@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "angularBuild": "browserify src/existingSynth/src/app.js -o src/views/bundle.js"
+    "angularBuild": "browserify src/existingSynth/src/app.js -o src/existingSynth/src/bundle.js"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0",

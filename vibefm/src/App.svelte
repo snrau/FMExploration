@@ -3,6 +3,8 @@
   import SynthView from "./views/SynthView.svelte";
   import AboutView from "./views/ExpView.svelte";
 
+  import "./existingSynth/synth.css";
+
   let currentView = "synth";
 
   function handleNavigation(view) {

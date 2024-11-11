@@ -3,14 +3,15 @@
 
     import { onMount, onDestroy } from "svelte";
 
+    import "../existingSynth/synth.css";
+
     let angularHtml = "";
-    let scriptLoaded = false;
 
     // Function to dynamically load the bundle.js script
     const loadAngularAppScript = () => {
         return new Promise((resolve, reject) => {
             const script = document.createElement("script");
-            script.src = "./src/views/bundle.js"; // Path to your AngularJS bundle.js
+            script.src = "./src/existingSynth/src/bundle.js"; // Path to your AngularJS bundle.js
             script.onload = () => {
                 console.log("AngularJS bundle loaded");
                 resolve();
@@ -25,40 +26,39 @@
             //Step 1
             const res = await fetch("./src/existingSynth/synth.html");
             angularHtml = await res.text();
-            console.log("C1");
 
             //Step 2
             const container = document.getElementById("angular-app-container");
             container.innerHTML = angularHtml;
-            console.log("C2");
 
-            //Step 3
-            await loadAngularAppScript();
-            console.log("C3");
+            if (!window.scriptLoaded)
+                //Step 3
+                await loadAngularAppScript();
 
             //Step 4
             setTimeout(() => {
-                console.log("C4");
                 // Assume `angular` is globally available
                 const appElement = document.getElementById(
                     "angular-app-container",
                 );
-                if (window.angularApp && appElement) {
-                    window.angular.bootstrap(appElement, [
-                        window.angularApp.name,
-                    ]);
+                if (appElement) {
+                    window.angular.bootstrap(appElement, ["synthApp"]);
+                    window.scriptLoaded = true;
                     window.angular
-                        .element(document.getElementById("angular-container"))
+                        .element(
+                            document.getElementById("angular-app-container"),
+                        )
                         .scope()
                         .$digest();
                 }
-            }, 2000);
+            }, 100);
         } catch (e) {
             console.log(e);
         }
     });
     onDestroy(() => {
         // Optionally, you can clean up AngularJS or other related stuff here
+
         const appElement = document.getElementById("angular-app-container");
         if (appElement) {
             window.angular.element(appElement).scope().$destroy();

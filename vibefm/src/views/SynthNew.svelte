@@ -1,36 +1,21 @@
 <script>
-    // @ts-nocheck
+    import { onMount, onDestroy } from "svelte";
 
-    import MidiController from "../components/MidiController.svelte";
-    import PresetController from "../components/PresetController.svelte";
+    onMount(() => {
+        const angularContainer = document.getElementById(
+            "angular-app-container",
+        );
 
-    // Define MIDI and preset control functions here
-    const onVizClick = () => {
-        /* MIDI Visualization logic */
-    };
-    const onDemoClick = (demoIndex) => {
-        /* Demo playback logic */
-    };
-    const onMidiPlay = () => {
-        /* Play MIDI logic */
-    };
-    const onMidiStop = () => {
-        /* Stop MIDI logic */
-    };
+        // Show the AngularJS app when SynthView is active
+        if (angularContainer) angularContainer.style.display = "block";
+    });
 
-    // Preset handling
-    let presets = [{ name: "Preset 1" }, { name: "Preset 2" }];
-    let selectedIndex = 0;
-    const savePreset = () => {
-        /* Save logic */
-    };
-    const resetPreset = () => {
-        /* Reset logic */
-    };
+    onDestroy(() => {
+        const angularContainer = document.getElementById(
+            "angular-app-container",
+        );
+
+        // Hide the AngularJS app when SynthView is inactive
+        if (angularContainer) angularContainer.style.display = "none";
+    });
 </script>
-
-<div>
-    <MidiController {onVizClick} {onDemoClick} {onMidiPlay} {onMidiStop} />
-    <PresetController {presets} bind:selectedIndex {savePreset} {resetPreset} />
-    <!-- Place Knobs, Sliders, etc., as needed here -->
-</div>
