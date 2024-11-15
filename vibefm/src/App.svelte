@@ -2,10 +2,11 @@
   import SideMenu from "./components/SideMenu.svelte";
   import SynthView from "./views/SynthView.svelte";
   import AboutView from "./views/ExpView.svelte";
+  import DexedConnectionView from "./views/DexedConnection.svelte";
 
   import "./existingSynth/synth.css";
 
-  let currentView = "synth";
+  let currentView = "about";
 
   function handleNavigation(view) {
     currentView = view;
@@ -18,7 +19,7 @@
     {#if currentView === "synth"}
       <SynthView />
     {:else if currentView === "about"}
-      <AboutView />
+      <DexedConnectionView />
     {/if}
   </div>
 </div>
