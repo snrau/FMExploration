@@ -329,7 +329,11 @@
 
     // if sample is randomly generated -> random seed else could be a parsed preset
     // change array empty or not set = fully random, else restricted
-    function progressiveRandomSampling(sample, num = 50, changeArray = []) {
+    function progressiveSubgroupSingleParamSampling(
+        sample,
+        num = 50,
+        changeArray = [],
+    ) {
         const parameters = Object.values(dx7Parameters);
 
         const sampledCollection = [];
@@ -384,7 +388,11 @@
     }
 
     // change whole blocks
-    function progressiveSubgroupSampling(sample, num = 50, changeArray = []) {
+    function progressiveSubgroupBlockSampling(
+        sample,
+        num = 50,
+        changeArray = [],
+    ) {
         const parameters = Object.values(dx7Parameters);
 
         const sampledCollection = [];
@@ -481,7 +489,7 @@
 
     let collection = [];
 
-    function createFromSelection(arr) {
+    function createSysexMessageFromConfig(arr) {
         const sysExMessage = [0xf0, 0x43, 0x00, 0x00, 0x01, 0x1b].concat(arr);
         const checksum = sysExMessage
             .slice(6)
@@ -543,7 +551,7 @@ SYSEX MESSAGE: Parameter Change
 
     function handleSelectionChange(event) {
         selectedIndex = parseInt(event.target.value); // Update selected index
-        let m = createFromSelection(collection[selectedIndex]);
+        let m = createSysexMessageFromConfig(collection[selectedIndex]);
         sendMessage(m); // Call the function with the new index
     }
 
@@ -569,6 +577,133 @@ SYSEX MESSAGE: Parameter Change
             console.error("MIDI output not available");
         }
     }
+
+    let voices = [];
+
+    function importMidi(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            let fileContent = null;
+
+            reader.onload = (e) => {
+                console.log(e);
+                // @ts-ignore
+                fileContent = new Uint8Array(e.target.result);
+                parseSysEx(fileContent);
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    // first start at 6 -> but order is different than at the top (EGR1,2, EGL1,2, EGR3,4, EGL3,4 ...)
+    // global eg 108 - 115, 116 algorithm
+    function parseSysEx(data) {
+        // Ensure it's a Yamaha DX7 SysEx file
+        const SYSEX_START = 0xf0; // Start of SysEx
+        const SYSEX_END = 0xf7; // End of SysEx
+
+        console.log(data);
+
+        if (data[0] !== SYSEX_START || data[data.length - 1] !== SYSEX_END) {
+            console.error("Invalid SysEx file.");
+            return;
+        }
+
+        // Extract voice data (32 voices, each 128 bytes)
+        const VOICE_START = 6; // Typically, the first 6 bytes are the header
+        const VOICE_SIZE = 128;
+        const NUM_VOICES = 32;
+
+        for (let i = 0; i < NUM_VOICES; i++) {
+            const start = VOICE_START + i * VOICE_SIZE;
+            const end = start + VOICE_SIZE;
+            const voice = data.slice(start, end);
+            voices.push(parseVoice(voice));
+        }
+
+        //sendMessage(createSysexMessageFromConfig(voices[0]));
+        console.log("Extracted voices:", voices);
+    }
+
+    async function sendReaper() {
+        if (collection.length === 0) return null;
+        let allMessages = collection.map((arr) =>
+            createSysexMessageFromConfig(arr),
+        );
+        /*.map((arr) =>
+            arr.map((v, i) => v / Object.entries(dx7Parameters)[i][1].max),
+        );*/
+
+        console.log(allMessages);
+        const response = await fetch("http://localhost:3000/send_sysex_batch", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ allMessages }),
+        });
+
+        if (response.ok) {
+            console.log("Rendering triggered!");
+        } else {
+            alert("Failed to trigger rendering.");
+        }
+    }
+
+    function parseVoice(voice) {
+        let temp = [];
+        let DT = 0;
+        voice.forEach((v, i) => {
+            if (i % 17 === 11 && i < 102) {
+                const leftCurve = v & 0b11; // Mask 0b00000011 to get bits 0-1
+                // Extract SCL LEFT CURVE (bits 2–3)
+                const rightCurve = (v >> 2) & 0b11; // Shift right 2 bits, mask 0b00000011 to get bits 2-3
+                temp.push(leftCurve);
+                temp.push(rightCurve);
+            } else if (i % 17 === 12 && i < 102) {
+                const RS = v & 0b111;
+                DT = (v >> 3) & 0b1111;
+                temp.push(RS);
+            } else if (i % 17 === 13 && i < 102) {
+                const AMS = v & 0b11; // Mask 0b00000011 to get bits 0-1
+                // Extract SCL LEFT CURVE (bits 2–3)
+                const KVS = (v >> 2) & 0b111; // Shift right 2 bits, mask 0b00000011 to get bits 2-3
+                temp.push(AMS);
+                temp.push(KVS);
+            } else if (i % 17 === 15 && i < 102) {
+                const M = v & 0b1; // Mask 0b00000011 to get bits 0-1
+                const FC = (v >> 1) & 0b11111; // Shift right 2 bits, mask 0b00000011 to get bits 2-3
+                temp.push(M);
+                temp.push(FC);
+            } else if (i % 17 === 16 && i < 102) {
+                temp.push(v);
+                temp.push(DT);
+            } else if (i < 102) {
+                temp.push(v);
+            } else {
+                if (i === 111) {
+                    const FB = v & 0b111; // Mask 0b00000011 to get bits 0-1
+                    const OKS = (v >> 3) & 0b1; // Shift right 2 bits, mask 0b00000011 to get bits 2-3
+                    temp.push(FB);
+                    temp.push(OKS);
+                } else if (i === 116) {
+                    const LFS = v & 0b1; // Mask 0b00000011 to get bits 0-1
+                    const LFW = (v >> 1) & 0b111; // Shift right 2 bits, mask 0b00000011 to get bits 2-3
+                    const LPMS = (v >> 4) & 0b111; //maybe 0b11
+                    console.log(v, LFS, LFW, LPMS);
+                    temp.push(LFS);
+                    temp.push(LFW);
+                    temp.push(LPMS);
+                } else {
+                    temp.push(v);
+                }
+            }
+        });
+        temp.push(31);
+        return temp;
+    }
+
+    const numToGenerate = 3;
 </script>
 
 <div>
@@ -578,7 +713,8 @@ SYSEX MESSAGE: Parameter Change
         >Algorithm to 12</button
     >
     <button
-        on:click={() => sendMessage(createFromSelection(uniformSamplingFull()))}
+        on:click={() =>
+            sendMessage(createSysexMessageFromConfig(uniformSamplingFull()))}
         >Generate Random Voice</button
     >
     <button
@@ -586,7 +722,7 @@ SYSEX MESSAGE: Parameter Change
             (collection = generateCombinations(
                 dx7Parameters,
                 "uniformRandomRestrict",
-                50,
+                numToGenerate,
             ))}>Sample Restricted Combinations</button
     >
     <button
@@ -594,14 +730,14 @@ SYSEX MESSAGE: Parameter Change
             (collection = generateCombinations(
                 dx7Parameters,
                 "uniformRandomFull",
-                50,
+                numToGenerate,
             ))}>Sample Full Combinations</button
     >
     <button
         on:click={() =>
-            (collection = progressiveRandomSampling(
+            (collection = progressiveSubgroupSingleParamSampling(
                 uniformSamplingFull(),
-                50,
+                numToGenerate,
                 getChangesArray(dx7Parameters),
             ))}
         >Sample Progressive from random seed but restricted Combinations</button
@@ -614,4 +750,21 @@ SYSEX MESSAGE: Parameter Change
             {/each}
         </select>
     </div>
+    <input type="file" accept=".syx" on:change={importMidi} />
+    <button
+        on:click={() => {
+            if (voices.length > 0)
+                collection = progressiveSubgroupBlockSampling(
+                    voices[0],
+                    numToGenerate,
+                    getChangesArray(dx7Parameters),
+                );
+        }}>sample around first voice of file</button
+    >
+    <button
+        on:click={() => sendMessage(createSysexMessageFromConfig(voices[0]))}
+        >send first voices of sysex file</button
+    >
+
+    <button on:click={() => sendReaper()}>send collection to reaper</button>
 </div>

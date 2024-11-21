@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "angularBuild": "browserify src/existingSynth/src/app.js -o src/existingSynth/src/bundle.js"
+    "server": "cd src/nodeserver && npm run server"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
@@ -25,6 +25,10 @@
   },
   "dependencies": {
     "angular": "^1.4.1",
+    "child_process": "^1.0.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "fs": "^0.0.1-security",
     "lodash": "^4.17.15",
     "midifile": "^1.0.1",
     "midiplayer": "0.0.2",
