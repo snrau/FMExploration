@@ -105,6 +105,12 @@ function send_patch(sysex_data, index, track)
     end
     
     reaper.MIDI_InsertNote(take, false, false, 0, 240, 0, 60, 100, false)
+
+    -- needs some tests
+    local start_time = 0  -- start from the beginning (0 seconds)
+    local end_time = 10   -- extend to 10 seconds (adjust this as needed)
+    reaper.SetMediaItemInfo_Value(item, "D_LENGTH", end_time - start_time)
+
     local success = reaper.MIDI_InsertTextSysexEvt(take, true, false, 0, -1, sysex_data)
     if not success then
         reaper.ShowConsoleMsg("Failed to insert SysEx message.\n")
