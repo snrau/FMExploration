@@ -333,12 +333,14 @@
         sample,
         num = 50,
         changeArray = [],
+        primer = true,
     ) {
         const parameters = Object.values(dx7Parameters);
 
         const sampledCollection = [];
 
-        for (let i = 0; i < num + 1; i++) {
+        const bound = primer ? num + 1 : num;
+        for (let i = 0; i < bound; i++) {
             sampledCollection.push([...sample]);
         }
 
@@ -365,15 +367,15 @@
                 sampledCollection[i][parameter.index] = newValue;
             }
         }
-        console.log(sampledCollection);
         return sampledCollection;
     }
 
     function selectARandomBlock() {
-        let block = dx7Blocks[getRandom(Object.keys(dx7Blocks).length)];
-        return dx7Blocks[block][
-            getRandom(Object.keys(dx7Blocks[block]).length)
-        ];
+        let block =
+            dx7Blocks[
+                Object.keys(dx7Blocks)[getRandom(Object.keys(dx7Blocks).length)]
+            ];
+        return block[Object.keys(block)[getRandom(Object.keys(block).length)]];
     }
 
     function randomizeBlock(sample, blockrange) {
@@ -388,43 +390,18 @@
     }
 
     // change whole blocks
-    function progressiveSubgroupBlockSampling(
-        sample,
-        num = 50,
-        changeArray = [],
-    ) {
-        const parameters = Object.values(dx7Parameters);
-
+    function progressiveSubgroupBlockSampling(sample, num = 50, primer = true) {
         const sampledCollection = [];
 
-        for (let i = 0; i < num + 1; i++) {
+        const bound = primer ? num + 1 : num;
+        for (let i = 0; i < bound; i++) {
             sampledCollection.push([...sample]);
         }
 
-        if (changeArray.length === 0) {
-            for (let i = 0; i < num; i++) {
-                const param = getRandom(145);
-                sampledCollection[i][param] = getRandom(
-                    parameters[param].max + 1,
-                );
-            }
-        } else {
-            for (let i = 0; i < num; i++) {
-                const param = getRandom(67);
-                const parameter = changeArray[param];
-                let newValue = null;
-                while (
-                    newValue === null ||
-                    newValue === sampledCollection[i][parameter.index]
-                ) {
-                    newValue =
-                        parameter.values[getRandom(parameter.values.length)];
-                }
-
-                sampledCollection[i][parameter.index] = newValue;
-            }
+        for (let i = 0; i < num; i++) {
+            const block = selectARandomBlock();
+            sampledCollection[i] = randomizeBlock(sampledCollection[i], block);
         }
-        console.log(sampledCollection);
         return sampledCollection;
     }
 
@@ -703,7 +680,29 @@ SYSEX MESSAGE: Parameter Change
         return temp;
     }
 
-    const numToGenerate = 3;
+    const numToGenerate = 20;
+
+    function sampleAroundMultipleVoices() {
+        let temp = [];
+        for (let i = 0; i < 10; i++) {
+            temp = temp.concat(
+                progressiveSubgroupBlockSampling(
+                    voices[i],
+                    numToGenerate - 5,
+                    false,
+                ),
+            );
+            temp = temp.concat(
+                progressiveSubgroupSingleParamSampling(
+                    voices[i],
+                    numToGenerate - 5,
+                    [],
+                    true,
+                ),
+            );
+        }
+        return temp;
+    }
 </script>
 
 <div>
@@ -757,9 +756,13 @@ SYSEX MESSAGE: Parameter Change
                 collection = progressiveSubgroupBlockSampling(
                     voices[0],
                     numToGenerate,
-                    getChangesArray(dx7Parameters),
                 );
         }}>sample around first voice of file</button
+    >
+    <button
+        on:click={() => {
+            if (voices.length > 0) collection = sampleAroundMultipleVoices();
+        }}>sample dataset around the first 10 presets from the file</button
     >
     <button
         on:click={() => sendMessage(createSysexMessageFromConfig(voices[0]))}
