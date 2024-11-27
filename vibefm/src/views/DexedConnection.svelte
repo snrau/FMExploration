@@ -18,13 +18,13 @@
 
     const dx7Parameters = {
         // OP6
-        OP6_EG_RATE1: { number: 0, max: 99, default: 99, change: true },
-        OP6_EG_RATE2: { number: 1, max: 99, default: 99, change: true },
-        OP6_EG_RATE3: { number: 2, max: 99, default: 99, change: true },
-        OP6_EG_RATE4: { number: 3, max: 99, default: 99, change: true },
-        OP6_LVL1: { number: 4, max: 99, default: 99, change: true },
-        OP6_LVL2: { number: 5, max: 99, default: 99, change: true },
-        OP6_LVL3: { number: 6, max: 99, default: 99, change: true },
+        OP6_EG_RATE1: { number: 0, max: 99, default: 20, change: true },
+        OP6_EG_RATE2: { number: 1, max: 99, default: 0, change: true },
+        OP6_EG_RATE3: { number: 2, max: 99, default: 20, change: true },
+        OP6_EG_RATE4: { number: 3, max: 99, default: 0, change: false },
+        OP6_LVL1: { number: 4, max: 99, default: 99, change: false },
+        OP6_LVL2: { number: 5, max: 99, default: 90, change: false },
+        OP6_LVL3: { number: 6, max: 99, default: 0, change: false },
         OP6_LVL4: { number: 7, max: 99, default: 0, change: false },
         OP6_KBD_LEV_SCL_BRK_PT: {
             number: 8,
@@ -43,15 +43,15 @@
         OP6_OSC_MODE: { number: 17, max: 1, default: 0, change: false }, // 0=ratio
         OP6_OSC_FREQ_COARSE: { number: 18, max: 31, default: 1, change: true },
         OP6_OSC_FREQ_FINE: { number: 19, max: 99, default: 0, change: true },
-        OP6_OSC_DETUNE: { number: 20, max: 14, default: 7, change: true }, // 0 = det=-7
+        OP6_OSC_DETUNE: { number: 20, max: 14, default: 7, change: false }, // 0 = det=-7
         // OP5
-        OP5_EG_RATE1: { number: 21, max: 99, default: 99, change: true },
-        OP5_EG_RATE2: { number: 22, max: 99, default: 99, change: true },
-        OP5_EG_RATE3: { number: 23, max: 99, default: 99, change: true },
-        OP5_EG_RATE4: { number: 24, max: 99, default: 99, change: true },
-        OP5_LVL1: { number: 25, max: 99, default: 99, change: true },
-        OP5_LVL2: { number: 26, max: 99, default: 99, change: true },
-        OP5_LVL3: { number: 27, max: 99, default: 99, change: true },
+        OP5_EG_RATE1: { number: 21, max: 99, default: 20, change: true },
+        OP5_EG_RATE2: { number: 22, max: 99, default: 0, change: true },
+        OP5_EG_RATE3: { number: 23, max: 99, default: 20, change: true },
+        OP5_EG_RATE4: { number: 24, max: 99, default: 0, change: false },
+        OP5_LVL1: { number: 25, max: 99, default: 99, change: false },
+        OP5_LVL2: { number: 26, max: 99, default: 90, change: false },
+        OP5_LVL3: { number: 27, max: 99, default: 0, change: false },
         OP5_LVL4: { number: 28, max: 99, default: 0, change: false },
         OP5_KBD_LEV_SCL_BRK_PT: {
             number: 29,
@@ -70,15 +70,15 @@
         OP5_OSC_MODE: { number: 38, max: 1, default: 0, change: false },
         OP5_OSC_FREQ_COARSE: { number: 39, max: 31, default: 1, change: true },
         OP5_OSC_FREQ_FINE: { number: 40, max: 99, default: 0, change: true },
-        OP5_OSC_DETUNE: { number: 41, max: 14, default: 7, change: true },
+        OP5_OSC_DETUNE: { number: 41, max: 14, default: 7, change: false },
         // OP4
-        OP4_EG_RATE1: { number: 42, max: 99, default: 99, change: true },
-        OP4_EG_RATE2: { number: 43, max: 99, default: 99, change: true },
-        OP4_EG_RATE3: { number: 44, max: 99, default: 99, change: true },
-        OP4_EG_RATE4: { number: 45, max: 99, default: 99, change: true },
-        OP4_LVL1: { number: 46, max: 99, default: 99, change: true },
-        OP4_LVL2: { number: 47, max: 99, default: 99, change: true },
-        OP4_LVL3: { number: 48, max: 99, default: 99, change: true },
+        OP4_EG_RATE1: { number: 42, max: 99, default: 20, change: true },
+        OP4_EG_RATE2: { number: 43, max: 99, default: 0, change: true },
+        OP4_EG_RATE3: { number: 44, max: 99, default: 20, change: true },
+        OP4_EG_RATE4: { number: 45, max: 99, default: 0, change: false },
+        OP4_LVL1: { number: 46, max: 99, default: 99, change: false },
+        OP4_LVL2: { number: 47, max: 99, default: 90, change: false },
+        OP4_LVL3: { number: 48, max: 99, default: 0, change: false },
         OP4_LVL4: { number: 49, max: 99, default: 0, change: false },
         OP4_KBD_LEV_SCL_BRK_PT: {
             number: 50,
@@ -97,15 +97,15 @@
         OP4_OSC_MODE: { number: 59, max: 1, default: 0, change: false },
         OP4_OSC_FREQ_COARSE: { number: 60, max: 31, default: 1, change: true },
         OP4_OSC_FREQ_FINE: { number: 61, max: 99, default: 0, change: true },
-        OP4_OSC_DETUNE: { number: 62, max: 14, default: 7, change: true },
+        OP4_OSC_DETUNE: { number: 62, max: 14, default: 7, change: false },
         // OP3
-        OP3_EG_RATE1: { number: 63, max: 99, default: 99, change: true },
-        OP3_EG_RATE2: { number: 64, max: 99, default: 99, change: true },
-        OP3_EG_RATE3: { number: 65, max: 99, default: 99, change: true },
-        OP3_EG_RATE4: { number: 66, max: 99, default: 99, change: true },
-        OP3_LVL1: { number: 67, max: 99, default: 99, change: true },
-        OP3_LVL2: { number: 68, max: 99, default: 99, change: true },
-        OP3_LVL3: { number: 69, max: 99, default: 99, change: true },
+        OP3_EG_RATE1: { number: 63, max: 99, default: 20, change: true },
+        OP3_EG_RATE2: { number: 64, max: 99, default: 0, change: true },
+        OP3_EG_RATE3: { number: 65, max: 99, default: 20, change: true },
+        OP3_EG_RATE4: { number: 66, max: 99, default: 0, change: false },
+        OP3_LVL1: { number: 67, max: 99, default: 99, change: false },
+        OP3_LVL2: { number: 68, max: 99, default: 90, change: false },
+        OP3_LVL3: { number: 69, max: 99, default: 0, change: false },
         OP3_LVL4: { number: 70, max: 99, default: 0, change: false },
         OP3_KBD_LEV_SCL_BRK_PT: {
             number: 71,
@@ -124,15 +124,15 @@
         OP3_OSC_MODE: { number: 80, max: 1, default: 0, change: false },
         OP3_OSC_FREQ_COARSE: { number: 81, max: 31, default: 1, change: true },
         OP3_OSC_FREQ_FINE: { number: 82, max: 99, default: 0, change: true },
-        OP3_OSC_DETUNE: { number: 83, max: 14, default: 7, change: true },
+        OP3_OSC_DETUNE: { number: 83, max: 14, default: 7, change: false },
         // OP2
-        OP2_EG_RATE1: { number: 84, max: 99, default: 99, change: true },
-        OP2_EG_RATE2: { number: 85, max: 99, default: 99, change: true },
-        OP2_EG_RATE3: { number: 86, max: 99, default: 99, change: true },
-        OP2_EG_RATE4: { number: 87, max: 99, default: 99, change: true },
-        OP2_LVL1: { number: 88, max: 99, default: 99, change: true },
-        OP2_LVL2: { number: 89, max: 99, default: 99, change: true },
-        OP2_LVL3: { number: 90, max: 99, default: 99, change: true },
+        OP2_EG_RATE1: { number: 84, max: 99, default: 20, change: true },
+        OP2_EG_RATE2: { number: 85, max: 99, default: 0, change: true },
+        OP2_EG_RATE3: { number: 86, max: 99, default: 20, change: true },
+        OP2_EG_RATE4: { number: 87, max: 99, default: 0, change: true },
+        OP2_LVL1: { number: 88, max: 99, default: 99, change: false },
+        OP2_LVL2: { number: 89, max: 99, default: 90, change: false },
+        OP2_LVL3: { number: 90, max: 99, default: 0, change: false },
         OP2_LVL4: { number: 91, max: 99, default: 0, change: false },
         OP2_KBD_LEV_SCL_BRK_PT: {
             number: 92,
@@ -156,15 +156,15 @@
             change: true,
         },
         OP2_OSC_FREQ_FINE: { number: 103, max: 99, default: 0, change: true },
-        OP2_OSC_DETUNE: { number: 104, max: 14, default: 7, change: true },
+        OP2_OSC_DETUNE: { number: 104, max: 14, default: 7, change: false },
         //OP1
-        OP1_EG_RATE1: { number: 105, max: 99, default: 99, change: true },
-        OP1_EG_RATE2: { number: 106, max: 99, default: 99, change: true },
-        OP1_EG_RATE3: { number: 107, max: 99, default: 99, change: true },
-        OP1_EG_RATE4: { number: 108, max: 99, default: 99, change: true },
-        OP1_LVL1: { number: 109, max: 99, default: 99, change: true },
-        OP1_LVL2: { number: 110, max: 99, default: 99, change: true },
-        OP1_LVL3: { number: 111, max: 99, default: 99, change: true },
+        OP1_EG_RATE1: { number: 105, max: 99, default: 20, change: true },
+        OP1_EG_RATE2: { number: 106, max: 99, default: 0, change: true },
+        OP1_EG_RATE3: { number: 107, max: 99, default: 20, change: true },
+        OP1_EG_RATE4: { number: 108, max: 99, default: 0, change: true },
+        OP1_LVL1: { number: 109, max: 99, default: 99, change: false },
+        OP1_LVL2: { number: 110, max: 99, default: 90, change: false },
+        OP1_LVL3: { number: 111, max: 99, default: 0, change: false },
         OP1_LVL4: { number: 112, max: 99, default: 0, change: false },
         OP1_KBD_LEV_SCL_BRK_PT: {
             number: 113,
@@ -188,7 +188,7 @@
             change: true,
         },
         OP1_OSC_FREQ_FINE: { number: 124, max: 99, default: 0, change: true },
-        OP1_OSC_DETUNE: { number: 125, max: 14, default: 7, change: true },
+        OP1_OSC_DETUNE: { number: 125, max: 14, default: 7, change: false },
         // General
         PITCH_EG_RATE1: { number: 126, max: 99, default: 99, change: false },
         PITCH_EG_RATE2: { number: 127, max: 99, default: 99, change: false },
@@ -199,7 +199,7 @@
         PITCH_EG_LVL3: { number: 132, max: 99, default: 50, change: false },
         PITCH_EG_LVL4: { number: 133, max: 99, default: 50, change: false },
         ALGORITHM_NUM: { number: 134, max: 31, default: 0, change: true },
-        FEEDBACK: { number: 135, max: 7, default: 7, change: false },
+        FEEDBACK: { number: 135, max: 7, default: 0, change: true },
         OSC_SYNC: { number: 136, max: 1, default: 0, change: false },
         LFO_SPEED: { number: 137, max: 99, default: 0, change: false },
         LFO_DELAY: { number: 138, max: 99, default: 0, change: false },
@@ -289,7 +289,7 @@
         return temp;
     }
 
-    function getChangesArray(objDict = dx7Parameters) {
+    function getChangesArrayLimited(objDict = dx7Parameters) {
         // Get parameter keys in order to maintain consistent index positions
         const parameters = Object.keys(objDict);
 
@@ -316,6 +316,113 @@
                         values: Array.from({ length: maxVal + 1 }, (_, i) => i),
                     };
                 else return { index: index, values: [0, 1, 2, 4, 8] };
+            } else {
+                // Use a placeholder for max=127 to indicate randomness
+                return { index: index, values: null }; // Placeholder, will be replaced with random values later
+            }
+        });
+    }
+
+    function getChangesArrayFull(objDict = dx7Parameters) {
+        // Get parameter keys in order to maintain consistent index positions
+        const parameters = Object.keys(objDict);
+
+        // Gather parameters that change and the values they should cycle through
+        const changeParams = parameters.filter(
+            (param) => objDict[param].change,
+        );
+        return changeParams.map((param) => {
+            const maxVal = objDict[param].max;
+            const index = objDict[param].number;
+            if (index < 144) {
+                return {
+                        index: index,
+                        values: Array.from({ length: maxVal + 1 }, (_, i) => i),
+                    };
+            } else {
+                // Use a placeholder for max=127 to indicate randomness
+                return { index: index, values: null }; // Placeholder, will be replaced with random values later
+            }
+        });
+    }
+
+    function getChangesArrayLowsustain(objDict = dx7Parameters) {
+        // Get parameter keys in order to maintain consistent index positions
+        const parameters = Object.keys(objDict);
+
+        // Gather parameters that change and the values they should cycle through
+        const changeParams = parameters.filter(
+            (param) => objDict[param].change,
+        );
+        return changeParams.map((param) => {
+            const maxVal = objDict[param].max;
+            const index = objDict[param].number;
+            if (index < 144) {
+                return {
+                        index: index,
+                        values: Array.from({ length: maxVal + 1 }, (_, i) => i),
+                    };
+            } else if (index % 21 === 1 && index < 144) {
+                return {
+                        index: index,
+                        values: Array.from({ length: 26 }, (_, i) => i),
+                    };
+            } else {
+                // Use a placeholder for max=127 to indicate randomness
+                return { index: index, values: null }; // Placeholder, will be replaced with random values later
+            }
+        });
+    }
+
+    function getChangesArrayHighsustain(objDict = dx7Parameters) {
+        // Get parameter keys in order to maintain consistent index positions
+        const parameters = Object.keys(objDict);
+
+        // Gather parameters that change and the values they should cycle through
+        const changeParams = parameters.filter(
+            (param) => objDict[param].change,
+        );
+        return changeParams.map((param) => {
+            const maxVal = objDict[param].max;
+            const index = objDict[param].number;
+            if (index < 144) {
+                return {
+                        index: index,
+                        values: Array.from({ length: maxVal + 1 }, (_, i) => i),
+                    };
+            } else if (index % 21 === 1 && index < 144) {
+                return {
+                        index: index,
+                        values: Array.from({ length: 26 }, (_, i) => i+50),
+                    };
+            } else {
+                // Use a placeholder for max=127 to indicate randomness
+                return { index: index, values: null }; // Placeholder, will be replaced with random values later
+            }
+        });
+    }
+
+    function getChangesArrayNonSilent(objDict = dx7Parameters) {
+        // Get parameter keys in order to maintain consistent index positions
+        const parameters = Object.keys(objDict);
+
+        // Gather parameters that change and the values they should cycle through
+        const changeParams = parameters.filter(
+            (param) => objDict[param].change,
+        );
+        return changeParams.map((param) => {
+            const maxVal = objDict[param].max;
+            const index = objDict[param].number;
+            if (index < 144) {
+                return {
+                        index: index,
+                        values: Array.from({ length: maxVal + 1 }, (_, i) => i),
+                    };
+            } else if (index % 21 === 16 && index < 144) {
+                return {
+                        index: index,
+                        values: Array.from({ length: 50 }, (_, i) => i+50),
+                    };
             } else {
                 // Use a placeholder for max=127 to indicate randomness
                 return { index: index, values: null }; // Placeholder, will be replaced with random values later
