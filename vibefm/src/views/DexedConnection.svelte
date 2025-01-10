@@ -336,9 +336,9 @@
             const index = objDict[param].number;
             if (index < 144) {
                 return {
-                        index: index,
-                        values: Array.from({ length: maxVal + 1 }, (_, i) => i),
-                    };
+                    index: index,
+                    values: Array.from({ length: maxVal + 1 }, (_, i) => i),
+                };
             } else {
                 // Use a placeholder for max=127 to indicate randomness
                 return { index: index, values: null }; // Placeholder, will be replaced with random values later
@@ -359,14 +359,14 @@
             const index = objDict[param].number;
             if (index < 144) {
                 return {
-                        index: index,
-                        values: Array.from({ length: maxVal + 1 }, (_, i) => i),
-                    };
+                    index: index,
+                    values: Array.from({ length: maxVal + 1 }, (_, i) => i),
+                };
             } else if (index % 21 === 1 && index < 144) {
                 return {
-                        index: index,
-                        values: Array.from({ length: 26 }, (_, i) => i),
-                    };
+                    index: index,
+                    values: Array.from({ length: 26 }, (_, i) => i),
+                };
             } else {
                 // Use a placeholder for max=127 to indicate randomness
                 return { index: index, values: null }; // Placeholder, will be replaced with random values later
@@ -387,14 +387,14 @@
             const index = objDict[param].number;
             if (index < 144) {
                 return {
-                        index: index,
-                        values: Array.from({ length: maxVal + 1 }, (_, i) => i),
-                    };
+                    index: index,
+                    values: Array.from({ length: maxVal + 1 }, (_, i) => i),
+                };
             } else if (index % 21 === 1 && index < 144) {
                 return {
-                        index: index,
-                        values: Array.from({ length: 26 }, (_, i) => i+50),
-                    };
+                    index: index,
+                    values: Array.from({ length: 26 }, (_, i) => i + 50),
+                };
             } else {
                 // Use a placeholder for max=127 to indicate randomness
                 return { index: index, values: null }; // Placeholder, will be replaced with random values later
@@ -415,14 +415,14 @@
             const index = objDict[param].number;
             if (index < 144) {
                 return {
-                        index: index,
-                        values: Array.from({ length: maxVal + 1 }, (_, i) => i),
-                    };
+                    index: index,
+                    values: Array.from({ length: maxVal + 1 }, (_, i) => i),
+                };
             } else if (index % 21 === 16 && index < 144) {
                 return {
-                        index: index,
-                        values: Array.from({ length: 50 }, (_, i) => i+50),
-                    };
+                    index: index,
+                    values: Array.from({ length: 50 }, (_, i) => i + 50),
+                };
             } else {
                 // Use a placeholder for max=127 to indicate randomness
                 return { index: index, values: null }; // Placeholder, will be replaced with random values later
@@ -810,6 +810,24 @@ SYSEX MESSAGE: Parameter Change
         }
         return temp;
     }
+
+    async function testPythonScripts() {
+        const response = await fetch("http://localhost:3000/hrps", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                path: "..\\luaScript\\output",
+                inputFile: "patch_0.wav",
+                outputFile: "patch_0.json",
+            }),
+        });
+
+        if (response.ok) {
+            console.log("Worked to do hrps");
+        } else {
+            alert("Failed to do hrps.");
+        }
+    }
 </script>
 
 <div>
@@ -877,4 +895,6 @@ SYSEX MESSAGE: Parameter Change
     >
 
     <button on:click={() => sendReaper()}>send collection to reaper</button>
+
+    <button on:click={() => testPythonScripts()}>test python scripts</button>
 </div>
