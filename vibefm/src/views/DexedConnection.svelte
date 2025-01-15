@@ -323,6 +323,7 @@
         });
     }
 
+    /*
     function getChangesArrayFull(objDict = dx7Parameters) {
         // Get parameter keys in order to maintain consistent index positions
         const parameters = Object.keys(objDict);
@@ -429,6 +430,7 @@
             }
         });
     }
+    */
 
     function getRandom(max) {
         return Math.floor(Math.random() * max);
@@ -538,7 +540,7 @@
     ) {
         let changeArray =
             samplingStrategy === "uniformRandomRestrict"
-                ? getChangesArray(objDict)
+                ? getChangesArrayLimited(objDict)
                 : null;
 
         let sampledCollection = new Array(num).fill([]);
@@ -567,7 +569,7 @@
             } while (successful === false);
             console.log(i + 1 + " of " + num + " done");
         }
-
+        console.log(sampledCollection);
         return sampledCollection; //allCombinations;
     }
 
@@ -640,7 +642,7 @@ SYSEX MESSAGE: Parameter Change
     }
 
     function sendMessage(m) {
-        //console.log(m);
+        console.log(m);
         midiOutput.send(m);
     }
 
@@ -649,7 +651,7 @@ SYSEX MESSAGE: Parameter Change
             let message = null;
             if (action === "single parameter") {
                 message = changeSingleParameter(param, value);
-            } else if (action === "load bank") {
+            } else if (action === "load Bank") {
                 message = loadACompleteBank();
             } else {
                 console.log("function not ready yet");
@@ -711,6 +713,38 @@ SYSEX MESSAGE: Parameter Change
         console.log("Extracted voices:", voices);
     }
 
+    function writeSysEx(collection) {
+        // Ensure it's a Yamaha DX7 SysEx file
+        const NUM_VOICES = 32;
+
+        const sysexData = [];
+
+        for (let i = 0; i < NUM_VOICES; i++) {
+            if (collection.length > i)
+                sysexData.push(writeVoice(collection[i]));
+            else sysexData.push(writeVoice(null));
+        }
+        const data = sysexData.flat();
+
+        // Add a SysEx header and footer if needed (for some formats)
+        const header = [0xf0, 0x43, 0x00, 0x09, 0x20, 0x00]; // Example header bytes (Yamaha SysEx ID)
+        const footer = [0xf7]; // End of SysEx message
+        const fullData = [...header, ...data, ...footer];
+
+        //sendMessage(createSysexMessageFromConfig(voices[0]));
+        return new Promise(() => {
+            const blob = new Blob([new Uint8Array(fullData)], {
+                type: "application/sysex",
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "collection" + ".sysex";
+            link.click();
+            URL.revokeObjectURL(url);
+        });
+    }
+
     async function sendReaper() {
         if (collection.length === 0) return null;
         let allMessages = collection.map((arr) =>
@@ -728,7 +762,21 @@ SYSEX MESSAGE: Parameter Change
         });
 
         if (response.ok) {
-            console.log("Rendering triggered!");
+            const response = await fetch("http://localhost:3000/analysis", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    path: "..\\luaScript\\output",
+                    configs: collection,
+                }),
+            });
+
+            if (response.ok) {
+                console.log("Finished analysis");
+            } else {
+                alert("Failed to do hrps.");
+            }
+            console.log("Rendering done!");
         } else {
             alert("Failed to trigger rendering.");
         }
@@ -812,21 +860,98 @@ SYSEX MESSAGE: Parameter Change
     }
 
     async function testPythonScripts() {
-        const response = await fetch("http://localhost:3000/hrps", {
+        const response = await fetch("http://localhost:3000/analysis", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 path: "..\\luaScript\\output",
-                inputFile: "patch_0.wav",
-                outputFile: "patch_0.json",
+                configs: collection,
             }),
         });
 
         if (response.ok) {
-            console.log("Worked to do hrps");
+            console.log("analysis done");
         } else {
             alert("Failed to do hrps.");
         }
+    }
+
+    async function distanceMatrix() {
+        const response = await fetch("http://localhost:3000/distanceMatrix", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                path: "..\\luaScript\\output",
+            }),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(
+                        "Network response was not ok " + response.statusText,
+                    );
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Distance Matrix:", data);
+            });
+    }
+
+    function writeVoice(parsedVoice) {
+        if (parsedVoice === null) {
+            return new Array(102).fill(0);
+        }
+        let voice = [];
+        let DT = 0;
+        let index = 0;
+
+        while (index < parsedVoice.length - 1) {
+            // Exclude the terminating 31 at the end
+            if (index % 17 === 11 && voice.length < 102) {
+                const leftCurve = parsedVoice[index];
+                const rightCurve = parsedVoice[index + 1];
+                voice.push((rightCurve << 2) | leftCurve); // Combine leftCurve and rightCurve
+                index += 2;
+            } else if (index % 17 === 12 && voice.length < 102) {
+                const RS = parsedVoice[index];
+                DT = parsedVoice[index + 1];
+                voice.push((DT << 3) | RS); // Combine DT and RS
+                index += 2;
+            } else if (index % 17 === 13 && voice.length < 102) {
+                const AMS = parsedVoice[index];
+                const KVS = parsedVoice[index + 1];
+                voice.push((KVS << 2) | AMS); // Combine AMS and KVS
+                index += 2;
+            } else if (index % 17 === 15 && voice.length < 102) {
+                const M = parsedVoice[index];
+                const FC = parsedVoice[index + 1];
+                voice.push((FC << 1) | M); // Combine M and FC
+                index += 2;
+            } else if (index % 17 === 16 && voice.length < 102) {
+                const value = parsedVoice[index];
+                voice.push(value);
+                voice.push(DT); // Append DT separately
+                index++;
+            } else if (voice.length === 111) {
+                // Handle FB and OKS
+                const FB = parsedVoice[index];
+                const OKS = parsedVoice[index + 1];
+                voice.push((OKS << 3) | FB); // Combine OKS and FB
+                index += 2;
+            } else if (voice.length === 116) {
+                // Handle LFS, LFW, and LPMS
+                const LFS = parsedVoice[index];
+                const LFW = parsedVoice[index + 1];
+                const LPMS = parsedVoice[index + 2];
+                voice.push((LPMS << 4) | (LFW << 1) | LFS); // Combine LPMS, LFW, and LFS
+                index += 3;
+            } else {
+                voice.push(parsedVoice[index]); // Copy other values directly
+                index++;
+            }
+        }
+
+        return voice;
     }
 </script>
 
@@ -862,9 +987,7 @@ SYSEX MESSAGE: Parameter Change
             (collection = progressiveSubgroupSingleParamSampling(
                 uniformSamplingFull(),
                 numToGenerate,
-                getChangesArray(dx7Parameters),
-            ))}
-        >Sample Progressive from random seed but restricted Combinations</button
+            ))}>Sample Progressive from random seed</button
     >
     <div>
         <select bind:value={selectedIndex} on:change={handleSelectionChange}>
@@ -897,4 +1020,6 @@ SYSEX MESSAGE: Parameter Change
     <button on:click={() => sendReaper()}>send collection to reaper</button>
 
     <button on:click={() => testPythonScripts()}>test python scripts</button>
+
+    <button on:click={() => distanceMatrix()}>calculate Distance</button>
 </div>
