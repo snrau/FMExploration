@@ -726,9 +726,14 @@ SYSEX MESSAGE: Parameter Change
         }
         const data = sysexData.flat();
 
+        const masked_sum =
+            data.reduce((partialSum, a) => partialSum + a, 0) & 0x0fffffff;
+
+        const checksum = (~masked_sum + 1) & 0x0fffffff;
+
         // Add a SysEx header and footer if needed (for some formats)
         const header = [0xf0, 0x43, 0x00, 0x09, 0x20, 0x00]; // Example header bytes (Yamaha SysEx ID)
-        const footer = [0xf7]; // End of SysEx message
+        const footer = [checksum, 0xf7]; // End of SysEx message
         const fullData = [...header, ...data, ...footer];
 
         //sendMessage(createSysexMessageFromConfig(voices[0]));
@@ -739,7 +744,7 @@ SYSEX MESSAGE: Parameter Change
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.href = url;
-            link.download = "collection" + ".sysex";
+            link.download = "collection" + ".syx";
             link.click();
             URL.revokeObjectURL(url);
         });
@@ -767,7 +772,7 @@ SYSEX MESSAGE: Parameter Change
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     path: "..\\luaScript\\output",
-                    configs: collection,
+                    configs: JSON.stringify(collection),
                 }),
             });
 
@@ -859,13 +864,13 @@ SYSEX MESSAGE: Parameter Change
         return temp;
     }
 
-    async function testPythonScripts() {
+    async function doAnalysis() {
         const response = await fetch("http://localhost:3000/analysis", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 path: "..\\luaScript\\output",
-                configs: collection,
+                configs: JSON.stringify(collection),
             }),
         });
 
@@ -899,7 +904,7 @@ SYSEX MESSAGE: Parameter Change
 
     function writeVoice(parsedVoice) {
         if (parsedVoice === null) {
-            return new Array(102).fill(0);
+            return new Array(128).fill(0);
         }
         let voice = [];
         let DT = 0;
@@ -907,49 +912,50 @@ SYSEX MESSAGE: Parameter Change
 
         while (index < parsedVoice.length - 1) {
             // Exclude the terminating 31 at the end
-            if (index % 17 === 11 && voice.length < 102) {
+            if (index % 21 === 11 && index < 126) {
                 const leftCurve = parsedVoice[index];
                 const rightCurve = parsedVoice[index + 1];
                 voice.push((rightCurve << 2) | leftCurve); // Combine leftCurve and rightCurve
                 index += 2;
-            } else if (index % 17 === 12 && voice.length < 102) {
+            } else if (index % 21 === 13 && index < 126) {
                 const RS = parsedVoice[index];
-                DT = parsedVoice[index + 1];
+                DT = parsedVoice[index + 7];
                 voice.push((DT << 3) | RS); // Combine DT and RS
-                index += 2;
-            } else if (index % 17 === 13 && voice.length < 102) {
+                index++;
+            } else if (index % 21 === 14 && index < 126) {
                 const AMS = parsedVoice[index];
                 const KVS = parsedVoice[index + 1];
                 voice.push((KVS << 2) | AMS); // Combine AMS and KVS
                 index += 2;
-            } else if (index % 17 === 15 && voice.length < 102) {
+            } else if (index % 21 === 17 && index < 126) {
                 const M = parsedVoice[index];
                 const FC = parsedVoice[index + 1];
                 voice.push((FC << 1) | M); // Combine M and FC
                 index += 2;
-            } else if (index % 17 === 16 && voice.length < 102) {
-                const value = parsedVoice[index];
-                voice.push(value);
-                voice.push(DT); // Append DT separately
+            } else if (index % 21 === 20 && index < 126) {
+                //const value = parsedVoice[index];
+                //voice.push(value);
+                //voice.push(DT); // wrong, this has to go together with RS
                 index++;
-            } else if (voice.length === 111) {
+            } else if (index === 135) {
                 // Handle FB and OKS
                 const FB = parsedVoice[index];
                 const OKS = parsedVoice[index + 1];
                 voice.push((OKS << 3) | FB); // Combine OKS and FB
                 index += 2;
-            } else if (voice.length === 116) {
+            } else if (index === 141) {
                 // Handle LFS, LFW, and LPMS
                 const LFS = parsedVoice[index];
                 const LFW = parsedVoice[index + 1];
                 const LPMS = parsedVoice[index + 2];
                 voice.push((LPMS << 4) | (LFW << 1) | LFS); // Combine LPMS, LFW, and LFS
                 index += 3;
-            } else {
+            } else if (index !== 155) {
                 voice.push(parsedVoice[index]); // Copy other values directly
                 index++;
             }
         }
+        console.log(voice.length);
 
         return voice;
     }
@@ -1019,7 +1025,9 @@ SYSEX MESSAGE: Parameter Change
 
     <button on:click={() => sendReaper()}>send collection to reaper</button>
 
-    <button on:click={() => testPythonScripts()}>test python scripts</button>
+    <button on:click={() => doAnalysis()}>analysis</button>
 
     <button on:click={() => distanceMatrix()}>calculate Distance</button>
+
+    <button on:click={() => writeSysEx(collection)}>export collection</button>
 </div>

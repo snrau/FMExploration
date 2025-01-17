@@ -1,5 +1,6 @@
 import sys, os
 import librosa.display
+import librosa.feature
 import ast
 from hrps import hrps
 import json
@@ -22,18 +23,21 @@ def convert_ndarray_to_list(data):
 
 def main():
     path = sys.argv[1]
-    configs = sys.argv[4]
+    print(f"{sys.argv[4]}", file=sys.stderr)
+    configs = json.loads(sys.argv[4])
+    print(f"{configs}", file=sys.stderr)
 
-    index = 0
-
+    count = 0
 
     for wavFile in json.loads(sys.argv[2]):
+        index = int(wavFile.split("_")[1].split(".w")[0])
+        print(f"{index}", file=sys.stderr)
         input = os.path.join(path, wavFile)
         output = os.path.join(path, json.loads(sys.argv[3])[index])
 
         data = {}
 
-        data["config"] = configs[index]
+        
 
         # HRPS
         fn_wav = input
@@ -68,21 +72,23 @@ def main():
         data["stft_phase"] = np.angle(stft)
 
         ### mfcc
-        mfcc = librosa.mfcc(y=x, sr=Fs, n_fft=N, hop_length=H, win_length=N, window='hann', center=True, pad_mode='constant')
+        mfcc = librosa.feature.mfcc(y=x, sr=Fs, n_fft=N, hop_length=H, win_length=N, window='hann', center=True, pad_mode='constant')
         data["mfcc"] = mfcc
+
+        data["config"] = configs[index]
 
         data_cleaned = convert_ndarray_to_list(data)
         try:
             # Write JSON data to the file with pretty formatting
             with open(output, 'w', encoding='utf-8') as file:
                 json.dump(data_cleaned, file, ensure_ascii=False, indent=4)
-            print(f"JSON written - {index + 1} of {len(json.loads(sys.argv[2]))} done", file=sys.stderr)
+            print(f"JSON written - {count + 1} of {len(json.loads(sys.argv[2]))} done", file=sys.stderr)
 
         except Exception as e:
             print(f"Failed to write JSON to file: {e}", file=sys.stderr)
             sys.exit(1)
         
-        index += 1
+        count += 1
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

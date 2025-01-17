@@ -2,7 +2,7 @@ import express from "express";
 import * as fs from "fs";
 import { exec, spawn } from "child_process";
 import cors from 'cors'
-import { euclidean } from "ml-distance";
+
 
 
 const app = express();
@@ -39,6 +39,10 @@ app.post("/send_sysex_batch", (req, res) => {
 
 });
 
+function euclideanDistance(a, b) {
+    return Math.hypot(...Object.keys(a).map(k => b[k] - a[k]));
+}
+
 
 app.post('/analysis', (req, res) => {
 
@@ -58,7 +62,7 @@ app.post('/analysis', (req, res) => {
 
 
         // Spawn a Python process
-        const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), req.body.configs]);
+        const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs)]);
 
         // Capture output from the Python script
         pythonProcess.stdout.on('data', (data) => {
@@ -111,7 +115,7 @@ app.post('/distanceMatrix', (req, res) => {
                 const mfcc2 = mfccMatrices[j]
 
                 // Compute pairwise Euclidean distances and calculate the average distance
-                let totalDistance = euclidean(mfcc1, mfcc2);
+                let totalDistance = euclideanDistance(mfcc1, mfcc2);
 
                 // Store the distance symmetrically
                 distanceMatrix[i][j] = totalDistance;
