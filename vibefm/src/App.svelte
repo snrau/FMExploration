@@ -1,7 +1,5 @@
 <script>
   import SideMenu from "./components/SideMenu.svelte";
-  import SynthView from "./views/SynthView.svelte";
-  import AboutView from "./views/ExpView.svelte";
   import DexedConnectionView from "./views/DexedConnection.svelte";
 
   import "./existingSynth/synth.css";
@@ -17,7 +15,7 @@
   <SideMenu callback={handleNavigation} />
   <div class="main-content">
     {#if currentView === "synth"}
-      <SynthView />
+      <p />
     {:else if currentView === "about"}
       <DexedConnectionView />
     {/if}
