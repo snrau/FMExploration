@@ -75,7 +75,7 @@
     </div>
 
     <div class="middle">
-        <MapView {data} on:pointClick={handlePointClick} />
+        <MapView {data} onpointClick={handlePointClick} />
     </div>
 
     <div class="right">
