@@ -3,6 +3,7 @@ import * as fs from "fs";
 import { exec, spawn } from "child_process";
 import cors from 'cors'
 import * as JSONStream from 'JSONStream'
+import { json } from "d3";
 
 
 
@@ -134,6 +135,9 @@ app.post('/readData', (req, res) => {
                                 objects.push({
                                     config: jsonObject.config,
                                     mfcc: jsonObject.mfcc,
+                                    hrps: { harmonic: jsonObject.harmonic, residual: jsonObject.residual, percussive: jsonObject.percussive},
+                                    centroid: jsonObject.centroid_frequencies,
+                                    rms: jsonObject.rms
                                 });
                             } catch (e) {
                                 console.error("Error parsing JSON fragment:", e);

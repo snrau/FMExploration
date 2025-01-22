@@ -1,11 +1,13 @@
 <script>
-    import * as d3 from "d3";
+    import { onMount } from "svelte";
+    import { scaleLinear, zoom, select } from "d3";
 
     export let data = [];
     export let onPointClick;
+    export let pointRenderer = null;
+    export let selectedPoint = null;
 
     function handleClick(point) {
-        console.log(point, onPointClick);
         if (onPointClick) {
             onPointClick(point);
         }
@@ -14,8 +16,11 @@
     const size = 900;
     const offset = 5;
 
-    $: xScale = d3.scaleLinear().domain([0, size]).range([0, size]);
-    $: yScale = d3.scaleLinear().domain([0, size]).range([0, size]);
+    let container; // Reference to the SVG container
+    let zoomTransform = { x: 0, y: 0, k: 1 }; // Initial zoom state
+
+    $: xScale = scaleLinear().domain([0, size]).range([0, size]);
+    $: yScale = scaleLinear().domain([0, size]).range([0, size]);
 
     $: if (data.length) {
         // Compute extents
@@ -29,15 +34,26 @@
         ];
 
         // Create linear scales
-        xScale = d3
-            .scaleLinear()
+        xScale = scaleLinear()
             .domain(xExtent)
             .range([offset, size - offset]);
-        yScale = d3
-            .scaleLinear()
+        yScale = scaleLinear()
             .domain(yExtent)
             .range([offset, size - offset]);
     }
+
+    onMount(() => {
+    const svg = select(container);
+
+    const zoomBehavior = zoom()
+      .scaleExtent([0.5, 5]) // Zoom limits
+      .on("zoom", (event) => {
+        if(event.sourceEvent.altKey)
+            zoomTransform = event.transform; // Update the transform state
+      });
+
+    svg.call(zoomBehavior);
+  });
 </script>
 
 <div class="map-container">
@@ -48,24 +64,49 @@
             on:click={() => handleClick(point)}
         ></div>
     {/each}
+    <div class="map-container" style="width: {size}px; height: {size}px;">
+        <svg
+          bind:this={container}
+          width={size}
+          height={size}
+          style="background: #f0f0f0;"
+        >
+          <g transform="translate({zoomTransform.x},{zoomTransform.y}) scale({zoomTransform.k})">
+            {#if pointRenderer}
+                {#each data as point}
+                    {@html pointRenderer(point)}
+                {/each}
+            {:else}
+              <!-- Default: Dots -->
+              {#each data as point}
+                <circle cx={xScale(point.x)} cy={yScale(point.y)} r="5" class="point {point === selectedPoint ? 'selected' : ''}" fill={point === selectedPoint ? "orange" : "red"} on:click={() => handleClick(point)}></circle>
+              {/each}
+            {/if}
+          </g>
+        </svg>
+      </div>
 </div>
 
 <style>
     .map-container {
-        width: 100%;
-        height: 100%;
-        position: relative;
-        background-color: #eef;
-        border: 1px solid #ddd;
-    }
+    border: 1px solid #ccc;
+    margin: 0 auto;
+    overflow: hidden;
+  }
 
-    .point {
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        background-color: red;
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        cursor: pointer;
-    }
+  .point {
+    fill: red;
+    stroke: black;
+    stroke-width: 0.5;
+  }
+
+  .selected {
+    fill: orange; /* Color for selected points */
+    stroke: black;
+    stroke-width: 1;
+  }
+
+  .custom-point {
+    transform: translate(-50%, -50%);
+  }
 </style>

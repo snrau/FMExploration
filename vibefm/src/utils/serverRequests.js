@@ -90,20 +90,43 @@ export async function readData() {
             let closingBracketIndex;
 
             while (
-                openingBracketIndex !== -1 &&
-                (closingBracketIndex = buffer.indexOf('}', openingBracketIndex)) !== -1
+                openingBracketIndex !== -1 
             ) {
+
+                const configStartIndex = buffer.indexOf('"config"', openingBracketIndex);
+
+                if(done){
+                    const jsonString = buffer.slice(openingBracketIndex, buffer.length-1);
+                    const jsonObject = JSON.parse(jsonString);
+                    console.log("Received JSON Object:", jsonObject);
+                    parsedData.push(jsonObject)
+                    break
+                }
+
+                if (configStartIndex === -1) {
+                    // If "config" key is not found, break out of the loop since we're incomplete
+                    break;
+                }
+
+                // Find the closing bracket for the JSON object after finding "config"
+                closingBracketIndex = buffer.indexOf('},{"config"', configStartIndex);
+
+                if (closingBracketIndex === -1) {
+                    // If no closing bracket is found, break out of the loop, the object is incomplete
+                    break;
+                }
                 const jsonString = buffer.slice(openingBracketIndex, closingBracketIndex + 1);
 
                 try {
                     const jsonObject = JSON.parse(jsonString);
-                    console.log("Received JSON Object");
+                    console.log("Received JSON Object:", jsonObject);
                     parsedData.push(jsonObject)
 
                     // Clear processed data from the buffer
                     buffer = buffer.slice(closingBracketIndex + 1);
                 } catch (error) {
                     // Ignore incomplete JSON fragments
+                    console.log(error)
                     break;
                 }
 

@@ -7,6 +7,8 @@
     import { distanceMatrix, readData } from "../utils/serverRequests";
     import { getDrProjectedPoints } from "../utils/dr";
     import { sendMessage } from "../utils/midi";
+    import {createSysexMessageFromConfig} from "../utils/dexed"
+    import TextView from "./TextView.svelte";
 
     // Example data
     let data = [];
@@ -17,7 +19,7 @@
 
     $: selectedPoint = null;
 
-    let dropdownOptions = ["LoadDataFromFiles", "getSimilarity"];
+    let dropdownOptions = ["LoadDataFromFiles", "getSimilarity", "resetSelectedPoint"];
 
     // onMount Midiaccess requesten
 
@@ -48,71 +50,82 @@
                 console.log(data);
                 alert("Points calculated");
             }
+        } else if (option === "getSimilarity") {
+            selectedPoint = null
         }
+
     }
 
     // Function to handle point click
     function handlePointClick(point) {
         sendMessage(createSysexMessageFromConfig(point.config));
         selectedPoint = point;
-        console.log(selectedPoint);
+        //play wav?
     }
 </script>
 
 <div class="container">
-    <div class="header">
-        <Dropdown
-            options={dropdownOptions}
-            onOptionClick={handleDropdownClick}
-        />
-    </div>
+    <div class="left">
+        <div class="left-top">
+            <Dropdown
+                options={dropdownOptions}
+                onOptionClick={handleDropdownClick}
+            />
+        </div>
 
-    <div class="left-bottom">
-        <DetailView
-            title="Left View"
-            content="Data: {jsonDataList.length} - points: {data.length}"
-        />
+        <div class="left-bottom">
+            <TextView
+                title="Left View"
+                content="Data: {jsonDataList.length} - points: {data.length}"
+            />
+        </div>
     </div>
 
     <div class="middle">
-        <MapView {data} onpointClick={handlePointClick} />
+        <MapView {data} onPointClick={handlePointClick} selectedPoint={selectedPoint}/>
     </div>
 
     <div class="right">
-        <DetailView title="Right View" content={$selectedPoint?.label} />
+        <DetailView selectedPoint={selectedPoint}/>
     </div>
 </div>
 
 <style>
     .container {
         display: grid;
-        grid-template-columns: 1fr 3fr 1fr;
-        grid-template-rows: auto 1fr;
-        height: 100vh;
+        grid-template-columns: 250px 3fr 450px;
+        grid-template-rows: 1fr;
+        height: 900px;
         gap: 10px;
     }
 
-    .header {
-        grid-column: span 3;
+    .left {
+        display: grid;
+        grid-template-rows: 1fr 1fr; /* Stack two views vertically */
+        grid-template-columns: 1fr; /* Single column */
+        background-color: #f8f9fa;
+        border-right: 1px solid #ddd;
+    }
+
+    .left-top {
         display: flex;
-        justify-content: flex-start;
+        justify-content: center;
         align-items: center;
-        padding: 10px;
-        background-color: #f4f4f4;
     }
 
     .left-bottom {
-        grid-row: 2;
-        grid-column: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     .middle {
-        grid-row: 2;
+        grid-row:1;
         grid-column: 2;
     }
 
     .right {
-        grid-row: 2;
+        grid-row:1;
         grid-column: 3;
     }
 </style>

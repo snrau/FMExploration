@@ -15,8 +15,10 @@ export async function requestMidiAccess() {
 }
 
 export function sendMessage(m, mout = null) {
-    if (!mout)
+    if (mout)
+        mout.send(m)
+    else if(midiOutput)
         midiOutput.send(m);
     else
-        mout.send(m)
+        console.log("No Midi Output")
 }

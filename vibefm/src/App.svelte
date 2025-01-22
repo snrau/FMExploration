@@ -1,4 +1,5 @@
 <script>
+  
   import SideMenu from "./components/SideMenu.svelte";
   import DexedConnectionView from "./views/DexedConnection.svelte";
 
