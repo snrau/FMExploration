@@ -1,6 +1,8 @@
 let midiOutput;
 let midiAccess;
 
+let audio = null
+
 export async function requestMidiAccess() {
 
     await navigator.requestMIDIAccess({ sysex: true }).then((ma) => {
@@ -17,8 +19,27 @@ export async function requestMidiAccess() {
 export function sendMessage(m, mout = null) {
     if (mout)
         mout.send(m)
-    else if(midiOutput)
+    else if (midiOutput)
         midiOutput.send(m);
     else
-        console.log("No Midi Output")
+        console.log("not sent")
+}
+
+export function playWav(point) {
+    const filePath = `./output/${point.label}.wav`;
+
+    if (audio) {
+        audio.pause();
+        audio.currentTime = 0; // Reset playback to the beginning
+    }
+
+    audio = new Audio(filePath);
+    audio.play()
+        .then()
+        .catch((error) => console.error(`Error playing ${point.label}.wav:`, error));
+
+    // When the audio ends, reset the audio instance
+    audio.addEventListener("ended", () => {
+        audio = null;
+    });
 }

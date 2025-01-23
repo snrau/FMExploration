@@ -7,7 +7,8 @@
     import { distanceMatrix, readData } from "../utils/serverRequests";
     import { getDrProjectedPoints } from "../utils/dr";
     import { sendMessage } from "../utils/midi";
-    import {createSysexMessageFromConfig} from "../utils/dexed"
+    import { createSysexMessageFromConfig } from "../utils/dexed";
+    import { doAnalysisForValues } from "../utils/analysis";
     import TextView from "./TextView.svelte";
 
     // Example data
@@ -17,9 +18,16 @@
 
     let distMatrix = [];
 
+    $: pointRenderer = "circle";
+
     $: selectedPoint = null;
 
-    let dropdownOptions = ["LoadDataFromFiles", "getSimilarity", "resetSelectedPoint"];
+    let dropdownOptions = [
+        "LoadDataFromFiles",
+        "getSimilarity",
+        "resetSelectedPoint",
+        "changeRender",
+    ];
 
     // onMount Midiaccess requesten
 
@@ -27,8 +35,9 @@
     async function handleDropdownClick(option) {
         if (option === "LoadDataFromFiles") {
             jsonDataList = await readData();
-            alert("Data imported");
+            jsonDataList = doAnalysisForValues(jsonDataList);
             console.log(jsonDataList);
+            alert("Data imported");
         } else if (option === "getSimilarity") {
             if (jsonDataList.length !== 0) {
                 distMatrix = await distanceMatrix();
@@ -50,10 +59,12 @@
                 console.log(data);
                 alert("Points calculated");
             }
-        } else if (option === "getSimilarity") {
-            selectedPoint = null
+        } else if (option === "resetSelectedPoint") {
+            selectedPoint = null;
+        } else if (option === "changeRender") {
+            if (pointRenderer === "circle") pointRenderer = "rect";
+            else if (pointRenderer === "rect") pointRenderer = "circle";
         }
-
     }
 
     // Function to handle point click
@@ -82,11 +93,16 @@
     </div>
 
     <div class="middle">
-        <MapView {data} onPointClick={handlePointClick} selectedPoint={selectedPoint}/>
+        <MapView
+            {data}
+            {pointRenderer}
+            onPointClick={handlePointClick}
+            {selectedPoint}
+        />
     </div>
 
     <div class="right">
-        <DetailView selectedPoint={selectedPoint}/>
+        <DetailView {selectedPoint} />
     </div>
 </div>
 
@@ -120,12 +136,12 @@
     }
 
     .middle {
-        grid-row:1;
+        grid-row: 1;
         grid-column: 2;
     }
 
     .right {
-        grid-row:1;
+        grid-row: 1;
         grid-column: 3;
     }
 </style>

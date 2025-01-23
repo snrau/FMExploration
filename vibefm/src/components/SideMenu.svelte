@@ -16,7 +16,7 @@
     /* Sidebar styling */
     .sidebar {
         background-color: #2c3e50;
-        color: #575757;
+        color: #ffffff;
         width: 100%;
         max-width: 200px;
         padding: 1rem;

@@ -1,15 +1,20 @@
 <script>
-  
   import SideMenu from "./components/SideMenu.svelte";
   import DexedConnectionView from "./views/DexedConnection.svelte";
 
   import Overview from "./components/Overview.svelte";
+  import { onMount } from "svelte";
+  import { requestMidiAccess } from "./utils/midi";
 
   let currentView = "about";
 
   function handleNavigation(view) {
     currentView = view;
   }
+
+  onMount(() => {
+    requestMidiAccess();
+  });
 </script>
 
 <div class="app-container">

@@ -135,7 +135,7 @@ app.post('/readData', (req, res) => {
                                 objects.push({
                                     config: jsonObject.config,
                                     mfcc: jsonObject.mfcc,
-                                    hrps: { harmonic: jsonObject.harmonic, residual: jsonObject.residual, percussive: jsonObject.percussive},
+                                    hrps: { harmonic: jsonObject.harmonic, residual: jsonObject.residual, percussive: jsonObject.percussive },
                                     centroid: jsonObject.centroid_frequencies,
                                     rms: jsonObject.rms
                                 });
