@@ -47,6 +47,7 @@
 
   $: data,
     () => {
+      console.log(brightnessExtent);
       const allBrightness = data.map((p) => p.analysis.brightness.mean);
       brightnessExtent = [
         0, //Math.min(...allBrightness),
@@ -71,6 +72,7 @@
       0, //Math.min(...allBrightness),
       Math.max(...allBrightness),
     ];
+    console.log(brightnessExtent);
   });
 </script>
 

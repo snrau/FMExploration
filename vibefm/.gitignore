@@ -24,5 +24,3 @@ signal
 *.njsproj
 *.sln
 *.sw?
-
-*.wav
