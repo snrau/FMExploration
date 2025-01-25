@@ -3,6 +3,7 @@
 
     import Dropdown from "./Dropdown.svelte";
     import DetailView from "./DetailView.svelte";
+    import DetailViewNew from "./DetailViewNew.svelte";
     import MapView from "./MapView.svelte";
     import { distanceMatrix, readData } from "../utils/serverRequests";
     import { getDrProjectedPoints } from "../utils/dr";
@@ -102,7 +103,7 @@
     </div>
 
     <div class="right">
-        <DetailView {selectedPoint} />
+        <DetailViewNew {selectedPoint} />
     </div>
 </div>
 
