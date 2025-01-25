@@ -62,8 +62,8 @@
         } else if (option === "resetSelectedPoint") {
             selectedPoint = null;
         } else if (option === "changeRender") {
-            if (pointRenderer === "circle") pointRenderer = "rect";
-            else if (pointRenderer === "rect") pointRenderer = "circle";
+            if (pointRenderer === "circle") pointRenderer = "glyph";
+            else if (pointRenderer === "glyph") pointRenderer = "circle";
         }
     }
 

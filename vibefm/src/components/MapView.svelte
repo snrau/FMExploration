@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { scaleLinear, zoom, select } from "d3";
   import { getColor } from "../utils/color";
+  import envelopeGlyph from "../glyphs/envelopeGlyph.svelte";
 
   export let data = [];
   export let onPointClick;
@@ -106,7 +107,7 @@
               fill={getColor(point, brightnessExtent)}
               on:click={() => handleClick(point)}
             ></rect>;
-          {:else}
+          {:else if pointRenderer === "circle"}
             <circle
               cx={xScale(point.x)}
               cy={yScale(point.y)}
@@ -115,6 +116,17 @@
               fill={getColor(point, brightnessExtent)}
               on:click={() => handleClick(point)}
             ></circle>
+          {:else if pointRenderer === "glyph"}
+            <envelopeGlyph
+              data={point.analysis.centroid[0]}
+              x={xScale(point.x) - 5}
+              y={yScale(point.y) - 5}
+              width="10"
+              height="10"
+              class="point"
+              fill={getColor(point, brightnessExtent)}
+              on:click={() => handleClick(point)}
+            />
           {/if}
         {/each}
         <!--{:else if pointRenderer === "circle"}
