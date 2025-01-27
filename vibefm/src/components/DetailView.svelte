@@ -171,6 +171,11 @@
     const img = new Image();
     img.src = imageUrl;
     img.alt = "MFCC Image for " + selectedPoint.label;
+
+    img.style.objectFit = "contain";
+    img.style.width = "100%";
+    img.style.height = "100%";
+
     img.onload = () => {
       matrixPlot.innerHTML = "";
       matrixPlot.appendChild(img);
@@ -198,27 +203,27 @@
 
     <div class="plot">
       <h5>Config:</h5>
-      <div bind:this={arrayPlot}></div>
+      <div class="plotcontainer" bind:this={arrayPlot}></div>
     </div>
 
     <div class="plot">
       <h5>MFCC:</h5>
-      <div bind:this={matrixPlot}></div>
+      <div class="plotcontainer" bind:this={matrixPlot}></div>
     </div>
 
     <div class="plot">
       <h5>Harmonics:</h5>
-      <div bind:this={harmonicPlot}></div>
+      <div class="plotcontainer" bind:this={harmonicPlot}></div>
     </div>
 
     <div class="plot">
       <h5>Centroid:</h5>
-      <div bind:this={centroidPlot}></div>
+      <div class="plotcontainer" bind:this={centroidPlot}></div>
     </div>
 
     <div class="plot">
       <h5>RMS:</h5>
-      <div bind:this={rmsPlot}></div>
+      <div class="plotcontainer" bind:this={rmsPlot}></div>
     </div>
   {:else}
     <div class="label">No point selected</div>
@@ -255,5 +260,18 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+  }
+
+  .plotcontainer {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
   }
 </style>
