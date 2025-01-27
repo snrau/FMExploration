@@ -3,7 +3,6 @@
 
     import Dropdown from "./Dropdown.svelte";
     import DetailView from "./DetailView.svelte";
-    import DetailViewNew from "./DetailViewNew.svelte";
     import MapView from "./MapView.svelte";
     import { distanceMatrix, readData } from "../utils/serverRequests";
     import { getDrProjectedPoints } from "../utils/dr";
@@ -64,7 +63,8 @@
             selectedPoint = null;
         } else if (option === "changeRender") {
             if (pointRenderer === "circle") pointRenderer = "glyph";
-            else if (pointRenderer === "glyph") pointRenderer = "circle";
+            else if (pointRenderer === "glyph") pointRenderer = "brightness";
+            else if (pointRenderer === "brightness") pointRenderer = "circle";
         }
     }
 
@@ -103,7 +103,7 @@
     </div>
 
     <div class="right">
-        <DetailViewNew {selectedPoint} />
+        <DetailView {selectedPoint} />
     </div>
 </div>
 

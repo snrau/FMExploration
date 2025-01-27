@@ -164,39 +164,17 @@
 
   // Function to render the 2D array plot
   const renderMatrixPlot = () => {
-    if (!selectedPoint || !selectedPoint?.analysis.mfcc) return;
+    if (!selectedPoint || !selectedPoint?.label) return;
     if (!matrixPlot) return;
 
-    let data = selectedPoint?.analysis.mfcc.flatMap((row, y) =>
-      row.map((z, x) => ({ x, y, z })),
-    );
-    const zExtent = extent(data, (d) => d.z);
-
-    const plot = Plot.plot({
-      marks: [Plot.rect(data, { x: "x", y: "y", fill: "z" })],
-      color: {
-        type: "linear",
-        domain: [0, zExtent[1]],
-        scheme: "viridis",
-        range: [0, 1],
-      },
-      x: {
-        axis: false, // Remove axis ticks and labels
-        ticks: 0,
-        label: "", // Remove x-axis label
-      },
-      y: {
-        axis: false, // Remove axis ticks and labels
-        ticks: 0,
-        label: "", // Remove y-axis label
-      },
-      height: 120,
-      width: 350,
-      margin: 2,
-    });
-
-    matrixPlot.innerHTML = "";
-    matrixPlot.appendChild(plot);
+    const imageUrl = `./output/${selectedPoint.label}_mfcc.png`;
+    const img = new Image();
+    img.src = imageUrl;
+    img.alt = "MFCC Image for " + selectedPoint.label;
+    img.onload = () => {
+      matrixPlot.innerHTML = "";
+      matrixPlot.appendChild(img);
+    };
   };
 
   // Watch for changes in selectedPoint and update the plots

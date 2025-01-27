@@ -1,13 +1,29 @@
 import { createSysexMessageFromConfig } from "./dexed";
-import JSONStream from 'JSONStream'
 
 export async function doAnalysis(collection) {
     const response = await fetch("http://localhost:3000/analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            path: "..\\luaScript\\output",
+            path: "..\\..\\public\\output",
             configs: JSON.stringify(collection),
+        }),
+    });
+
+    if (response.ok) {
+        console.log("analysis done");
+    } else {
+        alert("Failed to do hrps.");
+    }
+    return response
+}
+
+export async function exportMFCC() {
+    const response = await fetch("http://localhost:3000/exportMFCC", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            path: "..\\..\\public\\output",
         }),
     });
 
@@ -25,7 +41,7 @@ export async function distanceMatrix() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                path: "..\\luaScript\\output",
+                path: "..\\..\\public\\output",
             }),
         })
 
@@ -46,7 +62,7 @@ export async function readData() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                path: "..\\luaScript\\output",
+                path: "..\\..\\public\\output",
             }),
         })
 
@@ -90,13 +106,13 @@ export async function readData() {
             let closingBracketIndex;
 
             while (
-                openingBracketIndex !== -1 
+                openingBracketIndex !== -1
             ) {
 
                 const configStartIndex = buffer.indexOf('"config"', openingBracketIndex);
 
-                if(done){
-                    const jsonString = buffer.slice(openingBracketIndex, buffer.length-1);
+                if (done) {
+                    const jsonString = buffer.slice(openingBracketIndex, buffer.length - 1);
                     const jsonObject = JSON.parse(jsonString);
                     console.log("Received JSON Object:", jsonObject);
                     parsedData.push(jsonObject)

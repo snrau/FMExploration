@@ -1,5 +1,6 @@
 <script>
     import { onMount } from "svelte";
+    import { exportMFCC } from "../utils/serverRequests";
 
     let midiOutput;
     let midiAccess;
@@ -1026,6 +1027,8 @@ SYSEX MESSAGE: Parameter Change
     <button on:click={() => sendReaper()}>send collection to reaper</button>
 
     <button on:click={() => doAnalysis()}>analysis</button>
+
+    <button on:click={() => exportMFCC()}>mfcc</button>
 
     <button on:click={() => distanceMatrix()}>calculate Distance</button>
 

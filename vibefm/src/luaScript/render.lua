@@ -1,7 +1,7 @@
 -- Paths
 local sysex_file = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\sysex_batch.json"  -- JSON file written by Node.js
 local midi_path = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\c4.mid"     -- MIDI file for playback
-local output_dir = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\output\\"          -- Output folder for WAV files
+local output_dir = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\public\\output\\"          -- Output folder for WAV files
 
 local midi_port = "loopMIDI Port 1"
 

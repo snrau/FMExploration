@@ -5,6 +5,7 @@ import ast
 from hrps import hrps
 import json
 import numpy as np
+import matplotlib.pyplot as plt
 
 def convert_ndarray_to_list(data):
     """
@@ -20,6 +21,8 @@ def convert_ndarray_to_list(data):
         return str(data)
     else:
         return data  # Return the value as-is if it's not an ndarray
+    
+
 
 def main():
     path = sys.argv[1]
@@ -74,6 +77,8 @@ def main():
         ### mfcc
         mfcc = librosa.feature.mfcc(y=x, sr=Fs, n_fft=N, hop_length=H, win_length=N, window='hann', center=True, pad_mode='constant')
         data["mfcc"] = mfcc
+
+        
 
         data["config"] = configs[index]
 

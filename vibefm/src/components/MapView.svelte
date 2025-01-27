@@ -2,7 +2,9 @@
   import { onMount } from "svelte";
   import { scaleLinear, zoom, select } from "d3";
   import { getColor } from "../utils/color";
-  import envelopeGlyph from "../glyphs/envelopeGlyph.svelte";
+  import EnvelopeGlyph from "../glyphs/envelopeGlyph.svelte";
+  import EnvelopeSimpleGlyph from "../glyphs/envelopeSimpleGlyph.svelte";
+  import BrightnessGlyph from "../glyphs/brightnessGlyph.svelte";
 
   export let data = [];
   export let onPointClick;
@@ -46,16 +48,13 @@
       .range([offset, size - offset]);
   }
 
-  $: data,
-    () => {
-      console.log(brightnessExtent);
-      const allBrightness = data.map((p) => p.analysis.brightness.mean);
-      brightnessExtent = [
-        0, //Math.min(...allBrightness),
-        Math.max(...allBrightness),
-      ];
-      console.log(brightnessExtent);
-    };
+  $: if (data.length) {
+    const allBrightness = data.map((p) => p.analysis.brightness.mean);
+    brightnessExtent = [
+      0, //Math.min(...allBrightness),
+      Math.max(...allBrightness),
+    ];
+  }
 
   onMount(() => {
     const svg = select(container);
@@ -67,83 +66,67 @@
       });
 
     svg.call(zoomBehavior);
-
-    const allBrightness = data.map((p) => p.analysis.brightness.mean);
-    brightnessExtent = [
-      0, //Math.min(...allBrightness),
-      Math.max(...allBrightness),
-    ];
-    console.log(brightnessExtent);
   });
 </script>
 
-<div class="map-container">
-  {#each data as point}
-    <div
-      class="point"
-      style="left: {xScale(point.x)}px; top: {yScale(point.y)}px"
-      on:click={() => handleClick(point)}
-    ></div>
-  {/each}
-  <div class="map-container" style="width: {size}px; height: {size}px;">
-    <svg
-      bind:this={container}
-      width={size}
-      height={size}
-      style="background: #f0f0f0;"
+<div class="map-container" style="width: {size}px; height: {size}px;">
+  <svg
+    bind:this={container}
+    width={size}
+    height={size}
+    style="background: #f0f0f0;"
+  >
+    <g
+      transform="translate({zoomTransform.x},{zoomTransform.y}) scale({zoomTransform.k})"
     >
-      <g
-        transform="translate({zoomTransform.x},{zoomTransform.y}) scale({zoomTransform.k})"
-      >
-        <!--{#if pointRenderer === "rect"}-->
-        {#each data as point}
-          {#if point === selectedPoint}
-            <rect
-              x={xScale(point.x) - 5}
-              y={yScale(point.y) - 5}
-              width="10"
-              height="10"
-              class="point"
-              fill={getColor(point, brightnessExtent)}
-              on:click={() => handleClick(point)}
-            ></rect>;
-          {:else if pointRenderer === "circle"}
-            <circle
-              cx={xScale(point.x)}
-              cy={yScale(point.y)}
-              r="5"
-              class="point"
-              fill={getColor(point, brightnessExtent)}
-              on:click={() => handleClick(point)}
-            ></circle>
-          {:else if pointRenderer === "glyph"}
-            <envelopeGlyph
-              data={point.analysis.centroid[0]}
-              x={xScale(point.x) - 5}
-              y={yScale(point.y) - 5}
-              width="10"
-              height="10"
-              class="point"
-              fill={getColor(point, brightnessExtent)}
-              on:click={() => handleClick(point)}
-            />
-          {/if}
-        {/each}
-        <!--{:else if pointRenderer === "circle"}
-          {#each data as point}
-            <circle
-              cx={xScale(point.x)}
-              cy={yScale(point.y)}
-              r="5"
-              class="point {point === selectedPoint ? 'selected' : ''}"
-              fill={point === selectedPoint ? "orange" : "red"}
-              on:click={() => handleClick(point)}
-            ></circle>
-          {/each}
-        {/if}-->
-      </g>
-    </svg>
-  </div>
+      <!--{#if pointRenderer === "rect"}-->
+      {#each data as point, index}
+        {#if point === selectedPoint && pointRenderer === "circle"}
+          <rect
+            x={xScale(point.x) - 5}
+            y={yScale(point.y) - 5}
+            width="10"
+            height="10"
+            class="point"
+            fill={getColor(point, brightnessExtent)}
+            on:click={() => handleClick(point)}
+          ></rect>;
+        {:else if pointRenderer === "circle"}
+          <circle
+            cx={xScale(point.x)}
+            cy={yScale(point.y)}
+            r="5"
+            class="point"
+            fill={getColor(point, brightnessExtent)}
+            on:click={() => handleClick(point)}
+          ></circle>
+        {:else if pointRenderer === "glyph"}
+          <EnvelopeSimpleGlyph
+            data={point.analysis.rms[0]}
+            x={xScale(point.x) - 10}
+            y={yScale(point.y) - 10}
+            width={20}
+            height={20}
+            fill={getColor(point, brightnessExtent)}
+            onClick={() => handleClick(point)}
+            selected={point === selectedPoint}
+            dev={index === 9 ? true : false}
+          />
+        {:else if pointRenderer === "brightness"}
+          <BrightnessGlyph
+            data={point.analysis.centroid[0]}
+            x={xScale(point.x) - 10}
+            y={yScale(point.y) - 10}
+            width={20}
+            height={20}
+            fill={getColor(point, brightnessExtent)}
+            onClick={() => handleClick(point)}
+            selected={point === selectedPoint}
+          />
+        {/if}
+      {/each}
+    </g>
+  </svg>
 </div>
 
 <style>

@@ -6,7 +6,6 @@ import * as JSONStream from 'JSONStream'
 import { json } from "d3";
 
 
-
 const app = express();
 const PORT = 3000;
 
@@ -65,6 +64,45 @@ app.post('/analysis', (req, res) => {
 
         // Spawn a Python process
         const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs)]);
+
+        // Capture output from the Python script
+        pythonProcess.stdout.on('data', (data) => {
+            console.log(data)
+        });
+
+        pythonProcess.stderr.on('data', (error) => {
+            console.error(`${error}`);
+        });
+
+        pythonProcess.on('close', (code) => {
+            if (code === 0) {
+                res.status(200).send("done"); // Send the result back to the client
+            } else {
+                res.status(500).send('Python script execution failed');
+            }
+        });
+    });
+})
+
+app.post('/exportMFCC', (req, res) => {
+
+    let jsonFiles = []
+    const folderPath = req.body.path
+
+    fs.readdir(folderPath, (err, files) => {
+        if (err) {
+            return res.status(500).json({ error: "Failed to read directory" });
+        }
+
+        // Filter .wav files
+        jsonFiles = files.filter(file => file.endsWith(".json"));
+
+        // Path to the Python executable within the virtual environment
+        const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
+
+
+        // Spawn a Python process
+        const pythonProcess = spawn(pythonExecutable, ['mfcc.py', req.body.path, JSON.stringify(jsonFiles)]);
 
         // Capture output from the Python script
         pythonProcess.stdout.on('data', (data) => {

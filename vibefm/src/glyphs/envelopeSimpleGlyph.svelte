@@ -1,0 +1,147 @@
+<script>
+    import * as d3 from "d3";
+    import { onMount } from "svelte";
+
+    export let data;
+    export let width = 20; // Width of the mini plot
+    export let height = 20; // Height of the mini plot
+    export let onClick;
+    export let x;
+    export let y;
+    export let fill;
+    export let selected;
+    export let dev = false;
+
+    let svg;
+
+    // Scales for the plot
+    let xScale = d3
+        .scaleLinear()
+        .domain(d3.extent(data, (d, i) => i))
+        .range([0, width]);
+    let yScale = d3
+        .scaleLinear()
+        .domain(d3.extent(data, (d, i) => d))
+        .range([height, 0]);
+
+    // Line generator
+    let background = null;
+    let path = null;
+
+    // Extract important points
+    function getImportantPoints(data) {
+        if (!data || data.length === 0) return [];
+
+        const importantPoints = [];
+        importantPoints.push({ index: 0, value: data[0] }); // Add the first point
+
+        let lastMax = null;
+        let first = true;
+
+        for (let i = 1; i < data.length - 1; i++) {
+            if (
+                data[i] > data[i - 1] &&
+                data[i] > data[i + 1] &&
+                data[i] > 0.001
+            ) {
+                // Local maximum
+                if (first) {
+                    importantPoints.push({ index: i, value: data[i] });
+                    first = false;
+                }
+                lastMax = { index: i, value: data[i] };
+                if (dev) console.log("max found", i, data[i]);
+            }
+        }
+        if (dev) console.log("last", lastMax);
+        importantPoints.push(lastMax);
+
+        let lastLowStart = null;
+        for (let i = lastMax.index + 1; i < data.length - 1; i++) {
+            if (
+                data[i] >= data[i - 1] &&
+                data[i] - data[data.length - 1] < 0.00001
+            ) {
+                lastLowStart = { index: i, value: data[i] };
+                break;
+            }
+        }
+
+        if (dev) console.log("low", lastLowStart);
+
+        // Add the first point of the low stretch (last local minimum)
+        if (lastLowStart) {
+            importantPoints.push(lastLowStart);
+        } else {
+            importantPoints.push({
+                index: data.length - 1,
+                value: data[data.length - 1],
+            }); // Add the last point
+        }
+
+        if (dev) console.log(importantPoints);
+
+        return importantPoints.sort((a, b) => a.index - b.index);
+    }
+
+    // Draw the plot
+    function drawPlot() {
+        const svgElement = d3.select(svg);
+        svgElement.selectAll("*").remove(); // Clear any existing content
+
+        background = svgElement
+            .append("rect")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("fill", "transparent") // Transparent background
+            .attr("pointer-events", "all"); // Ensure it captures click events
+
+        const importantPoints = getImportantPoints(data);
+        let line = d3
+            .line()
+            .x((d, i) => xScale(d.index))
+            .y((d, i) => yScale(d.value))
+            .curve(d3.curveCatmullRom);
+
+        // Add line
+        path = svgElement
+            .append("path")
+            .datum(importantPoints)
+            .attr("d", line)
+            .attr("stroke", fill)
+            .attr("stroke-width", selected ? 3 : 1)
+            .attr("fill", "none");
+    }
+
+    function adjustSelect() {
+        background
+            .attr("stroke", selected ? fill : "none")
+            .attr("fill", selected ? "white" : "transparent");
+        path.attr("stroke-width", selected ? 3 : 1);
+    }
+
+    $: data, drawPlot();
+    $: selected, adjustSelect();
+
+    onMount(() => {
+        if (data && data.length) drawPlot();
+    });
+
+    // pointer-events: none; /* Disable pointer events to allow map interaction */
+</script>
+
+<svg
+    bind:this={svg}
+    {width}
+    {height}
+    {x}
+    {y}
+    on:click={() => onClick()}
+    viewBox={`0 0 ${width} ${height}`}
+></svg>
+
+<style>
+    svg {
+        position: absolute;
+    }
+</style>
