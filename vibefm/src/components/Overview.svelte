@@ -64,7 +64,8 @@
         } else if (option === "changeRender") {
             if (pointRenderer === "circle") pointRenderer = "glyph";
             else if (pointRenderer === "glyph") pointRenderer = "brightness";
-            else if (pointRenderer === "brightness") pointRenderer = "circle";
+            else if (pointRenderer === "brightness") pointRenderer = "config";
+            else if (pointRenderer === "config") pointRenderer = "circle";
         }
     }
 

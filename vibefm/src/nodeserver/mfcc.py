@@ -14,13 +14,30 @@ def plot_mfcc(mfcc, output_path):
 
     mfcc = np.array(mfcc)
 
-    plt.figure(figsize=(10, 4))
-    librosa.display.specshow(mfcc, x_axis='time', sr=22050, cmap='coolwarm')
-    plt.colorbar(format='%+2.0f dB')
-    plt.title('MFCC')
+    # Adjust figure size to achieve desired pixel dimensions
+    dpi = 100  # Dots per inch (scaling factor)
+    width_in_inches = 350 / dpi
+    height_in_inches = 120 / dpi
+
+    fig = plt.figure(figsize=(width_in_inches, height_in_inches), dpi=dpi)
+    from matplotlib.gridspec import GridSpec
+
+    gs = GridSpec(1, 8, figure=fig, wspace=0.1)
+    ax = fig.add_subplot(gs[:, :-1])  # Heatmap on the left (7/8)
+    cax = fig.add_subplot(gs[:, -1])  # Colorbar on the right (1/8)
+
+
+    img = librosa.display.specshow(mfcc, sr=22050, cmap='coolwarm', ax=ax)
+    colorbar = plt.colorbar(img, cax=cax, format='%+2.0f dB')
+    colorbar.ax.tick_params(labelsize=6) 
+
+
+     # Remove extra space around the plot
+    ax.axis("off")  # Turn off axis for clean output
+
     # Save the plot as a PNG image
-    image_path = output_path.replace('.json', '_mfcc.png')
-    plt.savefig(image_path)
+    image_path = output_path.replace(".json", "_mfcc.png")
+    plt.savefig(image_path, dpi=dpi, bbox_inches="tight", pad_inches=0.1)
     plt.close()
 
 

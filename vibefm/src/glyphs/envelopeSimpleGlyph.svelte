@@ -10,19 +10,21 @@
     export let y;
     export let fill;
     export let selected;
-    export let dev = false;
+    export let extent;
 
     let svg;
+
+    let padding = 2;
 
     // Scales for the plot
     let xScale = d3
         .scaleLinear()
         .domain(d3.extent(data, (d, i) => i))
-        .range([0, width]);
+        .range([padding, width - padding]);
     let yScale = d3
         .scaleLinear()
-        .domain(d3.extent(data, (d, i) => d))
-        .range([height, 0]);
+        .domain(extent)
+        .range([height - padding, padding]);
 
     // Line generator
     let background = null;
@@ -50,27 +52,37 @@
                     first = false;
                 }
                 lastMax = { index: i, value: data[i] };
-                if (dev) console.log("max found", i, data[i]);
             }
         }
-        if (dev) console.log("last", lastMax);
         importantPoints.push(lastMax);
 
-        let lastLowStart = null;
-        for (let i = lastMax.index + 1; i < data.length - 1; i++) {
+        let lastTurning = null;
+        let added = false;
+        for (let i = lastMax.index + 1; i < data.length - 2; i++) {
             if (
-                data[i] >= data[i - 1] &&
-                data[i] - data[data.length - 1] < 0.00001
+                data[i - 1] - data[i] < data[i] - data[i + 1] + 0.000001 &&
+                data[i] - data[data.length - 1] > 0.001
+            ) {
+                lastTurning = { index: i, value: data[i] };
+                importantPoints.push(lastTurning);
+            }
+        }
+
+        const startLoop = lastTurning !== null ? lastTurning : lastMax;
+
+        let lastLowStart = null;
+        for (let i = startLoop.index + 1; i < data.length - 1; i++) {
+            if (
+                data[i] <= data[i - 1] &&
+                data[i] - data[data.length - 1] < 0.0001
             ) {
                 lastLowStart = { index: i, value: data[i] };
                 break;
             }
         }
 
-        if (dev) console.log("low", lastLowStart);
-
         // Add the first point of the low stretch (last local minimum)
-        if (lastLowStart) {
+        if (lastLowStart !== null) {
             importantPoints.push(lastLowStart);
         } else {
             importantPoints.push({
@@ -79,9 +91,9 @@
             }); // Add the last point
         }
 
-        if (dev) console.log(importantPoints);
+        const r = importantPoints.sort((a, b) => a.index - b.index);
 
-        return importantPoints.sort((a, b) => a.index - b.index);
+        return r;
     }
 
     // Draw the plot
@@ -93,8 +105,10 @@
             .append("rect")
             .attr("width", width)
             .attr("height", height)
-            .attr("fill", "transparent") // Transparent background
-            .attr("pointer-events", "all"); // Ensure it captures click events
+            .attr("pointer-events", "all")
+            .attr("stroke", fill)
+            .attr("stroke-width", selected ? 2 : 1)
+            .attr("fill", selected ? "white" : "transparent");
 
         const importantPoints = getImportantPoints(data);
         let line = d3
@@ -115,7 +129,7 @@
 
     function adjustSelect() {
         background
-            .attr("stroke", selected ? fill : "none")
+            .attr("stroke-width", selected ? 2 : 1)
             .attr("fill", selected ? "white" : "transparent");
         path.attr("stroke-width", selected ? 3 : 1);
     }

@@ -13,15 +13,17 @@
 
     let svg;
 
+    let padding = 1;
+
     // Scales for the plot
     let xScale = d3
         .scaleLinear()
         .domain(d3.extent(data, (d, i) => i))
-        .range([0, width]);
+        .range([padding, width - padding]);
     let yScale = d3
         .scaleLinear()
         .domain(d3.extent(data, (d, i) => d))
-        .range([height, 0]);
+        .range([height - padding, padding]);
 
     // Line generator
     let background = null;
@@ -76,8 +78,9 @@
             .append("rect")
             .attr("width", width)
             .attr("height", height)
-            .attr("fill", "transparent") // Transparent background
-            .attr("pointer-events", "all"); // Ensure it captures click events
+            .attr("pointer-events", "all") // Ensure it captures click events
+            .attr("stroke-width", selected ? 2 : 1)
+            .attr("fill", selected ? "white" : "transparent");
 
         const importantPoints = getImportantPoints(data);
         let line = d3
@@ -98,7 +101,7 @@
 
     function adjustSelect() {
         background
-            .attr("stroke", selected ? fill : "none")
+            .attr("stroke-width", selected ? 2 : 1)
             .attr("fill", selected ? "white" : "transparent");
         path.attr("stroke-width", selected ? 3 : 1);
     }

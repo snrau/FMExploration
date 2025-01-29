@@ -5,6 +5,8 @@
   import EnvelopeGlyph from "../glyphs/envelopeGlyph.svelte";
   import EnvelopeSimpleGlyph from "../glyphs/envelopeSimpleGlyph.svelte";
   import BrightnessGlyph from "../glyphs/brightnessGlyph.svelte";
+  import { dx7Parameters } from "../utils/dexed";
+  import ConfigMatrixGlyph from "../glyphs/configMatrixGlyph.svelte";
 
   export let data = [];
   export let onPointClick;
@@ -18,6 +20,7 @@
   }
 
   let brightnessExtent = [Infinity, -Infinity];
+  let rmsExtent = [Infinity, -Infinity];
 
   const size = 900;
   const offset = 5;
@@ -53,6 +56,13 @@
     brightnessExtent = [
       0, //Math.min(...allBrightness),
       Math.max(...allBrightness),
+    ];
+
+    const rmsData = data.map((p) => p.analysis.rms[0]);
+    const allRMSextent = rmsData.flat(2);
+    rmsExtent = [
+      0, //Math.min(...allBrightness),
+      Math.max(...allRMSextent),
     ];
   }
 
@@ -110,7 +120,7 @@
             fill={getColor(point, brightnessExtent)}
             onClick={() => handleClick(point)}
             selected={point === selectedPoint}
-            dev={index === 9 ? true : false}
+            extent={rmsExtent}
           />
         {:else if pointRenderer === "brightness"}
           <BrightnessGlyph
@@ -122,6 +132,16 @@
             fill={getColor(point, brightnessExtent)}
             onClick={() => handleClick(point)}
             selected={point === selectedPoint}
+          />
+        {:else if pointRenderer === "config"}
+          <ConfigMatrixGlyph
+            config={point.config}
+            x={xScale(point.x) - 10}
+            y={yScale(point.y) - 10}
+            cellSize={5}
+            onClick={() => handleClick(point)}
+            parameters={Object.entries(dx7Parameters)}
+            selection={point === selectedPoint ? null : selectedPoint}
           />
         {/if}
       {/each}
