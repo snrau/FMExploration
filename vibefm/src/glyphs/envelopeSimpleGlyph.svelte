@@ -35,7 +35,8 @@
         if (!data || data.length === 0) return [];
 
         const importantPoints = [];
-        importantPoints.push({ index: 0, value: data[0] }); // Add the first point
+        importantPoints.push({ index: 0, value: 0 }); // Add the first point
+        importantPoints.push({ index: 1, value: data[1] });
 
         let lastMax = null;
         let first = true;

@@ -1,6 +1,10 @@
 <script>
     import { onMount } from "svelte";
-    import { exportMFCC } from "../utils/serverRequests";
+    import {
+        exportMFCC,
+        sendReaper,
+        doAnalysis,
+    } from "../utils/serverRequests";
 
     let midiOutput;
     let midiAccess;
@@ -751,7 +755,7 @@ SYSEX MESSAGE: Parameter Change
         });
     }
 
-    async function sendReaper() {
+    async function sendReaperOld() {
         if (collection.length === 0) return null;
         let allMessages = collection.map((arr) =>
             createSysexMessageFromConfig(arr),
@@ -865,7 +869,7 @@ SYSEX MESSAGE: Parameter Change
         return temp;
     }
 
-    async function doAnalysis() {
+    async function doAnalysisOld() {
         const response = await fetch("http://localhost:3000/analysis", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1024,9 +1028,11 @@ SYSEX MESSAGE: Parameter Change
         >send first voices of sysex file</button
     >
 
-    <button on:click={() => sendReaper()}>send collection to reaper</button>
+    <button on:click={() => sendReaper(collection)}
+        >send collection to reaper</button
+    >
 
-    <button on:click={() => doAnalysis()}>analysis</button>
+    <button on:click={() => doAnalysis(collection)}>analysis</button>
 
     <button on:click={() => exportMFCC()}>mfcc</button>
 

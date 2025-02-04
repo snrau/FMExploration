@@ -1,3 +1,5 @@
+import * as d3 from 'd3'
+
 const characterColors = {
     harmonic: "rgb(0, 0, 255)",
     residual: "rgb(255, 165, 0)",
@@ -9,13 +11,23 @@ function normalizeBrightness(value, brightnessExtent) {
     return (value - min) / (max - min);
 }
 
-export function getColor(point, brightnessExtent) {
-    // Base color based on character
-    const baseColor = characterColors[point.analysis.character.character] || "gray";
+export function getColor(point, brightnessExtent, pointColor) {
+    let color
 
-    // Adjust brightness using HSL (lightness component)
-    const normalizedBrightness = normalizeBrightness(point.analysis.brightness.mean, brightnessExtent);
-    const color = adjustBrightness(baseColor, normalizedBrightness);
+    if (pointColor === "brightHarmonic") {
+        // Base color based on character
+        const baseColor = characterColors[point.analysis.character.character] || "gray";
+
+        // Adjust brightness using HSL (lightness component)
+        const normalizedBrightness = normalizeBrightness(point.analysis.brightness.mean, brightnessExtent);
+        color = adjustBrightness(baseColor, normalizedBrightness);
+    } else if (pointColor === 'algorithm') {
+        const colorScale = d3.scaleSequential(d3.interpolateRainbow).domain([0, 31]);
+        color = colorScale(point.config[134])
+    } else if (pointColor === 'feedback') {
+        const colorScale = d3.scaleSequential(d3.interpolateGreys).domain([0, 7]);
+        color = colorScale(point.config[135])
+    }
 
     return color;
 }

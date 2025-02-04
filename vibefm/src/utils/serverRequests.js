@@ -30,7 +30,7 @@ export async function exportMFCC() {
     if (response.ok) {
         console.log("analysis done");
     } else {
-        alert("Failed to do hrps.");
+        alert("Failed to do mfcc.");
     }
     return response
 }

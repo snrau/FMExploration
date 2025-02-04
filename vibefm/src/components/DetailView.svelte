@@ -3,6 +3,7 @@
   import * as Plot from "@observablehq/plot";
   import { extent } from "d3-array";
   import { playWav } from "../utils/midi";
+  import Algorithm from "./Algorithm.svelte";
 
   export let selectedPoint = null;
 
@@ -167,7 +168,7 @@
     if (!selectedPoint || !selectedPoint?.label) return;
     if (!matrixPlot) return;
 
-    const imageUrl = `./output/${selectedPoint.label}_mfcc.png`;
+    const imageUrl = `./output/${selectedPoint.label}_mel.png`;
     const img = new Image();
     img.src = imageUrl;
     img.alt = "MFCC Image for " + selectedPoint.label;
@@ -203,11 +204,15 @@
 
     <div class="plot">
       <h5>Config:</h5>
-      <div class="plotcontainer" bind:this={arrayPlot}></div>
+      <Algorithm
+        algorithm={selectedPoint.config[134]}
+        config={selectedPoint.config}
+      ></Algorithm>
+      <!--<div class="plotcontainer" bind:this={arrayPlot}></div>-->
     </div>
 
     <div class="plot">
-      <h5>MFCC:</h5>
+      <h5>Mel-Spectogram:</h5>
       <div class="plotcontainer" bind:this={matrixPlot}></div>
     </div>
 

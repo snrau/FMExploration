@@ -2,7 +2,6 @@ import express from "express";
 import * as fs from "fs";
 import { exec, spawn } from "child_process";
 import cors from 'cors'
-import * as JSONStream from 'JSONStream'
 import { json } from "d3";
 
 
@@ -49,6 +48,8 @@ app.post('/analysis', (req, res) => {
 
     let wavFiles = []
     const folderPath = req.body.path
+
+    console.log(folderPath)
 
     fs.readdir(folderPath, (err, files) => {
         if (err) {

@@ -57,6 +57,8 @@
         const svgElement = d3.select(svg);
         svgElement.selectAll("*").remove(); // Clear previous content
 
+        console.log(filteredData);
+
         const background = svgElement
             .append("rect")
             .attr("width", width)
@@ -71,8 +73,8 @@
             .data(filteredData)
             .join("rect")
             .attr("class", "cell")
-            .attr("x", (d, i) => (i % cols) * cellSize)
-            .attr("y", (d, i) => Math.floor(i / cols) * cellSize)
+            .attr("x", (d, i) => (i % cols) * cellSize + padding / 2)
+            .attr("y", (d, i) => Math.floor(i / cols) * cellSize + padding / 2)
             .attr("width", cellSize - padding)
             .attr("height", cellSize - padding)
             .attr("fill", (d) => d.color)

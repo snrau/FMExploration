@@ -11,6 +11,7 @@
   export let data = [];
   export let onPointClick;
   export let pointRenderer = null;
+  export let pointColor = null;
   export let selectedPoint = null;
 
   function handleClick(point) {
@@ -98,7 +99,7 @@
             width="10"
             height="10"
             class="point"
-            fill={getColor(point, brightnessExtent)}
+            fill={getColor(point, brightnessExtent, pointColor)}
             on:click={() => handleClick(point)}
           ></rect>;
         {:else if pointRenderer === "circle"}
@@ -107,7 +108,7 @@
             cy={yScale(point.y)}
             r="5"
             class="point"
-            fill={getColor(point, brightnessExtent)}
+            fill={getColor(point, brightnessExtent, pointColor)}
             on:click={() => handleClick(point)}
           ></circle>
         {:else if pointRenderer === "glyph"}
@@ -117,7 +118,7 @@
             y={yScale(point.y) - 10}
             width={20}
             height={20}
-            fill={getColor(point, brightnessExtent)}
+            fill={getColor(point, brightnessExtent, pointColor)}
             onClick={() => handleClick(point)}
             selected={point === selectedPoint}
             extent={rmsExtent}
@@ -129,7 +130,7 @@
             y={yScale(point.y) - 10}
             width={20}
             height={20}
-            fill={getColor(point, brightnessExtent)}
+            fill={getColor(point, brightnessExtent, pointColor)}
             onClick={() => handleClick(point)}
             selected={point === selectedPoint}
           />

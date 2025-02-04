@@ -26,21 +26,19 @@ def convert_ndarray_to_list(data):
 
 def main():
     path = sys.argv[1]
-    print(f"{sys.argv[4]}", file=sys.stderr)
     configs = json.loads(sys.argv[4])
-    print(f"{configs}", file=sys.stderr)
 
     count = 0
+
+    print(f"{json.loads(sys.argv[2])}", file=sys.stderr)
 
     for wavFile in json.loads(sys.argv[2]):
         index = int(wavFile.split("_")[1].split(".w")[0])
         print(f"{index}", file=sys.stderr)
         input = os.path.join(path, wavFile)
-        output = os.path.join(path, json.loads(sys.argv[3])[index])
+        output = os.path.join(path, input.replace('.wav', '.json'))
 
         data = {}
-
-        
 
         # HRPS
         fn_wav = input
@@ -54,7 +52,9 @@ def main():
         x_h, x_p, x_r, D = hrps(x, Fs=Fs, N=N, H=H, 
                                 L_h=L_h_sec, L_p=L_p_Hz, beta=beta, detail=True)
         
-        data = {"harmonic": x_h, "percussive": x_p, "residual": x_r}#, "details": D}
+        data["harmonic"] = x_h 
+        data["percussive"]= x_p
+        data["residual"]= x_r#, "details": D}
 
         ### spectral_centroid
         ### how does the input has to look like? look at the documentation
@@ -78,6 +78,8 @@ def main():
         mfcc = librosa.feature.mfcc(y=x, sr=Fs, n_fft=N, hop_length=H, win_length=N, window='hann', center=True, pad_mode='constant')
         data["mfcc"] = mfcc
 
+        mel = librosa.feature.melspectrogram(y=x, sr=Fs, n_mels=128, fmax=8000)
+        data['mel'] = mel
         
 
         data["config"] = configs[index]

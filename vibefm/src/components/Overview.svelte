@@ -7,9 +7,13 @@
     import { distanceMatrix, readData } from "../utils/serverRequests";
     import { getDrProjectedPoints } from "../utils/dr";
     import { sendMessage } from "../utils/midi";
-    import { createSysexMessageFromConfig } from "../utils/dexed";
+    import {
+        createSysexMessageFromConfig,
+        dx7Parameters,
+    } from "../utils/dexed";
     import { doAnalysisForValues } from "../utils/analysis";
     import TextView from "./TextView.svelte";
+    import ConfigDistributions from "./ConfigHistogram.svelte";
 
     // Example data
     let data = [];
@@ -19,6 +23,7 @@
     let distMatrix = [];
 
     $: pointRenderer = "circle";
+    $: pointColor = "brightHarmonic";
 
     $: selectedPoint = null;
 
@@ -27,6 +32,7 @@
         "getSimilarity",
         "resetSelectedPoint",
         "changeRender",
+        "changeColor",
     ];
 
     // onMount Midiaccess requesten
@@ -66,6 +72,10 @@
             else if (pointRenderer === "glyph") pointRenderer = "brightness";
             else if (pointRenderer === "brightness") pointRenderer = "config";
             else if (pointRenderer === "config") pointRenderer = "circle";
+        } else if (option === "changeColor") {
+            if (pointColor === "brightHarmonic") pointColor = "algorithm";
+            else if (pointColor === "algorithm") pointColor = "feedback";
+            else if (pointColor === "feedback") pointColor = "brightHarmonic";
         }
     }
 
@@ -90,7 +100,9 @@
             <TextView
                 title="Left View"
                 content="Data: {jsonDataList.length} - points: {data.length}"
-            />
+                parameters={Object.entries(dx7Parameters)}
+                configs={jsonDataList.map((j) => j.config)}
+            ></TextView>
         </div>
     </div>
 
@@ -98,13 +110,14 @@
         <MapView
             {data}
             {pointRenderer}
+            {pointColor}
             onPointClick={handlePointClick}
             {selectedPoint}
         />
     </div>
 
     <div class="right">
-        <DetailView {selectedPoint} />
+        <DetailView {selectedPoint}></DetailView>
     </div>
 </div>
 
