@@ -196,8 +196,6 @@
         }
         modulatorInfo.sort((a, b) => a.modulator - b.modulator);
 
-        console.log(modulatorInfo);
-
         return modulatorInfo;
     }
 
@@ -312,8 +310,6 @@
         modulatorPositions.forEach((d) => {
             const fc = values[d.modulator].fc;
             const ff = values[d.modulator].ff;
-
-            console.log(d.modulator, ff * fc);
 
             // Generate sine wave points
             const sinePoints = d3.range(0, boxWidth).map((i) => {

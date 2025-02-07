@@ -4,23 +4,38 @@
     import Dropdown from "./Dropdown.svelte";
     import DetailView from "./DetailView.svelte";
     import MapView from "./MapView.svelte";
-    import { distanceMatrix, readData } from "../utils/serverRequests";
+    import {
+        distanceMatrix,
+        readRef,
+        readSampled,
+        readEdges,
+        uploadWav,
+    } from "../utils/serverRequests";
     import { getDrProjectedPoints } from "../utils/dr";
     import { sendMessage } from "../utils/midi";
+    import { importSysexFile } from "../utils/sysex";
     import {
         createSysexMessageFromConfig,
         dx7Parameters,
+        writeSysEx,
     } from "../utils/dexed";
     import { doAnalysisForValues } from "../utils/analysis";
     import TextView from "./TextView.svelte";
     import ConfigDistributions from "./ConfigHistogram.svelte";
+    import {
+        exportList,
+        data,
+        jsonDataList,
+        sampledList,
+        refList,
+        distMatrix,
+        startingIndex,
+    } from "../utils/stores";
+    import { onMount } from "svelte";
 
-    // Example data
-    let data = [];
+    let sysexList = [];
 
-    let jsonDataList = [];
-
-    let distMatrix = [];
+    let sysexIndex = 0;
 
     $: pointRenderer = "circle";
     $: pointColor = "brightHarmonic";
@@ -33,6 +48,8 @@
         "resetSelectedPoint",
         "changeRender",
         "changeColor",
+        "resetExportList",
+        "Export list",
     ];
 
     // onMount Midiaccess requesten
@@ -40,29 +57,40 @@
     // Function to handle dropdown button clicks
     async function handleDropdownClick(option) {
         if (option === "LoadDataFromFiles") {
-            jsonDataList = await readData();
-            jsonDataList = doAnalysisForValues(jsonDataList);
-            console.log(jsonDataList);
+            sampledList.set(await readSampled());
+            refList.set(await readRef());
+            edgeList.set(await readEdges());
+            jsonDataList.set($sampledList.concat($refList));
+            jsonDataList.set(doAnalysisForValues($jsonDataList));
+            startingIndex.set(
+                Math.max(
+                    ...$jsonDataList.map(
+                        (d) => d.filename.split("_")[1].split(".")[0],
+                    ),
+                ),
+            );
+            // load edges as well
+            console.log($jsonDataList, $startingIndex);
             alert("Data imported");
         } else if (option === "getSimilarity") {
-            if (jsonDataList.length !== 0) {
-                distMatrix = await distanceMatrix();
+            if ($jsonDataList.length !== 0) {
+                distMatrix.set(await distanceMatrix());
                 //DR from distMatrix
-                console.log(distMatrix);
-                let points = getDrProjectedPoints(distMatrix, "mds", true);
+                console.log($distMatrix);
+                let points = getDrProjectedPoints($distMatrix, "mds", true);
                 let temp = [];
-                jsonDataList.forEach((v, i) => {
+                $jsonDataList.forEach((v, i) => {
                     temp.push({
                         id: i,
                         x: points[i][0],
                         y: points[i][1],
-                        label: "patch_" + i,
+                        label: v.filename.split(".")[0],
                         config: v.config,
                         analysis: v,
                     });
                 });
-                data = [...temp];
-                console.log(data);
+                data.set([...temp]);
+                console.log($data);
                 alert("Points calculated");
             }
         } else if (option === "resetSelectedPoint") {
@@ -76,6 +104,10 @@
             if (pointColor === "brightHarmonic") pointColor = "algorithm";
             else if (pointColor === "algorithm") pointColor = "feedback";
             else if (pointColor === "feedback") pointColor = "brightHarmonic";
+        } else if (option === "resetExportList") {
+            exportList.set([]);
+        } else if (option === "Export list") {
+            writeSysEx(exportList);
         }
     }
 
@@ -84,6 +116,19 @@
         sendMessage(createSysexMessageFromConfig(point.config));
         selectedPoint = point;
         //play wav?
+    }
+
+    function handleReference(e) {
+        const config = sysexList[sysexIndex];
+    }
+
+    async function importWavFile(e) {
+        const upload = await uploadWav(e.target.files[0]);
+        // now use the json
+    }
+
+    function handleImport(e) {
+        sysexList = importSysexFile(e);
     }
 </script>
 
@@ -94,21 +139,46 @@
                 options={dropdownOptions}
                 onOptionClick={handleDropdownClick}
             />
+
+            <p>Reference</p>
+            <div class="center-wrapper">
+                <input type="file" accept=".syx" on:change={importSysexFile} />
+            </div>
+            {#if sysexList.length > 0}
+                <div class="center-wrapper">
+                    <select bind:value={sysexIndex}>
+                        <!-- Generate options based on indices of the items array -->
+                        {#each sysexList as item, index}
+                            <option value={index}
+                                >{getNamefromConfig(item)}</option
+                            >
+                        {/each}
+                    </select>
+                </div>
+                <div class="center-wrapper">
+                    <button on:click={handleReference}>
+                        Add as Reference
+                    </button>
+                </div>
+            {/if}
+            <p>New wav file</p>
+            <div class="center-wrapper">
+                <input type="file" accept=".wav" on:change={importWavFile} />
+            </div>
         </div>
 
         <div class="left-bottom">
             <TextView
                 title="Left View"
-                content="Data: {jsonDataList.length} - points: {data.length}"
+                content="Data: {$jsonDataList.length} - points: {$data.length}"
                 parameters={Object.entries(dx7Parameters)}
-                configs={jsonDataList.map((j) => j.config)}
+                configs={$jsonDataList.map((j) => j.config)}
             ></TextView>
         </div>
     </div>
 
     <div class="middle">
         <MapView
-            {data}
             {pointRenderer}
             {pointColor}
             onPointClick={handlePointClick}
@@ -140,8 +210,26 @@
 
     .left-top {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .center-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 55%;
+    }
+
+    input {
+        width: 100%; /* Make input fill the wrapper */
+        max-width: 100%; /* Ensure it does not shrink */
+        text-align: center; /* Centers text inside the input */
+        padding: 10px;
+        box-sizing: border-box; /* Ensures padding doesn't affect width */
     }
 
     .left-bottom {
@@ -153,10 +241,19 @@
     .middle {
         grid-row: 1;
         grid-column: 2;
+        height: 950px;
+        width: 950px;
+        overflow: hidden;
+        border: 1px solid #ccc;
+        margin: 8px;
     }
 
     .right {
         grid-row: 1;
         grid-column: 3;
+    }
+
+    p {
+        color: black;
     }
 </style>

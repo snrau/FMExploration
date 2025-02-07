@@ -333,11 +333,19 @@ export function parseVoice(voice) {
     return temp;
 }
 
-export function writeSysEx(collection) {
+export function writeSysEx(collection1) {
     // Ensure it's a Yamaha DX7 SysEx file
     const NUM_VOICES = 32;
 
     const sysexData = [];
+
+    let collection = collection1
+    let rest = []
+    if (collection1.length > 32) {
+        collection = collection1.slice(0, 32)
+        rest = collection1.slice(32)
+    }
+
 
     for (let i = 0; i < NUM_VOICES; i++) {
         if (collection.length > i)
@@ -355,6 +363,9 @@ export function writeSysEx(collection) {
     const header = [0xf0, 0x43, 0x00, 0x09, 0x20, 0x00]; // Example header bytes (Yamaha SysEx ID)
     const footer = [checksum, 0xf7]; // End of SysEx message
     const fullData = [...header, ...data, ...footer];
+
+    if (rest.length > 0)
+        writeSysEx(rest)
 
     //sendMessage(createSysexMessageFromConfig(voices[0]));
     return new Promise(() => {

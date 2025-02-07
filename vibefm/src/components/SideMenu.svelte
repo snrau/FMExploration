@@ -7,8 +7,8 @@
 <aside class="sidebar">
     <nav>
         <h2>VibeFM</h2>
-        <button on:click={() => callback("synth")}>Synth</button>
-        <button on:click={() => callback("about")}>About</button>
+        <button on:click={() => callback("synth")}>Exploration</button>
+        <button on:click={() => callback("about")}>Functions</button>
     </nav>
 </aside>
 

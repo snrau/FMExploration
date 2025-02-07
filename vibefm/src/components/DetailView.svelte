@@ -4,8 +4,56 @@
   import { extent } from "d3-array";
   import { playWav } from "../utils/midi";
   import Algorithm from "./Algorithm.svelte";
+  import { exportList, startingIndex } from "../utils/stores";
+  import { getNamefromConfig } from "../utils/sysex";
+  import { progressiveSubgroupBlockSampling } from "../utils/strategies";
+  import { sendReaper } from "../utils/serverRequests";
 
   export let selectedPoint = null;
+
+  let textInput = "";
+
+  // sample tree structure
+  const handleButtonClick1 = () => {
+    console.log(selectedPoint);
+    // sample new list of config
+    const config = selectedPoint.config;
+    const newConfigs = progressiveSubgroupBlockSampling(config, 20, false);
+    // do analysis on this configs (only on these so new request)
+    sendReaper(newConfigs);
+    // write json with connections {selectedpoint.filename: [newname, ...], ...} (newname is 'patch_' + (startindex + i))
+    writeEdges(selectedPoint, newConfigs, $startingIndex);
+  };
+
+  const handleButtonClick2 = () => {
+    if (selectedPoint) {
+      let temp = selectedPoint.config;
+
+      for (let i = 0; i < 10; i++) {
+        temp[145 + i] = textInput.charCodeAt(i) || 32;
+      }
+      selectedPoint.config = temp;
+      exportList.update((list) => {
+        const tempConfigHead = temp.slice(0, 145); // Extract first 145 values
+
+        // Find index of an existing entry with the same first 145 elements
+        const existingIndex = list.findIndex((item) =>
+          item.slice(0, 145).every((val, i) => val === tempConfigHead[i]),
+        );
+
+        if (existingIndex !== -1) {
+          // Replace existing entry
+          const newList = [...list];
+          newList[existingIndex] = temp;
+          return newList;
+        } else {
+          // Add new entry
+          return [...list, temp];
+        }
+      });
+      console.log("Added to export list: ", selectedPoint.label);
+    }
+  };
 
   let arrayPlot; // Reference for the 1D array plot
   let matrixPlot; // Reference for the 2D array plot
@@ -185,6 +233,7 @@
 
   // Watch for changes in selectedPoint and update the plots
   $: if (selectedPoint) {
+    textInput = getNamefromConfig(selectedPoint.config);
     renderArrayPlot();
     renderMatrixPlot();
     renderHarmonicPlot();
@@ -192,6 +241,17 @@
     renderRMSPlot();
   }
 </script>
+
+<div class="menu">
+  <button on:click={handleButtonClick1}>Sample similar</button>
+  <button on:click={handleButtonClick2}>add to Export list</button>
+  <input
+    type="text"
+    bind:value={textInput}
+    maxlength="10"
+    placeholder="Config Name"
+  />
+</div>
 
 <div class="detail-container">
   {#if selectedPoint}
@@ -278,5 +338,43 @@
   img {
     max-width: 100%;
     max-height: 100%;
+  }
+
+  .menu {
+    border: 1px solid #ccc;
+    width: 400px;
+    display: flex;
+    margin: 5 0px;
+    border-bottom: 1px solid #ccc;
+    border: 1px solid #ccc;
+    display: flex;
+    gap: 5px;
+    padding: 5px;
+    width: 400px;
+    background: #ffffff;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    color: black;
+  }
+
+  .menu button {
+    margin: 2px;
+    padding: 5px 10px;
+    border: none;
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .menu button:hover {
+    background: #0056b3;
+  }
+
+  .menu input {
+    margin: 2px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 120px;
   }
 </style>

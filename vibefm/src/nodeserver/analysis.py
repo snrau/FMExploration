@@ -82,7 +82,8 @@ def main():
         data['mel'] = mel
         
 
-        data["config"] = configs[index]
+        if len(configs) > 0:
+            data["config"] = configs[index]
 
         data_cleaned = convert_ndarray_to_list(data)
         try:

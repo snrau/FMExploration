@@ -1,13 +1,11 @@
 -- Paths
 local sysex_file = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\sysex_batch.json"  -- JSON file written by Node.js
 local midi_path = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\c4.mid"     -- MIDI file for playback
-local output_dir = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\public\\sampled\\"          -- Output folder for WAV files
+local output_dir = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\public\\reference\\"          -- Output folder for WAV files
 
 local midi_port = "loopMIDI Port 1"
 
 local json = require("dkjson")
-
-local arg1 = tonumber(arg[1])
 
 -- Load SysEx data from JSON file
 local function load_sysex_data()
@@ -130,8 +128,8 @@ end
 
 
 -- Render one patch
-function render_patch(index)
-    local output_wav =  "patch_" .. index .. ".wav"
+function render_patch(index, sysex)
+    local output_wav =  convert_sysex_to_name(sysex) .. ".wav"
     reaper.GetSetProjectInfo_String(0, "RENDER_FILE", output_dir, true)
     reaper.GetSetProjectInfo_String(0, "RENDER_PATTERN", output_wav, true)      
     -- Render
@@ -150,6 +148,22 @@ function convert_sysex(sysex)
     end
     --reaper.ShowConsoleMsg(hexMessage..'\n')
     return sysexMessage
+end
+
+function convert_sysex_to_name(sysex)
+    -- Extracting the subarray from index -13 to -4 (Lua indices are 1-based)
+    local startIndex = #sysex - 12
+    local endIndex = #sysex - 4
+    local result = ""
+
+    -- Loop through the range and convert each value from ASCII to string
+    for i = startIndex, endIndex do
+        local charCode = sysex[i]
+        -- Convert the ASCII number to a character and append to the result string
+        result = result .. string.char(charCode)
+    end
+    
+    return result
 end
 
 
@@ -200,9 +214,9 @@ if sysex_data then
         --reaper.TrackFX_SetPreset(track, retval, 1)
         if value then
             local sysexstring = convert_sysex(sysex)
-            value = send_patch(sysexstring, index - 1 + arg1, sender, receiver)
+            value = send_patch(sysexstring, index - 1, sender, receiver)
             if value then
-                value = render_patch(index - 1 + arg1, sysex)
+                value = render_patch(index - 1)
             end
         end
     end

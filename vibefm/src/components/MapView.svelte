@@ -7,8 +7,8 @@
   import BrightnessGlyph from "../glyphs/brightnessGlyph.svelte";
   import { dx7Parameters } from "../utils/dexed";
   import ConfigMatrixGlyph from "../glyphs/configMatrixGlyph.svelte";
+  import { data } from "../utils/stores";
 
-  export let data = [];
   export let onPointClick;
   export let pointRenderer = null;
   export let pointColor = null;
@@ -23,24 +23,26 @@
   let brightnessExtent = [Infinity, -Infinity];
   let rmsExtent = [Infinity, -Infinity];
 
-  const size = 900;
+  const size = 1800;
   const offset = 5;
 
+  const glyphsize = 20;
+
   let container; // Reference to the SVG container
-  let zoomTransform = { x: 0, y: 0, k: 1 }; // Initial zoom state
+  let zoomTransform = { x: 0, y: 0, k: 0.5 }; // Initial zoom state
 
   $: xScale = scaleLinear().domain([0, size]).range([0, size]);
   $: yScale = scaleLinear().domain([0, size]).range([0, size]);
 
-  $: if (data.length) {
+  $: if ($data.length) {
     // Compute extents
     const xExtent = [
-      Math.min(...data.map((p) => p.x)),
-      Math.max(...data.map((p) => p.x)),
+      Math.min(...$data.map((p) => p.x)),
+      Math.max(...$data.map((p) => p.x)),
     ];
     const yExtent = [
-      Math.min(...data.map((p) => p.y)),
-      Math.max(...data.map((p) => p.y)),
+      Math.min(...$data.map((p) => p.y)),
+      Math.max(...$data.map((p) => p.y)),
     ];
 
     // Create linear scales
@@ -52,14 +54,14 @@
       .range([offset, size - offset]);
   }
 
-  $: if (data.length) {
-    const allBrightness = data.map((p) => p.analysis.brightness.mean);
+  $: if ($data.length) {
+    const allBrightness = $data.map((p) => p.analysis.brightness.mean);
     brightnessExtent = [
       0, //Math.min(...allBrightness),
       Math.max(...allBrightness),
     ];
 
-    const rmsData = data.map((p) => p.analysis.rms[0]);
+    const rmsData = $data.map((p) => p.analysis.rms[0]);
     const allRMSextent = rmsData.flat(2);
     rmsExtent = [
       0, //Math.min(...allBrightness),
@@ -71,7 +73,7 @@
     const svg = select(container);
 
     const zoomBehavior = zoom()
-      .scaleExtent([0.5, 5]) // Zoom limits
+      .scaleExtent([0.25, 5]) // Zoom limits
       .on("zoom", (event) => {
         if (event.sourceEvent.altKey) zoomTransform = event.transform; // Update the transform state
       });
@@ -91,13 +93,13 @@
       transform="translate({zoomTransform.x},{zoomTransform.y}) scale({zoomTransform.k})"
     >
       <!--{#if pointRenderer === "rect"}-->
-      {#each data as point, index}
+      {#each $data as point, index}
         {#if point === selectedPoint && pointRenderer === "circle"}
           <rect
             x={xScale(point.x) - 5}
             y={yScale(point.y) - 5}
-            width="10"
-            height="10"
+            width={glyphsize / 2}
+            height={glyphsize / 2}
             class="point"
             fill={getColor(point, brightnessExtent, pointColor)}
             on:click={() => handleClick(point)}
@@ -106,7 +108,7 @@
           <circle
             cx={xScale(point.x)}
             cy={yScale(point.y)}
-            r="5"
+            r={glyphsize / 4}
             class="point"
             fill={getColor(point, brightnessExtent, pointColor)}
             on:click={() => handleClick(point)}
@@ -116,8 +118,8 @@
             data={point.analysis.rms[0]}
             x={xScale(point.x) - 10}
             y={yScale(point.y) - 10}
-            width={20}
-            height={20}
+            width={glyphsize}
+            height={glyphsize}
             fill={getColor(point, brightnessExtent, pointColor)}
             onClick={() => handleClick(point)}
             selected={point === selectedPoint}
@@ -128,8 +130,8 @@
             data={point.analysis.centroid[0]}
             x={xScale(point.x) - 10}
             y={yScale(point.y) - 10}
-            width={20}
-            height={20}
+            width={glyphsize}
+            height={glyphsize}
             fill={getColor(point, brightnessExtent, pointColor)}
             onClick={() => handleClick(point)}
             selected={point === selectedPoint}
@@ -139,7 +141,7 @@
             config={point.config}
             x={xScale(point.x) - 10}
             y={yScale(point.y) - 10}
-            cellSize={5}
+            cellSize={glyphsize / 5}
             onClick={() => handleClick(point)}
             parameters={Object.entries(dx7Parameters)}
             selection={point === selectedPoint ? null : selectedPoint}
@@ -152,9 +154,7 @@
 
 <style>
   .map-container {
-    border: 1px solid #ccc;
     margin: 0 auto;
-    overflow: hidden;
   }
 
   .point {

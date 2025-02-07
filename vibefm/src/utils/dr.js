@@ -49,3 +49,39 @@ export function getDrProjectedPoints(distMatrix, drmethod = 'mds', precomputed =
     const points = DR.to2dArray
     return points
 }
+
+
+export function newPointOOD(newPoint, points) {
+    if (!newPoint || !Array.isArray(points) || points.length === 0) {
+        throw new Error("Invalid input: newPoint must be an array, and points must be a non-empty array.");
+    }
+
+    // Function to compute Euclidean distance between two MFCC matrices
+    function euclideanDistance(mfcc1, mfcc2) {
+        if (mfcc1.length !== mfcc2.length) {
+            throw new Error("MFCC matrices must have the same length.");
+        }
+        return Math.sqrt(mfcc1.reduce((sum, val, i) => sum + Math.pow(val - mfcc2[i], 2), 0));
+    }
+
+    // Compute distances between newPoint and all existing points
+    let distances = points.map(p => ({
+        x: p.x,
+        y: p.y,
+        dist: euclideanDistance(newPoint.analysis.mfcc.flat(), p.analysis.mfcc.flat())
+    }));
+
+    // Estimate new (x, y) using Weighted Average Positioning
+    let sumWeights = 0, weightedX = 0, weightedY = 0;
+    distances.forEach(({ x, y, dist }) => {
+        let weight = 1 / (dist + 1e-6); // Avoid division by zero
+        sumWeights += weight;
+        weightedX += x * weight;
+        weightedY += y * weight;
+    });
+
+    newPoint.x = weightedX / sumWeights
+    newPoint.y = weightedY / sumWeights
+    // Calculate final estimated position
+    return newPoint
+}

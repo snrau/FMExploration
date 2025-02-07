@@ -5,8 +5,27 @@ export async function doAnalysis(collection) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            path: "..\\..\\public\\output",
+            path: "..\\..\\public\\sampled",
+            path2: "..\\..\\public\\reference",
             configs: JSON.stringify(collection),
+        }),
+    });
+
+    if (response.ok) {
+        console.log("analysis done");
+    } else {
+        alert("Failed to do hrps.");
+    }
+    return response
+}
+
+export async function addReference(config) {
+    const response = await fetch("http://localhost:3000/addReference", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            path: "..\\..\\public\\reference",
+            config: config,
         }),
     });
 
@@ -23,7 +42,7 @@ export async function exportMFCC() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            path: "..\\..\\public\\output",
+            path: "..\\..\\public\\sampled",
         }),
     });
 
@@ -41,7 +60,8 @@ export async function distanceMatrix() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                path: "..\\..\\public\\output",
+                sampled: "..\\..\\public\\sampled",
+                ref: "..\\..\\public\\reference",
             }),
         })
 
@@ -56,13 +76,125 @@ export async function distanceMatrix() {
     }
 }
 
-export async function readData() {
+export async function readRef() {
+    try {
+        const response = await fetch("http://localhost:3000/readRef", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                sampled: "..\\..\\public\\sampled",
+                ref: "..\\..\\public\\reference",
+            }),
+        })
+
+        if (!response.ok) {
+            throw new Error(
+                "Network response was not ok " + response.statusText,
+            );
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+
+        let buffer = '';
+        const parsedData = []
+        let done = false;
+
+
+        while (!done) {
+            const { value, done: streamDone } = await reader.read();
+            done = streamDone;
+            // Decode the chunk and append to the buffer
+            buffer += decoder.decode(value, { stream: true });
+
+            // Process complete JSON objects from the buffer
+            let openingBracketIndex = buffer.indexOf('{');
+            let closingBracketIndex;
+
+            while (
+                openingBracketIndex !== -1
+            ) {
+
+                const configStartIndex = buffer.indexOf('"config"', openingBracketIndex);
+
+                if (done) {
+                    const jsonString = buffer.slice(openingBracketIndex, buffer.length - 1);
+                    const jsonObject = JSON.parse(jsonString);
+                    console.log("Received JSON Object:", jsonObject);
+                    parsedData.push(jsonObject)
+                    break
+                }
+
+                if (configStartIndex === -1) {
+                    // If "config" key is not found, break out of the loop since we're incomplete
+                    break;
+                }
+
+                // Find the closing bracket for the JSON object after finding "config"
+                closingBracketIndex = buffer.indexOf('},{"config"', configStartIndex);
+
+                if (closingBracketIndex === -1) {
+                    // If no closing bracket is found, break out of the loop, the object is incomplete
+                    break;
+                }
+                const jsonString = buffer.slice(openingBracketIndex, closingBracketIndex + 1);
+
+                try {
+                    const jsonObject = JSON.parse(jsonString);
+                    console.log("Received JSON Object:", jsonObject);
+                    parsedData.push(jsonObject)
+
+                    // Clear processed data from the buffer
+                    buffer = buffer.slice(closingBracketIndex + 1);
+                } catch (error) {
+                    // Ignore incomplete JSON fragments
+                    console.log(error)
+                    break;
+                }
+
+                openingBracketIndex = buffer.indexOf('{');
+            }
+        }
+
+
+        return parsedData;
+
+    } catch (err) {
+        console.error("Error fetching data:", err);
+    }
+}
+
+export async function readEdges() {
+    try {
+        const response = await fetch("http://localhost:3000/readEdges", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                edges: "..\\..\\public\\connection.json",
+            }),
+        })
+
+        if (!response.ok) {
+            throw new Error(
+                "Network response was not ok " + response.statusText,
+            );
+        } else {
+            return response.json();
+        }
+
+
+    } catch (err) {
+        console.error("Error fetching data:", err);
+    }
+}
+
+export async function readSampled() {
     try {
         const response = await fetch("http://localhost:3000/readData", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                path: "..\\..\\public\\output",
+                sampled: "..\\..\\public\\sampled",
+                ref: "..\\..\\public\\reference",
             }),
         })
 
@@ -158,6 +290,38 @@ export async function readData() {
     }
 }
 
+
+
+export async function writeEdges(point, newConfigs, startingIndex) {
+    if (newConfigs.length === 0) return null;
+
+    let temp = []
+
+    for (let i = startingIndex; i < newConfigs.length; i++) {
+        temp.push("patch_" + i)
+    }
+
+    // {selectedpoint.filename: [newname, ...], ...} (newname is 'patch_' + (startindex + i))
+    const response = await fetch("http://localhost:3000/writeEdges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ point: point.filename.split('.')[0], array: temp, edges: "..\\..\\public\\connection.json", }),
+    });
+
+    if (response.ok) {
+
+        if (response.ok) {
+            console.log("Finished analysis");
+        } else {
+            alert("Failed to do hrps.");
+        }
+        console.log("Rendering done!");
+    } else {
+        alert("Failed to trigger rendering.");
+    }
+    return response
+}
+
 export async function sendReaper(collection) {
     if (collection.length === 0) return null;
     let allMessages = collection.map((arr) =>
@@ -187,4 +351,23 @@ export async function sendReaper(collection) {
         alert("Failed to trigger rendering.");
     }
     return response
+}
+
+
+export async function uploadWav(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+        const response = await fetch("http://localhost:5000/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/wav" },
+            body: formData
+        });
+
+        const result = await response.json();
+        return result
+    } catch (error) {
+        console.error("Upload failed:", error);
+    }
 }
