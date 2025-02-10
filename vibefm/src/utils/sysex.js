@@ -1,17 +1,27 @@
-export function importSysexFile(event) {
-    const file = event.target.files[0];
-    if (file) {
+export async function importSysexFile(event) {
+    return new Promise((resolve, reject) => {
+        const file = event.target.files[0];
+        if (!file) {
+            reject(new Error("No file selected"));
+            return;
+        }
+
         const reader = new FileReader();
-        let fileContent = null;
 
         reader.onload = (e) => {
-            // @ts-ignore
-            fileContent = new Uint8Array(e.target.result);
-            return parseSysEx(fileContent);
+            try {
+                // @ts-ignore
+                const fileContent = new Uint8Array(e.target.result);
+                const content = parseSysEx(fileContent);
+                resolve(content);
+            } catch (error) {
+                reject(error);
+            }
         };
 
+        reader.onerror = () => reject(new Error("Failed to read file"));
         reader.readAsArrayBuffer(file);
-    }
+    });
 }
 
 // first start at 6 -> but order is different than at the top (EGR1,2, EGL1,2, EGR3,4, EGL3,4 ...)
@@ -21,8 +31,6 @@ function parseSysEx(data) {
     // Ensure it's a Yamaha DX7 SysEx file
     const SYSEX_START = 0xf0; // Start of SysEx
     const SYSEX_END = 0xf7; // End of SysEx
-
-    console.log(data);
 
     if (data[0] !== SYSEX_START || data[data.length - 1] !== SYSEX_END) {
         console.error("Invalid SysEx file.");
@@ -84,7 +92,6 @@ function parseVoice(voice) {
                 const LFS = v & 0b1; // Mask 0b00000011 to get bits 0-1
                 const LFW = (v >> 1) & 0b111; // Shift right 2 bits, mask 0b00000011 to get bits 2-3
                 const LPMS = (v >> 4) & 0b111; //maybe 0b11
-                console.log(v, LFS, LFW, LPMS);
                 temp.push(LFS);
                 temp.push(LFW);
                 temp.push(LPMS);
@@ -102,5 +109,17 @@ export function getNamefromConfig(config) {
     return config
         .slice(145, 155)
         .map((code) => String.fromCharCode(code))
+        .join("")
+}
+
+export function getShortNamefromConfig(config) {
+    return config
+        .slice(145, 155)
+        .map((code) => {
+            if (code !== 32)
+                return String.fromCharCode(code)
+            else
+                return ""
+        })
         .join("")
 }

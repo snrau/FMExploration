@@ -5,6 +5,7 @@
         sendReaper,
         doAnalysis,
     } from "../utils/serverRequests";
+    import { startingIndex } from "../utils/stores";
 
     let midiOutput;
     let midiAccess;
@@ -845,7 +846,7 @@ SYSEX MESSAGE: Parameter Change
         return temp;
     }
 
-    const numToGenerate = 20;
+    const numToGenerate = 2;
 
     function sampleAroundMultipleVoices() {
         let temp = [];
@@ -1032,7 +1033,9 @@ SYSEX MESSAGE: Parameter Change
         >send collection to reaper</button
     >
 
-    <button on:click={() => doAnalysis(collection)}>analysis</button>
+    <button on:click={() => doAnalysis(collection, $startingIndex)}
+        >analysis</button
+    >
 
     <button on:click={() => exportMFCC()}>mfcc</button>
 

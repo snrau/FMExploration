@@ -10,10 +10,11 @@
         readSampled,
         readEdges,
         uploadWav,
+        addReference,
     } from "../utils/serverRequests";
-    import { getDrProjectedPoints } from "../utils/dr";
+    import { getDrProjectedPoints, newPointOOD } from "../utils/dr";
     import { sendMessage } from "../utils/midi";
-    import { importSysexFile } from "../utils/sysex";
+    import { importSysexFile, getNamefromConfig } from "../utils/sysex";
     import {
         createSysexMessageFromConfig,
         dx7Parameters,
@@ -37,10 +38,14 @@
 
     let sysexIndex = 0;
 
+    let oodpoint;
+
     $: pointRenderer = "circle";
     $: pointColor = "brightHarmonic";
 
     $: selectedPoint = null;
+
+    $: referencePoint = null;
 
     let dropdownOptions = [
         "LoadDataFromFiles",
@@ -50,6 +55,7 @@
         "changeColor",
         "resetExportList",
         "Export list",
+        "testOod",
     ];
 
     // onMount Midiaccess requesten
@@ -80,14 +86,22 @@
                 let points = getDrProjectedPoints($distMatrix, "mds", true);
                 let temp = [];
                 $jsonDataList.forEach((v, i) => {
-                    temp.push({
-                        id: i,
-                        x: points[i][0],
-                        y: points[i][1],
-                        label: v.filename.split(".")[0],
-                        config: v.config,
-                        analysis: v,
-                    });
+                    if (i !== 9)
+                        temp.push({
+                            id: i,
+                            x: points[i][0],
+                            y: points[i][1],
+                            label: v.filename.split(".")[0],
+                            config: v.config,
+                            analysis: v,
+                        });
+                    else
+                        oodpoint = {
+                            id: i,
+                            label: v.filename.split(".")[0],
+                            config: v.config,
+                            analysis: v,
+                        };
                 });
                 data.set([...temp]);
                 console.log($data);
@@ -108,27 +122,50 @@
             exportList.set([]);
         } else if (option === "Export list") {
             writeSysEx(exportList);
+        } else if (option === "testOod") {
+            let oodpoint = newPointOOD(oodpoint, $data);
+            data.update((v) => v.push(oodpoint));
         }
     }
 
     // Function to handle point click
-    function handlePointClick(point) {
-        sendMessage(createSysexMessageFromConfig(point.config));
-        selectedPoint = point;
-        //play wav?
+    function handlePointClick(event, point) {
+        if (event.ctrlKey) {
+            if (selectedPoint) {
+                referencePoint = point;
+            } else {
+                selectedPoint = point;
+                sendMessage(createSysexMessageFromConfig(point.config));
+            }
+        } else {
+            selectedPoint = point;
+            referencePoint = null; // Reset if Ctrl is not held
+            sendMessage(createSysexMessageFromConfig(point.config));
+        }
     }
 
     function handleReference(e) {
         const config = sysexList[sysexIndex];
+        console.log(config);
+        // codec for adding reference
+        let test = addReference(config);
+        test.then((v) => null);
+        // what should we do ones the references are added?
+        // recalculate everything? just add via ood? how to do when to load in?
     }
 
     async function importWavFile(e) {
         const upload = await uploadWav(e.target.files[0]);
         // now use the json
+        upload.then((v) => console.log(v));
+        // do ood on the json of v and show it in the data as well
     }
 
-    function handleImport(e) {
-        sysexList = importSysexFile(e);
+    async function handleImport(e) {
+        await importSysexFile(e).then((v) => {
+            sysexList = v;
+            console.log(sysexList);
+        });
     }
 </script>
 
@@ -142,7 +179,7 @@
 
             <p>Reference</p>
             <div class="center-wrapper">
-                <input type="file" accept=".syx" on:change={importSysexFile} />
+                <input type="file" accept=".syx" on:change={handleImport} />
             </div>
             {#if sysexList.length > 0}
                 <div class="center-wrapper">
@@ -183,6 +220,7 @@
             {pointColor}
             onPointClick={handlePointClick}
             {selectedPoint}
+            {referencePoint}
         />
     </div>
 
@@ -192,6 +230,20 @@
 </div>
 
 <style>
+    button {
+        margin: 2px;
+        padding: 5px 10px;
+        border: none;
+        background: #007bff;
+        color: white;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    button:hover {
+        background: #0056b3;
+    }
+
     .container {
         display: grid;
         grid-template-columns: 250px 3fr 450px;

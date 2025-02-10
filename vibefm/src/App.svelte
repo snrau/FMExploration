@@ -6,7 +6,7 @@
   import { onMount } from "svelte";
   import { requestMidiAccess } from "./utils/midi";
 
-  let currentView = "about";
+  let currentView = "synth";
 
   function handleNavigation(view) {
     currentView = view;

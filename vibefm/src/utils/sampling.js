@@ -80,3 +80,26 @@ export function randomizeBlock(sample, blockrange) {
     }
     return sample;
 }
+
+
+export function interpolate(configA, configB, percent) {
+    if (!Array.isArray(configA) || !Array.isArray(configB)) {
+        throw new Error("Both configs must be arrays");
+    }
+
+    if (configA.length !== configB.length) {
+        throw new Error("Configs must have the same length");
+    }
+
+    return configA.map((valueA, index) => {
+        const valueB = configB[index];
+
+        if (index === 134) {
+            // Discrete switch at 50%
+            return percent < 0.5 ? valueA : valueB;
+        } else {
+            // Linear interpolation and rounding to the nearest integer
+            return Math.round(valueA + (valueB - valueA) * percent);
+        }
+    });
+}

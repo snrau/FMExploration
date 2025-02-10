@@ -3,6 +3,7 @@ import * as fs from "fs";
 import { exec, spawn } from "child_process";
 import cors from 'cors'
 import path from "path";
+import { startingIndex } from "../utils/stores.js";
 
 
 
@@ -43,6 +44,8 @@ app.post("/send_sysex_batch", (req, res) => {
         const startindex = files.filter(file => file.endsWith(".wav")).length
         startingIndex.set(startindex)
 
+        console.log(startindex)
+
         // Trigger Reaper rendering script
         // REAPER:
         const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
@@ -68,71 +71,79 @@ app.post('/analysis', (req, res) => {
     let wavFiles = []
     const folderPath = req.body.path
     const folderPath2 = req.body.path2
+    const startindex = req.body.startindex
+    const name = req.body.name
 
-    fs.readdir(folderPath, (err, files) => {
-        if (err) {
-            return res.status(500).json({ error: "Failed to read directory" });
-        }
+    if (startindex !== -28) {
 
-        // Filter .wav files
-        wavFiles = files.filter(file => file.endsWith(".wav"));
-
-        // Path to the Python executable within the virtual environment
-        const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
-
-
-        // Spawn a Python process
-        const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs)]);
-
-        // Capture output from the Python script
-        pythonProcess.stdout.on('data', (data) => {
-            console.log(data)
-        });
-
-        pythonProcess.stderr.on('data', (error) => {
-            console.error(`${error}`);
-        });
-
-        pythonProcess.on('close', (code) => {
-            if (code === 0) {
-                res.status(200).send("done"); // Send the result back to the client
-            } else {
-                res.status(500).send('Python script execution failed');
+        fs.readdir(folderPath, (err, files) => {
+            if (err) {
+                return res.status(500).json({ error: "Failed to read directory" });
             }
+
+            // Filter .wav files
+            wavFiles = files.filter(file => file.endsWith(".wav"));
+
+            wavFiles = wavFiles.filter((f, i) => i >= startindex)
+
+            // Path to the Python executable within the virtual environment
+            const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
+
+
+            // Spawn a Python process
+            const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs)]);
+
+            // Capture output from the Python script
+            pythonProcess.stdout.on('data', (data) => {
+                console.log(data)
+            });
+
+            pythonProcess.stderr.on('data', (error) => {
+                console.error(`${error}`);
+            });
+
+            pythonProcess.on('close', (code) => {
+                if (code === 0) {
+                    res.status(200).send("done"); // Send the result back to the client
+                } else {
+                    res.status(500).send('Python script execution failed');
+                }
+            });
         });
-    });
-    fs.readdir(folderPath2, (err, files) => {
-        if (err) {
-            return res.status(500).json({ error: "Failed to read directory" });
-        }
-
-        // Filter .wav files
-        wavFiles = files.filter(file => file.endsWith(".wav"));
-
-        // Path to the Python executable within the virtual environment
-        const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
-
-
-        // Spawn a Python process
-        const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path2, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), []]);
-
-        // Capture output from the Python script
-        pythonProcess.stdout.on('data', (data) => {
-            console.log(data)
-        });
-
-        pythonProcess.stderr.on('data', (error) => {
-            console.error(`${error}`);
-        });
-
-        pythonProcess.on('close', (code) => {
-            if (code === 0) {
-                res.status(200).send("done"); // Send the result back to the client
-            } else {
-                res.status(500).send('Python script execution failed');
+    } else {
+        fs.readdir(folderPath2, (err, files) => {
+            if (err) {
+                return res.status(500).json({ error: "Failed to read directory" });
             }
+
+            // Filter .wav files
+            wavFiles = files.filter(file => file.endsWith(name + ".wav"));
+            console.log(wavFiles)
+
+            // Path to the Python executable within the virtual environment
+            const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
+
+            // Spawn a Python process
+            const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path2, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs)]);
+
+            // Capture output from the Python script
+            pythonProcess.stdout.on('data', (data) => {
+                console.log(data)
+            });
+
+            pythonProcess.stderr.on('data', (error) => {
+                console.error(`${error}`);
+            });
+
+            pythonProcess.on('close', (code) => {
+                if (code === 0) {
+                    res.status(200).send("done"); // Send the result back to the client
+                } else {
+                    res.status(500).send('Python script execution failed');
+                }
+            });
         });
-    });
+    }
 })
 
 app.post('/exportMFCC', (req, res) => {
@@ -576,6 +587,8 @@ app.post('/addReference', (req, res) => {
         return res.status(400).send("Invalid SysEx data.");
     }
 
+    console.log(sysexArray)
+
     // Save SysEx array to a JSON file
     const sysexPath = "../luaScript/sysex_batch.json";
     fs.writeFileSync(sysexPath, JSON.stringify(sysexArray, null, 2));
@@ -590,6 +603,7 @@ app.post('/addReference', (req, res) => {
             console.error("Error running Reaper script:", stderr);
             return res.status(500).send("Failed to trigger rendering.");
         }
+        console.log("after reaper")
         res.send("Rendering triggered successfully.");
 
         const name = getNamefromConfig(sysexArray[0])

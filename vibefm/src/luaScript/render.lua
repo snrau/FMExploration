@@ -7,6 +7,11 @@ local midi_port = "loopMIDI Port 1"
 
 local json = require("dkjson")
 
+
+for i, v in ipairs(arg) do
+    reaper.ShowConsoleMsg("Arg " .. i .. ": " .. tostring(v) .. "\n")
+end
+
 local arg1 = tonumber(arg[1])
 
 -- Load SysEx data from JSON file

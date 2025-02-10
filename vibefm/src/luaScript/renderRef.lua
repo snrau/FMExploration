@@ -46,49 +46,6 @@ function debug_sysex_events(take)
     end
 end
 
-function debug_track_info(track)
-    if not track then
-        reaper.ShowConsoleMsg("Track not found.\n")
-        return
-    end
-
-    local retval, trackName = reaper.GetTrackName(track, "")
-    local midiHwOut = reaper.GetMediaTrackInfo_Value(track, "I_MIDIHWOUT")
-    local isArmed = reaper.GetMediaTrackInfo_Value(track, "I_RECARM") > 0
-    --reaper.ShowConsoleMsg("Track Name: " .. trackName .. "\n")
-    reaper.ShowConsoleMsg("MIDI Hardware Output num: Track: " .. tostring(midiHwOut) ..' OutputID: '.. tostring(midiOutId) .. "\n")
-    local numMIDIOutputs = reaper.GetNumMIDIOutputs()
-    for i = 0, numMIDIOutputs - 1 do
-        local retval, name = reaper.GetMIDIOutputName(i, "")
-        reaper.ShowConsoleMsg("MIDI Hardware Output: " .. name .. " -> ")
-        if retval and midiOutId == i then
-            reaper.ShowConsoleMsg("selected\n")
-            break
-        end
-        reaper.ShowConsoleMsg("\n")
-    end
-    --reaper.ShowConsoleMsg("Track Armed for Recording: " .. tostring(isArmed) .. "\n")
-end
-
-function debug_track_items(track)
-    local numItems = reaper.CountTrackMediaItems(track)
-    reaper.ShowConsoleMsg("Number of media items on the track: " .. tostring(numItems) .. "\n")
-
-    for i = 0, numItems - 1 do
-        local item = reaper.GetTrackMediaItem(track, i)
-        local pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
-        local length = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
-        reaper.ShowConsoleMsg("Item " .. i .. ": Start = " .. pos .. ", Length = " .. length .. "\n")
-
-        local take = reaper.GetTake(item, 0)
-        if take then
-            debug_sysex_events(take)
-        else
-            reaper.ShowConsoleMsg("No take found for item " .. i .. "\n")
-        end
-    end
-end
-
 function send_patch(sysex_data, index, track)
 
     --local item = reaper.AddMediaItemToTrack(track)
@@ -152,18 +109,29 @@ end
 
 function convert_sysex_to_name(sysex)
     -- Extracting the subarray from index -13 to -4 (Lua indices are 1-based)
-    local startIndex = #sysex - 12
-    local endIndex = #sysex - 4
+    local startIndex = 152
+    local endIndex = 161
     local result = ""
-
     -- Loop through the range and convert each value from ASCII to string
     for i = startIndex, endIndex do
         local charCode = sysex[i]
         -- Convert the ASCII number to a character and append to the result string
-        result = result .. string.char(charCode)
+        if charCode ~= 32 then
+            result = result .. string.char(charCode)
+        end
     end
     
     return result
+end
+
+function convert_sysex_to_readable(sysex)
+    local hexMessage = ""
+
+    for _, byte in ipairs(sysex) do
+        hexMessage = hexMessage .. byte .. ' '
+    end
+
+    return hexMessage
 end
 
 
@@ -211,12 +179,18 @@ if sysex_data then
 
     value = true
     for index, sysex in ipairs(sysex_data) do
+        reaper.ShowConsoleMsg(tostring(index), "Success", 0)
+        reaper.ShowConsoleMsg("\n", "Success", 0)
+        
         --reaper.TrackFX_SetPreset(track, retval, 1)
         if value then
             local sysexstring = convert_sysex(sysex)
-            value = send_patch(sysexstring, index - 1, sender, receiver)
+            local hexStr = convert_sysex_to_readable(sysex)
+            reaper.ShowConsoleMsg("SysEx (Hex): " .. hexStr .. "\n")
+            reaper.ShowConsoleMsg("\n", "Success", 0)
+            value = send_patch(sysexstring, index - 1, sender)
             if value then
-                value = render_patch(index - 1)
+                value = render_patch(index - 1, sysex)
             end
         end
     end
@@ -227,6 +201,7 @@ if sysex_data then
         return true
     else
         reaper.ShowConsoleMsg("Batch failed", "Error", 0)
+        reaper.Main_OnCommand(40004, 0)
         return false
     end
     

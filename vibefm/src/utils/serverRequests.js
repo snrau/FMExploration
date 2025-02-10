@@ -1,6 +1,9 @@
+import { get } from "svelte/store";
 import { createSysexMessageFromConfig } from "./dexed";
+import { startingIndex } from "./stores";
+import { getNamefromConfig, getShortNamefromConfig } from "./sysex";
 
-export async function doAnalysis(collection) {
+export async function doAnalysis(collection, startindex, name = "") {
     const response = await fetch("http://localhost:3000/analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -8,6 +11,8 @@ export async function doAnalysis(collection) {
             path: "..\\..\\public\\sampled",
             path2: "..\\..\\public\\reference",
             configs: JSON.stringify(collection),
+            startindex: startindex,
+            name: name
         }),
     });
 
@@ -25,16 +30,19 @@ export async function addReference(config) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             path: "..\\..\\public\\reference",
-            config: config,
+            config: createSysexMessageFromConfig(config),
         }),
     });
 
+    let name = getShortNamefromConfig(config)
+
     if (response.ok) {
-        console.log("analysis done");
+        const response = await doAnalysis([config], -28, name)
+        return response
     } else {
         alert("Failed to do hrps.");
     }
-    return response
+
 }
 
 export async function exportMFCC() {
@@ -339,7 +347,7 @@ export async function sendReaper(collection) {
     });
 
     if (response.ok) {
-        const response = await doAnalysis(collection)
+        const response = await doAnalysis(collection, get(startingIndex))
 
         if (response.ok) {
             console.log("Finished analysis");
