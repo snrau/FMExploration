@@ -9,5 +9,7 @@ export const refList = writable([]);
 export const distMatrix = writable([]);
 export const edgeList = writable([]);
 
+export const cellStateStore = writable({});
+
 
 export const startingIndex = writable(0)

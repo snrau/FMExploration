@@ -1,17 +1,20 @@
 <script>
     import * as d3 from "d3";
     import { onMount } from "svelte";
+    import { cellStateStore } from "../utils/stores";
 
     export let parameters = []; // { index, change, max }
     export let configs = []; // Array of arrays: configs[row][col] = [values]
     export let cellSize = 30;
     export let binnumber = 10;
 
+    const margin = 25
+
     const rows = 7;
     const cols = 6;
     const padding = 3;
-    const width = cols * cellSize;
-    const height = rows * cellSize;
+    const width = margin+cols * cellSize;
+    const height = margin+rows * cellSize;
     let svg;
 
     // Define 6 column colors + 2 additional for the last row
@@ -34,10 +37,11 @@
     $: filteredData = parameters
         .filter((d) => d[1].change === true && d[1].number < 145)
         .map((d, i) => {
-            const row = Math.floor(i / cols);
+            const row = Math.floor(i / cols) === 6?6:5 - Math.floor(i / cols);
             const col = i % cols;
             const values = configs.map((a) => a[d[1].number]);
-            return { row, col, values, max: d[1].max };
+            const label = d[0]
+            return { row, col, values, max: d[1].max, label };
         });
 
     function drawMatrix() {
@@ -51,15 +55,59 @@
             .attr("class", "cell")
             .attr(
                 "transform",
-                (d) => `translate(${d.col * cellSize}, ${d.row * cellSize})`,
-            );
+                (d) => `translate(${margin + d.col * cellSize}, ${margin + d.row * cellSize})`,
+            )
 
         cells
             .append("rect")
             .attr("width", cellSize - padding)
             .attr("height", cellSize - padding)
-            .attr("fill", "none")
-            .attr("stroke", "black");
+            .attr("fill", "white")
+            .attr("stroke", "black")
+            .on("click", function (event, d) {
+                const store = { ...$cellStateStore, [d.label]: !$cellStateStore[d.label] }
+                cellStateStore.set(store); // Update Svelte store
+                updateCellVisual(d3.select(this.parentNode), d.label); // Update UI
+            });
+
+        // Draw "X" for cells already active in the store
+        cells.each(function (d) {
+            updateCellVisual(d3.select(this), d.label || false);
+        });
+
+        const columnLabels = ["R1", "R2", "R3", "Lvl", "FC", "FF"];
+        svgElement.selectAll("text.col-label")
+            .data(columnLabels)
+            .join("text")
+            .attr("x", (d, i) => margin + i * cellSize + cellSize / 2)
+            .attr("y", margin-5)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "10px")
+            .text(d => d);
+
+        const rowLabels = ["OP1", "OP2", "OP3", "OP4", "OP5", "OP6"];
+        svgElement.selectAll("text.row-label")
+            .data(rowLabels)
+            .join("text")
+            .attr("x", margin-5)
+            .attr("y", (d,i) => margin+i * cellSize + cellSize / 2)
+            .attr("text-anchor", "end")
+            .attr("font-size", "10px")
+            .text(d => d);
+
+        svgElement.append("text")
+            .attr("x", margin-5)
+            .attr("y", margin+6 * cellSize + cellSize / 2)
+            .attr("text-anchor", "end")
+            .attr("font-size", "10px")
+            .text("ALG");
+
+        svgElement.append("text")
+            .attr("x", margin+2 * cellSize + cellSize / 2 - padding)
+            .attr("y", margin+6 * cellSize + cellSize / 2)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "10px")
+            .text("FB");
 
         cells.each(function (d) {
             const g = d3.select(this);
@@ -99,6 +147,29 @@
                     colors[d.row < rows - 1 ? d.col % 6 : 6 + (d.col % 2)],
                 );
         });
+    }
+
+    function updateCellVisual(cell, label) {
+
+        cell.selectAll("text.x-mark").remove(); // Remove old "X"
+
+        if ($cellStateStore[label]) {
+            cell.append("text")
+                .attr("class", "x-mark")
+                .attr("x", cellSize / 2)
+                .attr("y", cellSize / 2)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("font-size", "20px")
+                .attr("fill", "black")
+                .attr("opacity", 0.2)
+                .text("X")
+                .on("click", function (event, d) {
+                    const store = { ...$cellStateStore, [d.label]: !$cellStateStore[d.label] }
+                    cellStateStore.set(store); // Update Svelte store
+                    updateCellVisual(d3.select(this.parentNode), d.label); // Update UI
+                });
+        }
     }
 
     $: configs, drawMatrix();
