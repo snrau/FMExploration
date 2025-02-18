@@ -31,6 +31,8 @@
         refList,
         distMatrix,
         startingIndex,
+        excluded,
+        drpoints
     } from "../utils/stores";
     import { onMount } from "svelte";
 
@@ -103,7 +105,7 @@
                             analysis: v,
                         };
                 });
-                data.set([...temp]);
+                drpoints.set([...temp]);
                 console.log($data);
                 alert("Points calculated");
             }
@@ -125,6 +127,8 @@
         } else if (option === "testOod") {
             let oodpoint = newPointOOD(oodpoint, $data);
             data.update((v) => v.push(oodpoint));
+        } else if (option === "reserExclude") {
+            excluded.set([])
         }
     }
 
@@ -155,10 +159,30 @@
     }
 
     async function importWavFile(e) {
+        const files = e.target.files;
+        const uploads = [];
+
+        for (let file of files) {
+            uploads.push(uploadWav(file));
+        }
+
+        // Wait for all uploads to complete
+        const results = await Promise.all(uploads);
+
+        // Process results
+        results.forEach((result, index) => {
+            console.log(`File ${files[index].name}:`, result);
+            // Perform additional processing (e.g., displaying data)
+        });
+
+
+        /* SINGLE
         const upload = await uploadWav(e.target.files[0]);
         // now use the json
         upload.then((v) => console.log(v));
         // do ood on the json of v and show it in the data as well
+        // filename as label
+        */
     }
 
     async function handleImport(e) {
@@ -167,6 +191,7 @@
             console.log(sysexList);
         });
     }
+
 </script>
 
 <div class="container">
@@ -200,7 +225,7 @@
             {/if}
             <p>New wav file</p>
             <div class="center-wrapper">
-                <input type="file" accept=".wav" on:change={importWavFile} />
+                <input type="file" accept=".wav" multiple on:change={importWavFile} />
             </div>
         </div>
 

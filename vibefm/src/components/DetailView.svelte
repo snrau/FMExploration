@@ -4,7 +4,7 @@
   import { extent } from "d3-array";
   import { playWav } from "../utils/midi";
   import Algorithm from "./Algorithm.svelte";
-  import { exportList, startingIndex } from "../utils/stores";
+  import { excluded, exportList, startingIndex } from "../utils/stores";
   import { getNamefromConfig } from "../utils/sysex";
   import { progressiveSubgroupBlockSampling, sampleAllValues, sampleSingleValues } from "../utils/strategies";
   import { sendReaper, writeEdges } from "../utils/serverRequests";
@@ -244,6 +244,10 @@
     };
   };
 
+  function exclude(selectedPoint){
+    excluded.set([...$excluded, selectedPoint.id])
+  }
+
   // Watch for changes in selectedPoint and update the plots
   $: if (selectedPoint) {
     textInput = getNamefromConfig(selectedPoint.config);
@@ -282,6 +286,9 @@
     </div>
     <button class="label" on:click={() => playWav(selectedPoint)}>
       Play Wav</button
+    >
+    <button class="label" on:click={() => exclude(selectedPoint)}>
+      Exclude</button
     >
 
     <div class="plot">

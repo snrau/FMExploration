@@ -183,58 +183,71 @@
     >
       <!--{#if pointRenderer === "rect"}-->
       {#each $data as point, index}
-        {#if point === selectedPoint && pointRenderer === "circle"}
-          <rect
-            x={xScale(point.x) - 5}
-            y={yScale(point.y) - 5}
-            width={glyphsize / 2}
-            height={glyphsize / 2}
-            class="point"
-            fill={getColor(point, brightnessExtent, pointColor)}
-            on:click={(e) => handleClick(e, point)}
-          ></rect>;
-        {:else if pointRenderer === "circle"}
-          <circle
-            cx={xScale(point.x)}
-            cy={yScale(point.y)}
-            r={glyphsize / 4}
-            class="point"
-            fill={getColor(point, brightnessExtent, pointColor)}
-            on:click={(e) => handleClick(e, point)}
-          ></circle>
-        {:else if pointRenderer === "glyph"}
-          <EnvelopeSimpleGlyph
-            data={point.analysis.rms[0]}
-            x={xScale(point.x) - 10}
-            y={yScale(point.y) - 10}
-            width={glyphsize}
-            height={glyphsize}
-            fill={getColor(point, brightnessExtent, pointColor)}
-            onClick={(e) => handleClick(e, point)}
-            selected={point === selectedPoint}
-            extent={rmsExtent}
-          />
-        {:else if pointRenderer === "brightness"}
-          <BrightnessGlyph
-            data={point.analysis.centroid[0]}
-            x={xScale(point.x) - 10}
-            y={yScale(point.y) - 10}
-            width={glyphsize}
-            height={glyphsize}
-            fill={getColor(point, brightnessExtent, pointColor)}
-            onClick={(e) => handleClick(e, point)}
-            selected={point === selectedPoint}
-          />
-        {:else if pointRenderer === "config"}
-          <ConfigMatrixGlyph
-            config={point.config}
-            x={xScale(point.x) - 10}
-            y={yScale(point.y) - 10}
-            cellSize={glyphsize / 5}
-            onClick={(e) => handleClick(e, point)}
-            parameters={Object.entries(dx7Parameters)}
-            selection={point === selectedPoint ? null : selectedPoint}
-          />
+        {#if point.sampled}
+          {#if point === selectedPoint && pointRenderer === "circle"}
+            <rect
+              x={xScale(point.x) - 5}
+              y={yScale(point.y) - 5}
+              width={glyphsize / 2}
+              height={glyphsize / 2}
+              class="point"
+              fill={getColor(point, brightnessExtent, pointColor)}
+              on:click={(e) => handleClick(e, point)}
+            ></rect>;
+          {:else if pointRenderer === "circle"}
+            <circle
+              cx={xScale(point.x)}
+              cy={yScale(point.y)}
+              r={glyphsize / 4}
+              class="point"
+              fill={getColor(point, brightnessExtent, pointColor)}
+              on:click={(e) => handleClick(e, point)}
+            ></circle>
+          {:else if pointRenderer === "glyph"}
+            <EnvelopeSimpleGlyph
+              data={point.analysis.rms[0]}
+              x={xScale(point.x) - 10}
+              y={yScale(point.y) - 10}
+              width={glyphsize}
+              height={glyphsize}
+              fill={getColor(point, brightnessExtent, pointColor)}
+              onClick={(e) => handleClick(e, point)}
+              selected={point === selectedPoint}
+              extent={rmsExtent}
+            />
+          {:else if pointRenderer === "brightness"}
+            <BrightnessGlyph
+              data={point.analysis.centroid[0]}
+              x={xScale(point.x) - 10}
+              y={yScale(point.y) - 10}
+              width={glyphsize}
+              height={glyphsize}
+              fill={getColor(point, brightnessExtent, pointColor)}
+              onClick={(e) => handleClick(e, point)}
+              selected={point === selectedPoint}
+            />
+          {:else if pointRenderer === "config"}
+            <ConfigMatrixGlyph
+              config={point.config}
+              x={xScale(point.x) - 10}
+              y={yScale(point.y) - 10}
+              cellSize={glyphsize / 5}
+              onClick={(e) => handleClick(e, point)}
+              parameters={Object.entries(dx7Parameters)}
+              selection={point === selectedPoint ? null : selectedPoint}
+            />
+          {/if}
+        {:else}
+          <Reference
+              data={point.label}
+              x={xScale(point.x) - 10}
+              y={yScale(point.y) - 10}
+              width={glyphsize}
+              height={glyphsize}
+              fill={getColor(point, brightnessExtent, pointColor)}
+              onClick={(e) => handleClick(e, point)}
+              selected={point === selectedPoint}
+            />
         {/if}
       {/each}
     </g>

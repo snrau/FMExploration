@@ -73,13 +73,15 @@ export function sampleRandomValue(initialValue, pmax, range = 100) {
             return output; // Allow any value between 0 and 100
     }
   
-    const min = Math.max(0, initialValue - range);
-    const max = Math.min(pmax, initialValue + range);
+    let newrange = Math.ceil((pmax+1)*range*0.01)
+
+    const min = Math.max(0, initialValue - newrange);
+    const max = Math.min(pmax, initialValue + newrange);
 
     output = Math.random() * (max - min) + min;
 
     if(initialValue === output)
-        return sampleRandomValue(initialValue, range)
+        return sampleRandomValue(initialValue, newrange)
     else
         return output; // Allow any value between 0 and 100
   }
@@ -135,14 +137,16 @@ export function getChangableParameters(){
         (param) => dx7Parameters[param].change,
     );
 
+
     const cells = get(cellStateStore)
     const changableParameters = changeParams.filter(d => {
-        if(cells[d] === undefined && !cells[d]){
+        if(cells[d] === undefined && !cells[d] && dx7Parameters[d].number !== 134){
             return true
         }else{
             return false
         }
     })
+
 
     return changableParameters.map(d => dx7Parameters[d])
 }
