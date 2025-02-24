@@ -82,7 +82,7 @@ export function randomizeBlock(sample, blockrange) {
 }
 
 
-export function interpolate(configA, configB, percent) {
+export function interpolate(configA, configB, percent, algoA) {
     if (!Array.isArray(configA) || !Array.isArray(configB)) {
         throw new Error("Both configs must be arrays");
     }
@@ -96,7 +96,7 @@ export function interpolate(configA, configB, percent) {
 
         if (index === 134) {
             // Discrete switch at 50%
-            return percent < 0.5 ? valueA : valueB;
+            return algoA ? valueA : valueB;
         } else {
             // Linear interpolation and rounding to the nearest integer
             return Math.round(valueA + (valueB - valueA) * percent);

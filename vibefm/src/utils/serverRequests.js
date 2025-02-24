@@ -179,15 +179,11 @@ export async function readEdges() {
             body: JSON.stringify({
                 edges: "..\\..\\public\\connection.json",
             }),
+        }).then(v => {
+            return v.json()
+        }).then(v => {
+            return v
         })
-
-        if (!response.ok) {
-            throw new Error(
-                "Network response was not ok " + response.statusText,
-            );
-        } else {
-            return response.json();
-        }
 
 
     } catch (err) {
@@ -367,14 +363,16 @@ export async function uploadWav(file) {
     formData.append("file", file);
 
     try {
-        const response = await fetch("http://localhost:5000/upload", {
+        const response = await fetch("http://localhost:3000/upload", {
             method: "POST",
-            headers: { "Content-Type": "application/wav" },
-            body: formData
-        });
+            body: formData // No need to set headers, browser sets them automatically
+        })
 
-        const result = await response.json();
+        const result = await response.json()
+        console.log(result);
         return result
+
+
     } catch (error) {
         console.error("Upload failed:", error);
     }

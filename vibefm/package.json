@@ -39,6 +39,7 @@
     "midiplayer": "0.0.2",
     "ml-distance": "^4.0.1",
     "mml-emitter": "git+https://github.com/mohayonao/mml-emitter.git#edd40ecf42141ca257c6cd8adc5073d570add1ee",
+    "multer": "^1.4.5-lts.1",
     "ngstorage": "^0.3.6",
     "pixi.js": "^3.0.6"
   }

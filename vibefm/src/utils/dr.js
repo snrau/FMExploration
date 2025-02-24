@@ -50,18 +50,16 @@ export function getDrProjectedPoints(distMatrix, drmethod = 'mds', precomputed =
     return points
 }
 
+export function euclideanDistance(mfcc1, mfcc2) {
+    if (mfcc1.length !== mfcc2.length) {
+        throw new Error("MFCC matrices must have the same length.");
+    }
+    return Math.sqrt(mfcc1.reduce((sum, val, i) => sum + Math.pow(val - mfcc2[i], 2), 0));
+}
 
-export function newPointOOD(newPoint, points) {
+export function newPointOOD(newPoint, points, globalMaxDist, globalMeanDist) {
     if (!newPoint || !Array.isArray(points) || points.length === 0) {
         throw new Error("Invalid input: newPoint must be an array, and points must be a non-empty array.");
-    }
-
-    // Function to compute Euclidean distance between two MFCC matrices
-    function euclideanDistance(mfcc1, mfcc2) {
-        if (mfcc1.length !== mfcc2.length) {
-            throw new Error("MFCC matrices must have the same length.");
-        }
-        return Math.sqrt(mfcc1.reduce((sum, val, i) => sum + Math.pow(val - mfcc2[i], 2), 0));
     }
 
     // Compute distances between newPoint and all existing points
@@ -71,17 +69,46 @@ export function newPointOOD(newPoint, points) {
         dist: euclideanDistance(newPoint.analysis.mfcc.flat(), p.analysis.mfcc.flat())
     }));
 
-    // Estimate new (x, y) using Weighted Average Positioning
-    let sumWeights = 0, weightedX = 0, weightedY = 0;
-    distances.forEach(({ x, y, dist }) => {
-        let weight = 1 / (dist + 1e-6); // Avoid division by zero
+    // Compute mean distance
+    let meanDist = distances.reduce((sum, d) => sum + d.dist, 0) / distances.length;
+
+    // Identify close and distant points
+    let closePoints = distances.filter(d => d.dist < globalMeanDist);
+    let distantPoints = distances.filter(d => d.dist >= globalMeanDist);
+
+    let sumWeights = 1e-6;
+    let weightedX = 0, weightedY = 0;
+
+    // Process close points with normal weighted averaging
+    closePoints.forEach(({ x, y, dist }) => {
+        let weight = Math.exp(-dist / (meanDist / 2)); // Stronger influence for close points
         sumWeights += weight;
         weightedX += x * weight;
         weightedY += y * weight;
     });
 
-    newPoint.x = weightedX / sumWeights
-    newPoint.y = weightedY / sumWeights
+    let inlierX = weightedX / sumWeights;
+    let inlierY = weightedY / sumWeights;
+
+    // Process distant points with repulsion
+    let repulsionFactor = closePoints.length === 0 ? 0.01 : 0.005; // Adjust this value for weaker/stronger repulsion
+    let repulsionX = 0, repulsionY = 0;
+
+    distantPoints.forEach(({ x, y, dist }) => {
+        let directionX = inlierX - x;
+        let directionY = inlierY - y;
+        let length = Math.sqrt(directionX * directionX + directionY * directionY) + 1e-6; // Avoid division by zero
+
+        let repulsionWeight = (1 + (dist - globalMeanDist) / globalMeanDist) * repulsionFactor;
+        repulsionX += (directionX / length) * repulsionWeight;
+        repulsionY += (directionY / length) * repulsionWeight;
+    });
+
+    console.log(closePoints, distantPoints, globalMeanDist, inlierX, repulsionX, inlierY, repulsionY)
+
+    // Apply repulsion effect
+    newPoint.x = inlierX + repulsionX;
+    newPoint.y = inlierY + repulsionY;
     // Calculate final estimated position
     return newPoint
 }

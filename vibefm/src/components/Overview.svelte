@@ -12,7 +12,11 @@
         uploadWav,
         addReference,
     } from "../utils/serverRequests";
-    import { getDrProjectedPoints, newPointOOD } from "../utils/dr";
+    import {
+        getDrProjectedPoints,
+        newPointOOD,
+        euclideanDistance,
+    } from "../utils/dr";
     import { sendMessage } from "../utils/midi";
     import { importSysexFile, getNamefromConfig } from "../utils/sysex";
     import {
@@ -31,6 +35,7 @@
         refList,
         distMatrix,
         startingIndex,
+        edgeList,
     } from "../utils/stores";
     import { onMount } from "svelte";
 
@@ -38,7 +43,12 @@
 
     let sysexIndex = 0;
 
-    let oodpoint;
+    let oodpoint = null;
+
+    let globalMaxDist = 0;
+    let globalMeanDist = 0;
+
+    let testOODtrigger = false;
 
     $: pointRenderer = "circle";
     $: pointColor = "brightHarmonic";
@@ -55,7 +65,7 @@
         "changeColor",
         "resetExportList",
         "Export list",
-        "testOod",
+        "toggleOod",
     ];
 
     // onMount Midiaccess requesten
@@ -82,11 +92,13 @@
             if ($jsonDataList.length !== 0) {
                 distMatrix.set(await distanceMatrix());
                 //DR from distMatrix
-                console.log($distMatrix);
                 let points = getDrProjectedPoints($distMatrix, "mds", true);
                 let temp = [];
                 $jsonDataList.forEach((v, i) => {
-                    if (i !== 9)
+                    if (
+                        v.filename.split(".")[0] !== "patch_16" ||
+                        !testOODtrigger
+                    )
                         temp.push({
                             id: i,
                             x: points[i][0],
@@ -103,8 +115,36 @@
                             analysis: v,
                         };
                 });
+                console.log(temp);
+
                 data.set([...temp]);
-                console.log($data);
+                if (testOODtrigger) {
+                    let allDistances = [];
+                    for (let i = 0; i < temp.length; i++) {
+                        for (let j = i + 1; j < temp.length; j++) {
+                            allDistances.push(
+                                euclideanDistance(
+                                    temp[i].analysis.mfcc.flat(),
+                                    temp[j].analysis.mfcc.flat(),
+                                ),
+                            );
+                        }
+                    }
+                    globalMaxDist = Math.max(...allDistances);
+                    globalMeanDist =
+                        allDistances.reduce((sum, d) => sum + d, 0) /
+                        allDistances.length;
+                    oodpoint = newPointOOD(
+                        oodpoint,
+                        temp,
+                        globalMaxDist,
+                        globalMeanDist,
+                    );
+                    data.update((v) => {
+                        v.push(oodpoint);
+                        return v;
+                    });
+                }
                 alert("Points calculated");
             }
         } else if (option === "resetSelectedPoint") {
@@ -122,9 +162,8 @@
             exportList.set([]);
         } else if (option === "Export list") {
             writeSysEx(exportList);
-        } else if (option === "testOod") {
-            let oodpoint = newPointOOD(oodpoint, $data);
-            data.update((v) => v.push(oodpoint));
+        } else if (option === "toggleOod") {
+            testOODtrigger = !testOODtrigger;
         }
     }
 
@@ -140,7 +179,7 @@
         } else {
             selectedPoint = point;
             referencePoint = null; // Reset if Ctrl is not held
-            sendMessage(createSysexMessageFromConfig(point.config));
+            if (point) sendMessage(createSysexMessageFromConfig(point.config));
         }
     }
 
@@ -155,10 +194,7 @@
     }
 
     async function importWavFile(e) {
-        const upload = await uploadWav(e.target.files[0]);
-        // now use the json
-        upload.then((v) => console.log(v));
-        // do ood on the json of v and show it in the data as well
+        await uploadWav(e.target.files[0]).then((v) => console.log(v));
     }
 
     async function handleImport(e) {
@@ -206,8 +242,8 @@
 
         <div class="left-bottom">
             <TextView
-                title="Left View"
-                content="Data: {$jsonDataList.length} - points: {$data.length}"
+                title="Left View "
+                content="testOOD: {testOODtrigger} - points: {$data.length}"
                 parameters={Object.entries(dx7Parameters)}
                 configs={$jsonDataList.map((j) => j.config)}
             ></TextView>

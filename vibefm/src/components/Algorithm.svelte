@@ -311,6 +311,7 @@
             const fc = values[d.modulator].fc;
             const ff = values[d.modulator].ff;
 
+            /*
             // Generate sine wave points
             const sinePoints = d3.range(0, boxWidth).map((i) => {
                 const x = d.x + i;
@@ -321,6 +322,7 @@
                     Math.sin((i / boxWidth) * (2 * Math.PI * ff * fc)) * 5;
                 return [x, y];
             });
+            */
 
             // Draw Modulator Number
             svg.append("text")
@@ -334,6 +336,7 @@
                     return `<tspan font-weight="bold">${d.modulator + 1}</tspan>: ${(fc * ff).toFixed(1)}`;
                 });
 
+            /*
             // Draw Sine Wave Representation
             const wavePath = d3
                 .line()
@@ -360,7 +363,9 @@
                 .attr("stroke", ff * fc > 30 ? "forestgreen" : "navy")
                 .attr("stroke-width", 1)
                 .attr("fill", "none");
+            */
         });
+
         /*
         // Draw modulator labels
         svg.selectAll(".modulator-label")

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { scaleLinear, zoom, select } from "d3";
+  import { scaleLinear, zoom, select, drag } from "d3";
   import { getColor } from "../utils/color";
   import EnvelopeGlyph from "../glyphs/envelopeGlyph.svelte";
   import EnvelopeSimpleGlyph from "../glyphs/envelopeSimpleGlyph.svelte";
@@ -23,12 +23,24 @@
     }
   }
 
+  function handleSvgClick(event) {
+    // Check if Alt or Ctrl is pressed
+    if (event.altKey || event.ctrlKey) return;
+
+    // Check if the clicked target is NOT a point
+    if (!event.target.classList.contains("point")) {
+      onPointClick(event, null);
+    }
+  }
+
   let interpolationValue = 0.5;
 
   let brightnessExtent = [Infinity, -Infinity];
   let rmsExtent = [Infinity, -Infinity];
 
   let interpolateConfig = null;
+
+  let recentConfig = null;
 
   const size = 1800;
   const offset = 5;
@@ -76,86 +88,86 @@
     ];
   }
 
-  $: if (referencePoint) {
-    drawConnection;
-  } else {
-    removeConnection;
+  $: referencePoint, change(referencePoint);
+
+  function change(referencePoint) {
+    if (referencePoint) {
+      removeConnection();
+      drawConnection();
+    } else {
+      removeConnection();
+    }
   }
 
   function drawConnection() {
     if (!selectedPoint || !referencePoint) return;
 
-    // Create a draggable handle at the midpoint
-    let midX = (xScale(selectedPoint.x) + xScale(referencePoint.x)) / 2;
-    let midY = (yScale(selectedPoint.y) + yScale(referencePoint.y)) / 2;
+    let g = select("#map").append("g").attr("id", "interpolation"); // Adjust this to your SVG container
+    g.append("line")
+      .attr("x1", xScale(selectedPoint.x))
+      .attr("y1", yScale(selectedPoint.y))
+      .attr("x2", xScale(referencePoint.x))
+      .attr("y2", yScale(referencePoint.y))
+      .attr("stroke", "black")
+      .classed("connection-line", true);
 
-    let handle = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "circle",
-    );
-    handle.setAttribute("cx", midX);
-    handle.setAttribute("cy", midY);
-    handle.setAttribute("r", 5);
-    handle.setAttribute("fill", "red");
-    handle.classList.add("draggable-handle");
-    handle.onmousedown = startDrag;
-
-    let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", xScale(selectedPoint.x));
-    line.setAttribute("y1", yScale(selectedPoint.y));
-    line.setAttribute("x2", xScale(referencePoint.x));
-    line.setAttribute("y2", yScale(referencePoint.y));
-    line.setAttribute("stroke", "black");
-    line.classList.add("connection-line");
-
-    let svg = document.querySelector("svg"); // Adjust this to your SVG container
-    svg.appendChild(line);
-    svg.appendChild(handle);
+    g.append("circle")
+      .attr("cx", (xScale(selectedPoint.x) + xScale(referencePoint.x)) / 2)
+      .attr("cy", (yScale(selectedPoint.y) + yScale(referencePoint.y)) / 2)
+      .attr("r", 5)
+      .attr("fill", "green")
+      .classed("draggable-handle", true)
+      .call(
+        drag()
+          .on("start", (e) => {})
+          .on("drag", dragged)
+          .on("end", (e) => {}),
+      );
   }
 
-  function startDrag(event) {
-    let handle = event.target;
+  let aAlgo = true;
 
-    function onMouseMove(e) {
-      let x1 = xScale(selectedPoint.x);
-      let y1 = yScale(selectedPoint.y);
-      let x2 = xScale(referencePoint.x);
-      let y2 = yScale(referencePoint.y);
+  function dragged(e) {
+    if (!e) return;
+    let x1 = xScale(selectedPoint.x);
+    let y1 = yScale(selectedPoint.y);
+    let x2 = xScale(referencePoint.x);
+    let y2 = yScale(referencePoint.y);
 
-      // Get relative mouse position along the line
-      let dx = x2 - x1;
-      let dy = y2 - y1;
-      let length = Math.sqrt(dx * dx + dy * dy);
-      let t =
-        ((e.clientX - x1) * dx + (e.clientY - y1) * dy) / (length * length);
+    // Get relative mouse position along the line
+    let dx = x2 - x1;
+    let dy = y2 - y1;
+    let length = Math.sqrt(dx * dx + dy * dy);
+    let t = ((e.x - x1) * dx + (e.y - y1) * dy) / (length * length);
 
-      interpolationValue = Math.max(0, Math.min(1, t)); // Keep value between 0 and 1
-      interpolateConfig = interpolate(
-        selectedPoint.config,
-        referencePoint.config,
-        interpolationValue,
-      );
+    interpolationValue = Math.max(0, Math.min(1, t)); // Keep value between 0 and 1
+    if (interpolationValue === 1) {
+      aAlgo = false;
+    } else if (interpolationValue === 0) {
+      aAlgo = true;
+    }
+    interpolateConfig = interpolate(
+      selectedPoint.config,
+      referencePoint.config,
+      interpolationValue,
+      aAlgo,
+    );
+    if (recentConfig !== interpolateConfig) {
+      console.log(interpolateConfig);
 
       sendMessage(createSysexMessageFromConfig(interpolateConfig));
-
-      // Move handle
-      handle.setAttribute("cx", x1 + interpolationValue * dx);
-      handle.setAttribute("cy", y1 + interpolationValue * dy);
     }
 
-    function onMouseUp() {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    }
-
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
+    // Move handle
+    select(this)
+      .attr("cx", x1 + interpolationValue * dx)
+      .attr("cy", y1 + interpolationValue * dy)
+      .attr("fill", aAlgo ? "green" : "yellow");
   }
 
   function removeConnection() {
-    document
-      .querySelectorAll(".connection-line, .draggable-handle")
-      .forEach((el) => el.remove());
+    recentConfig = null;
+    select("#interpolation").selectAll("*").remove();
   }
 
   onMount(() => {
@@ -164,8 +176,12 @@
     const zoomBehavior = zoom()
       .scaleExtent([0.25, 5]) // Zoom limits
       .on("zoom", (event) => {
-        if (event.sourceEvent.altKey) zoomTransform = event.transform; // Update the transform state
+        if (event.sourceEvent.altKey) {
+          zoomTransform = event.transform; // Update the transform state
+        }
       });
+
+    //svg.call(zoomBehavior.transform, zoomTransform);
 
     svg.call(zoomBehavior);
   });
@@ -177,13 +193,15 @@
     width={size}
     height={size}
     style="background: #f0f0f0;"
+    on:click={handleSvgClick}
   >
     <g
+      id={"map"}
       transform="translate({zoomTransform.x},{zoomTransform.y}) scale({zoomTransform.k})"
     >
       <!--{#if pointRenderer === "rect"}-->
       {#each $data as point, index}
-        {#if point === selectedPoint && pointRenderer === "circle"}
+        {#if (point === selectedPoint || point === referencePoint) && pointRenderer === "circle"}
           <rect
             x={xScale(point.x) - 5}
             y={yScale(point.y) - 5}

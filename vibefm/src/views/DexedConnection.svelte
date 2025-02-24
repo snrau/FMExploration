@@ -833,7 +833,6 @@ SYSEX MESSAGE: Parameter Change
                     const LFS = v & 0b1; // Mask 0b00000011 to get bits 0-1
                     const LFW = (v >> 1) & 0b111; // Shift right 2 bits, mask 0b00000011 to get bits 2-3
                     const LPMS = (v >> 4) & 0b111; //maybe 0b11
-                    console.log(v, LFS, LFW, LPMS);
                     temp.push(LFS);
                     temp.push(LFW);
                     temp.push(LPMS);

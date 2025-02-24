@@ -4,6 +4,7 @@ import { exec, spawn } from "child_process";
 import cors from 'cors'
 import path from "path";
 import { startingIndex } from "../utils/stores.js";
+import multer from 'multer'
 
 
 
@@ -625,7 +626,7 @@ app.post('/addReference', (req, res) => {
 })
 
 
-function refAnalysis(folderPath, name, configs, res) {
+async function refAnalysis(folderPath, name, configs, res) {
     fs.readdir(folderPath, (err, files) => {
         if (err) {
             return res.status(500).json({ error: "Failed to read directory" });
@@ -651,6 +652,7 @@ function refAnalysis(folderPath, name, configs, res) {
         });
 
         pythonProcess.on('close', (code) => {
+            console.log("analysis closed")
             if (code === 0) {
                 refMel(folderPath, name, res)
                 return res.status(200).send("done"); // Send the result back to the client
@@ -662,7 +664,7 @@ function refAnalysis(folderPath, name, configs, res) {
 
 }
 
-function refMel(folderPath, name, res) {
+async function refMel(folderPath, name, res) {
     // Filter .wav files
     let jsonFiles = [name + ".json"];
 
@@ -691,26 +693,138 @@ function refMel(folderPath, name, res) {
     });
 }
 
-// Upload route
-app.post("/upload", (req, res) => {
-    if (!req.body) return res.status(400).json({ error: "No file uploaded" });
 
-    const path = "..\\..\\public\\output"
-    const filePath = `${path}/upload.wav`
+function wavAnalysis(folderPath, name, configs) {
+    return new Promise((resolve, reject) => {
+        fs.readdir(folderPath, (err, files) => {
+            if (err) {
+                reject()
+            }
 
-    // Write the received file to the fixed path
-    fs.writeFile(filePath, req.body, (err) => {
-        if (err) {
-            return res.status(500).json({ error: "File saving failed" });
+            // Filter .wav files
+            const wavFiles = files.filter(file => file.endsWith(name + ".wav"));
+
+            // Path to the Python executable within the virtual environment
+            const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
+
+
+            // Spawn a Python process
+            const pythonProcess = spawn(pythonExecutable, ['analysis.py', folderPath, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(configs)]);
+
+            // Capture output from the Python script
+            pythonProcess.stdout.on('data', (data) => {
+                console.log(data)
+            });
+
+            pythonProcess.stderr.on('data', (error) => {
+                console.error(`${error}`);
+            });
+
+            pythonProcess.on('close', (code) => {
+                console.log("analysis closed")
+                if (code === 0) {
+                    resolve()
+                } else {
+                    reject()
+                }
+
+            });
+        });
+    })
+
+}
+
+function wavMel(folderPath, name) {
+    return new Promise((resolve, reject) => {
+        // Filter .wav files
+        let jsonFiles = [name + ".json"];
+
+        // Path to the Python executable within the virtual environment
+        const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
+
+
+        // Spawn a Python process
+        const pythonProcess = spawn(pythonExecutable, ['mfcc.py', folderPath, JSON.stringify(jsonFiles)]);
+
+        // Capture output from the Python script
+        pythonProcess.stdout.on('data', (data) => {
+            console.log(data)
+        });
+
+        pythonProcess.stderr.on('data', (error) => {
+            console.error(`${error}`);
+        });
+
+        pythonProcess.on('close', (code) => {
+            if (code === 0) {
+                resolve()
+            } else {
+                reject()
+            }
+
+        });
+    })
+}
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = path.join("..", "..", "public", "upload");
+        if (!fs.existsSync(uploadPath)) {
+            console.log(uploadPath)
+            //fs.mkdirSync(uploadPath, { recursive: true }); // Create folder if it doesn't exist
         }
+        console.log(uploadPath)
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname); // Keep original filename
+    }
+});
 
-        console.log("File saved at:", filePath);
-        res.json({ message: "File uploaded successfully", path: filePath });
+const upload = multer({ storage: storage });
 
-        refAnalysis(path, 'upload.wav', [], res)
-    });
+// Upload route
+app.post("/upload", upload.single("file"), async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    console.log("do analysis")
+    wavAnalysis(path.join("..", "..", "public", "upload"), req.file.filename.split('.')[0], []).then(v => {
+        wavMel(path.join("..", "..", "public", "upload"), req.file.filename.split('.')[0]).then(v => {
+            const file = req.file.filename.split('.')[0] + ".json"
+            // Step 3: Read the JSON output file
+            fs.readFile(`../../public/upload/${file}`, "utf-8", (err, jsonData) => {
 
 
+                console.log(jsonData)
+
+                // Step 4: Parse JSON and extract required values
+                const jsonObject = JSON.parse(jsonData);
+
+                const objects = [{
+                    config: null,
+                    mfcc: jsonObject.mfcc,
+                    hrps: {
+                        harmonic: jsonObject.harmonic,
+                        residual: jsonObject.residual,
+                        percussive: jsonObject.percussive
+                    },
+                    centroid: jsonObject.centroid_frequencies,
+                    rms: jsonObject.rms,
+                    sampled: false,
+                    filename: req.file.filename
+                }];
+
+                // Step 5: Respond with extracted data
+                res.json({
+                    data: objects
+                });
+            });
+
+        })
+    })
 
 });
 

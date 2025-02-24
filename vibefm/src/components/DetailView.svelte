@@ -216,7 +216,8 @@
     if (!selectedPoint || !selectedPoint?.label) return;
     if (!matrixPlot) return;
 
-    const imageUrl = `./output/${selectedPoint.label}_mel.png`;
+    const folder = selectedPoint.sampled ? "sampled" : "reference";
+    const imageUrl = `./${folder}/${selectedPoint.label}_mel.png`;
     const img = new Image();
     img.src = imageUrl;
     img.alt = "MFCC Image for " + selectedPoint.label;
