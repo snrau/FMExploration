@@ -1,4 +1,6 @@
+import { get } from "svelte/store";
 import { dx7Blocks, dx7Parameters } from "./dexed";
+import { cellStateStore } from "./stores";
 
 export function uniformSamplingFull() {
     let temp = [];
@@ -62,6 +64,28 @@ export function getRandom(max) {
     return Math.floor(Math.random() * max);
 }
 
+export function sampleRandomValue(initialValue, pmax, range = 100) {
+    let output = Math.random() * 100
+    if (range >= 100) {
+        if(initialValue === output)
+            return sampleRandomValue(initialValue, range)
+        else
+            return output; // Allow any value between 0 and 100
+    }
+  
+    let newrange = Math.ceil((pmax+1)*range*0.01)
+
+    const min = Math.max(0, initialValue - newrange);
+    const max = Math.min(pmax, initialValue + newrange);
+
+    output = Math.random() * (max - min) + min;
+
+    if(initialValue === output)
+        return sampleRandomValue(initialValue, newrange)
+    else
+        return output; // Allow any value between 0 and 100
+  }
+
 export function selectARandomBlock() {
     let block =
         dx7Blocks[
@@ -102,4 +126,27 @@ export function interpolate(configA, configB, percent, algoA) {
             return Math.round(valueA + (valueB - valueA) * percent);
         }
     });
+}
+
+export function getChangableParameters(){
+    // Get parameter keys in order to maintain consistent index positions
+    const parameters = Object.keys(dx7Parameters);
+
+    // Gather parameters that change and the values they should cycle through
+    const changeParams = parameters.filter(
+        (param) => dx7Parameters[param].change,
+    );
+
+
+    const cells = get(cellStateStore)
+    const changableParameters = changeParams.filter(d => {
+        if(cells[d] === undefined && !cells[d] && dx7Parameters[d].number !== 134){
+            return true
+        }else{
+            return false
+        }
+    })
+
+
+    return changableParameters.map(d => dx7Parameters[d])
 }

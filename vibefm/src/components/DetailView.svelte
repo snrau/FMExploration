@@ -4,13 +4,15 @@
   import { extent } from "d3-array";
   import { playWav } from "../utils/midi";
   import Algorithm from "./Algorithm.svelte";
-  import { exportList, startingIndex } from "../utils/stores";
+  import { excluded, exportList, startingIndex } from "../utils/stores";
   import { getNamefromConfig } from "../utils/sysex";
-  import { progressiveSubgroupBlockSampling } from "../utils/strategies";
-  import { sendReaper } from "../utils/serverRequests";
+  import { progressiveSubgroupBlockSampling, sampleAllValues, sampleSingleValues } from "../utils/strategies";
+  import { sendReaper, writeEdges } from "../utils/serverRequests";
 
   export let selectedPoint = null;
 
+  let isSingle = true;
+  let isSmall = true;
   let textInput = "";
 
   // sample tree structure
@@ -18,7 +20,18 @@
     console.log(selectedPoint);
     // sample new list of config
     const config = selectedPoint.config;
-    const newConfigs = progressiveSubgroupBlockSampling(config, 20, false);
+
+    const percent = isSmall?5:100
+
+    let newConfigs = []
+    //isSingle and isSmall for the 4 sampling ideas
+    if(isSingle){
+      newConfigs = sampleSingleValues(config, percent)
+    }else{
+      newConfigs = sampleAllValues(config, percent)
+    }
+
+    //const newConfigs = progressiveSubgroupBlockSampling(config, 20, false);
     // do analysis on this configs (only on these so new request)
     sendReaper(newConfigs);
     // write json with connections {selectedpoint.filename: [newname, ...], ...} (newname is 'patch_' + (startindex + i))
@@ -232,6 +245,10 @@
     };
   };
 
+  function exclude(selectedPoint){
+    excluded.set([...$excluded, selectedPoint.id])
+  }
+
   // Watch for changes in selectedPoint and update the plots
   $: if (selectedPoint) {
     textInput = getNamefromConfig(selectedPoint.config);
@@ -244,6 +261,15 @@
 </script>
 
 <div class="menu">
+  <label>
+    <input type="checkbox" bind:checked={isSingle} />
+    {isSingle ? "Single" : "All"}
+  </label>
+  
+  <label>
+    <input type="checkbox" bind:checked={isSmall} />
+    {isSmall ? "Small" : "Large"}
+  </label>
   <button on:click={handleButtonClick1}>Sample similar</button>
   <button on:click={handleButtonClick2}>add to Export list</button>
   <input
@@ -261,6 +287,9 @@
     </div>
     <button class="label" on:click={() => playWav(selectedPoint)}>
       Play Wav</button
+    >
+    <button class="label" on:click={() => exclude(selectedPoint)}>
+      Exclude</button
     >
 
     <div class="plot">
@@ -315,6 +344,12 @@
     font-size: 1rem;
     font-weight: bold;
     margin-bottom: 2px;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
 
   h5 {

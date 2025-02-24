@@ -35,7 +35,8 @@
         refList,
         distMatrix,
         startingIndex,
-        edgeList,
+        excluded,
+        drpoints,
     } from "../utils/stores";
     import { onMount } from "svelte";
 
@@ -115,36 +116,8 @@
                             analysis: v,
                         };
                 });
-                console.log(temp);
-
-                data.set([...temp]);
-                if (testOODtrigger) {
-                    let allDistances = [];
-                    for (let i = 0; i < temp.length; i++) {
-                        for (let j = i + 1; j < temp.length; j++) {
-                            allDistances.push(
-                                euclideanDistance(
-                                    temp[i].analysis.mfcc.flat(),
-                                    temp[j].analysis.mfcc.flat(),
-                                ),
-                            );
-                        }
-                    }
-                    globalMaxDist = Math.max(...allDistances);
-                    globalMeanDist =
-                        allDistances.reduce((sum, d) => sum + d, 0) /
-                        allDistances.length;
-                    oodpoint = newPointOOD(
-                        oodpoint,
-                        temp,
-                        globalMaxDist,
-                        globalMeanDist,
-                    );
-                    data.update((v) => {
-                        v.push(oodpoint);
-                        return v;
-                    });
-                }
+                drpoints.set([...temp]);
+                console.log($data);
                 alert("Points calculated");
             }
         } else if (option === "resetSelectedPoint") {
@@ -162,8 +135,11 @@
             exportList.set([]);
         } else if (option === "Export list") {
             writeSysEx(exportList);
-        } else if (option === "toggleOod") {
-            testOODtrigger = !testOODtrigger;
+        } else if (option === "testOod") {
+            let oodpoint = newPointOOD(oodpoint, $data);
+            data.update((v) => v.push(oodpoint));
+        } else if (option === "reserExclude") {
+            excluded.set([]);
         }
     }
 
@@ -194,7 +170,29 @@
     }
 
     async function importWavFile(e) {
-        await uploadWav(e.target.files[0]).then((v) => console.log(v));
+        const files = e.target.files;
+        const uploads = [];
+
+        for (let file of files) {
+            uploads.push(uploadWav(file));
+        }
+
+        // Wait for all uploads to complete
+        const results = await Promise.all(uploads);
+
+        // Process results
+        results.forEach((result, index) => {
+            console.log(`File ${files[index].name}:`, result);
+            // Perform additional processing (e.g., displaying data)
+        });
+
+        /* SINGLE
+        const upload = await uploadWav(e.target.files[0]);
+        // now use the json
+        upload.then((v) => console.log(v));
+        // do ood on the json of v and show it in the data as well
+        // filename as label
+        */
     }
 
     async function handleImport(e) {
@@ -236,7 +234,12 @@
             {/if}
             <p>New wav file</p>
             <div class="center-wrapper">
-                <input type="file" accept=".wav" on:change={importWavFile} />
+                <input
+                    type="file"
+                    accept=".wav"
+                    multiple
+                    on:change={importWavFile}
+                />
             </div>
         </div>
 

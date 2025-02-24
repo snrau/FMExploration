@@ -1,5 +1,5 @@
 import { dx7Parameters } from "./dexed";
-import { getChangesArrayLimited, getRandom, randomizeBlock, selectARandomBlock, uniformSamplingFull, uniformSamplingRestricted } from "./sampling";
+import { getChangableParameters, getChangesArrayLimited, getRandom, randomizeBlock, sampleRandomValue, selectARandomBlock, uniformSamplingFull, uniformSamplingRestricted } from "./sampling";
 
 // change whole blocks
 export function progressiveSubgroupBlockSampling(sample, num = 50, primer = true) {
@@ -118,4 +118,32 @@ export function progressiveSubgroupSingleParamSampling(
         }
     }
     return sampledCollection;
+}
+
+
+export function sampleSingleValues(config, percent){
+    let configs = []
+    const params = getChangableParameters()
+    params.forEach(p => {
+        let c = [...config]
+        c[p.number] = sampleRandomValue(p.value, p.max, percent)
+        configs.push(c)
+    })
+    return configs
+}
+
+export function sampleAllValues(config, percent){
+    let configs = []
+    const params = getChangableParameters()
+
+    const bound = 8
+    for (let i = 0; i < bound; i++) {
+        configs.push([...config]);
+    }
+    for (let i = 0; i < bound; i++) {
+        params.forEach(p => {
+            configs[i][p.number] = sampleRandomValue(p.value, p.max, percent)
+        })
+    }
+    return configs
 }

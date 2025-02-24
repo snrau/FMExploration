@@ -37,7 +37,8 @@
             const row = Math.floor(i / cols);
             const col = i % cols;
             const values = configs.map((a) => a[d[1].number]);
-            return { row, col, values, max: d[1].max };
+            const label = d[0]
+            return { row, col, values, max: d[1].max, label };
         });
 
     function drawMatrix() {
