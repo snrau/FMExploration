@@ -7,6 +7,9 @@ import { startingIndex } from "../utils/stores.js";
 import multer from 'multer'
 
 
+const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
+
+
 
 const app = express();
 const PORT = 3000;
@@ -49,7 +52,6 @@ app.post("/send_sysex_batch", (req, res) => {
 
         // Trigger Reaper rendering script
         // REAPER:
-        const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
         const luaScriptPath = `"C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\render.lua"`
         exec(`${reaperPath} -nosplash -new -noactivate ${luaScriptPath} ${startindex}`, (error, stdout, stderr) => {
             if (error) {
@@ -597,7 +599,7 @@ app.post('/addReference', (req, res) => {
 
     // Trigger Reaper rendering script
     // REAPER:
-    const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
+    
     const luaScriptPath = `"C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\renderRef.lua"`
     exec(`${reaperPath} -nosplash -new -noactivate ${luaScriptPath}`, (error, stdout, stderr) => {
         if (error) {
