@@ -200,6 +200,7 @@
       id={"map"}
       transform="translate({zoomTransform.x},{zoomTransform.y}) scale({zoomTransform.k})"
     >
+      {console.log(selectedPoint)}
       <!--{#if pointRenderer === "rect"}-->
       {#each $data as point, index}
         {#if point.analysis.sampled}
@@ -261,8 +262,7 @@
             data={point.label}
             x={xScale(point.x) - 10}
             y={yScale(point.y) - 10}
-            width={glyphsize}
-            height={glyphsize}
+            class1="point"
             fill={getColor(point, brightnessExtent, pointColor)}
             onClick={(e) => handleClick(e, point)}
             selected={point === selectedPoint}

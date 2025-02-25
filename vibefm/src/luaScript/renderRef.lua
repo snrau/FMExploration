@@ -1,7 +1,8 @@
--- Paths
-local sysex_file = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\sysex_batch.json"  -- JSON file written by Node.js
-local midi_path = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\c4.mid"     -- MIDI file for playback
-local output_dir = "C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\public\\reference\\"          -- Output folder for WAV files
+local base_dir = os.getenv("BASE_DIR") or "."
+
+local sysex_file = base_dir .. "/src/luaScript/sysex_batch.json"  -- JSON file written by Node.js
+local midi_path = base_dir .. "/src/luaScript/c4.mid"             -- MIDI file for playback
+local output_dir = base_dir .. "/public/reference/"               -- Output folder for WAV files
 
 local midi_port = "loopMIDI Port 1"
 
@@ -180,6 +181,7 @@ if sysex_data then
     value = true
     for index, sysex in ipairs(sysex_data) do
         reaper.ShowConsoleMsg(tostring(index), "Success", 0)
+        reaper.ShowConsoleMsg(convert_sysex_to_readable(sysex), "Success", 0)
         reaper.ShowConsoleMsg("\n", "Success", 0)
         
         --reaper.TrackFX_SetPreset(track, retval, 1)

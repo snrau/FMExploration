@@ -11,6 +11,7 @@
         readEdges,
         uploadWav,
         addReference,
+        readSpecificFile,
     } from "../utils/serverRequests";
     import {
         getDrProjectedPoints,
@@ -50,6 +51,8 @@
     let globalMaxDist = 0;
     let globalMeanDist = 0;
 
+    let tempRef = [];
+
     let testOODtrigger = false;
 
     $: pointRenderer = "circle";
@@ -67,7 +70,7 @@
         "changeColor",
         "resetExportList",
         "Export list",
-        "toggleOod",
+        "resetExclude",
     ];
 
     // onMount Midiaccess requesten
@@ -76,19 +79,19 @@
     async function handleDropdownClick(option) {
         if (option === "LoadDataFromFiles") {
             sampledList.set(await readSampled());
-            refList.set(await readRef());
+            tempRef = await readRef();
             edgeList.set(await readEdges());
-            jsonDataList.set($sampledList.concat($refList));
+            jsonDataList.set($sampledList);
             jsonDataList.set(doAnalysisForValues($jsonDataList));
             startingIndex.set(
                 Math.max(
                     ...$jsonDataList.map(
                         (d) => d.filename.split("_")[1].split(".")[0],
                     ),
-                ),
+                ) + 1,
             );
+            console.log($startingIndex);
             // load edges as well
-            console.log($jsonDataList, $startingIndex);
             alert("Data imported");
         } else if (option === "getSimilarity") {
             if ($jsonDataList.length !== 0) {
@@ -118,7 +121,18 @@
                         };
                 });
                 drpoints.set([...temp]);
-                console.log($data);
+                tempRef = doAnalysisForValues(tempRef);
+                refList.set(
+                    tempRef.map((v, i) => {
+                        let datapoint = {
+                            id: 5000 + i,
+                            label: v.filename.split(".")[0],
+                            config: v.config,
+                            analysis: v,
+                        };
+                        return newPointOOD(datapoint, $data, $distMatrix);
+                    }),
+                );
                 alert("Points calculated");
             }
         } else if (option === "resetSelectedPoint") {
@@ -139,35 +153,45 @@
         } else if (option === "testOod") {
             let oodpoint = newPointOOD(oodpoint, $data);
             data.update((v) => v.push(oodpoint));
-        } else if (option === "reserExclude") {
+        } else if (option === "resetExclude") {
             excluded.set([]);
         }
     }
 
     // Function to handle point click
     function handlePointClick(event, point) {
-        if (event.ctrlKey) {
+        console.log(event, point);
+        if (event?.ctrlKey) {
             if (selectedPoint) {
                 referencePoint = point;
             } else {
                 selectedPoint = point;
-                sendMessage(createSysexMessageFromConfig(point.config));
+                if (point?.config)
+                    sendMessage(createSysexMessageFromConfig(point.config));
             }
         } else {
             selectedPoint = point;
             referencePoint = null; // Reset if Ctrl is not held
-            if (point) sendMessage(createSysexMessageFromConfig(point.config));
+            if (point && point?.config)
+                sendMessage(createSysexMessageFromConfig(point.config));
         }
     }
 
     function handleReference(e) {
         const config = sysexList[sysexIndex];
-        console.log(config);
         // codec for adding reference
         let test = addReference(config);
-        test.then((v) => null);
-        // what should we do ones the references are added?
-        // recalculate everything? just add via ood? how to do when to load in?
+        test.then(async (v) => {
+            const object = await readSpecificFile("reference", v + ".json");
+            const analyzed = doAnalysisForValues([object])[0];
+            let datapoint = {
+                id: 5000 + $refList.length,
+                label: analyzed.filename.split(".")[0],
+                config: analyzed.config,
+                analysis: analyzed,
+            };
+            refList.set([...$refList, newPointOOD(datapoint, $drpoints)]);
+        });
     }
 
     async function importWavFile(e) {
@@ -181,19 +205,28 @@
         // Wait for all uploads to complete
         const results = await Promise.all(uploads);
 
+        let temp = [];
+
         // Process results
-        results.forEach((result, index) => {
-            console.log(`File ${files[index].name}:`, result);
-            // Perform additional processing (e.g., displaying data)
+        results[0].forEach((result, index) => {
+            temp.push(result);
+        });
+        temp = doAnalysisForValues(temp);
+        let analyzed = [];
+        temp.forEach((p, i) => {
+            let datapoint = {
+                id: 5000 + $refList.length + i,
+                label: p.filename.split(".")[0],
+                config: p.config,
+                analysis: p,
+            };
+            analyzed.push(newPointOOD(datapoint, $drpoints, $distMatrix));
         });
 
-        /* SINGLE
-        const upload = await uploadWav(e.target.files[0]);
-        // now use the json
-        upload.then((v) => console.log(v));
-        // do ood on the json of v and show it in the data as well
-        // filename as label
-        */
+        temp = [...$refList, ...analyzed];
+        console.log(temp);
+
+        refList.set(temp);
     }
 
     async function handleImport(e) {

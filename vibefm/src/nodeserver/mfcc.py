@@ -96,8 +96,6 @@ def main():
     count = 0
 
     for jsonFile in json.loads(sys.argv[2]):
-        index = int(jsonFile.split("_")[1].split(".j")[0])
-        print(f"{index}", file=sys.stderr)
         input = os.path.join(path, jsonFile)
 
         with open(input, 'r') as file:

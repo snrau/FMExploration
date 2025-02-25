@@ -45,12 +45,11 @@ app.post("/send_sysex_batch", (req, res) => {
         const startindex = files.filter(file => file.endsWith(".wav")).length
         startingIndex.set(startindex)
 
-        console.log(startindex)
-
+        const baseDir = path.resolve(__dirname, '..');
         // Trigger Reaper rendering script
         // REAPER:
         const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
-        const luaScriptPath = `"C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\render.lua"`
+        const luaScriptPath = path.join(baseDir, 'src', 'luaScript', 'render.lua');
         exec(`${reaperPath} -nosplash -new -noactivate ${luaScriptPath} ${startindex}`, (error, stdout, stderr) => {
             if (error) {
                 console.error("Error running Reaper script:", stderr);
@@ -58,6 +57,7 @@ app.post("/send_sysex_batch", (req, res) => {
             }
             res.send("Rendering triggered successfully.");
         });
+
     })
 
 });
@@ -119,7 +119,6 @@ app.post('/analysis', (req, res) => {
 
             // Filter .wav files
             wavFiles = files.filter(file => file.endsWith(name + ".wav"));
-            console.log(wavFiles)
 
             // Path to the Python executable within the virtual environment
             const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
@@ -129,7 +128,6 @@ app.post('/analysis', (req, res) => {
 
             // Capture output from the Python script
             pythonProcess.stdout.on('data', (data) => {
-                console.log(data)
             });
 
             pythonProcess.stderr.on('data', (error) => {
@@ -246,6 +244,7 @@ app.post('/readData', (req, res) => {
                                     centroid: jsonObject.centroid_frequencies,
                                     rms: jsonObject.rms,
                                     sampled: true,
+                                    reference: false,
                                     filename: file
                                 });
                             } catch (e) {
@@ -337,6 +336,47 @@ app.post('/readData', (req, res) => {
     }
 })
 
+app.post('/readSpecificFile', (req, res) => {
+    try {
+        const folderPath = req.body.filePath;
+        const fileName = req.body.fileName;
+
+        const filePath = `${folderPath}/${fileName}`
+
+        // Read the specified file
+        fs.readFile(filePath, { encoding: "utf8" }, (err, buffer) => {
+            if (err) {
+                console.error(`Error reading file ${filePath}:`, err);
+                res.status(500).send("Error reading file.");
+                return;
+            }
+
+            try {
+                const jsonObject = JSON.parse(buffer);
+                const responseObject = {
+                    config: jsonObject.config,
+                    mfcc: jsonObject.mfcc,
+                    hrps: { harmonic: jsonObject.harmonic, residual: jsonObject.residual, percussive: jsonObject.percussive },
+                    centroid: jsonObject.centroid_frequencies,
+                    rms: jsonObject.rms,
+                    sampled: folderPath.includes("sampled") ? true : false,
+                    reference: folderPath.includes("reference") ? true : false,
+                    filename: fileName
+                };
+
+                res.setHeader("Content-Type", "application/json");
+                res.json(responseObject);
+            } catch (error) {
+                console.error(`Error parsing JSON from file ${filePath}:`, error);
+                res.status(500).send("Error parsing JSON.");
+            }
+        });
+    } catch (err) {
+        console.error("Error:", err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/readRef', (req, res) => {
     try {
         const folderPath = req.body.ref
@@ -379,6 +419,7 @@ app.post('/readRef', (req, res) => {
                                     centroid: jsonObject.centroid_frequencies,
                                     rms: jsonObject.rms,
                                     sampled: false,
+                                    reference: true,
                                     filename: file
                                 });
                             } catch (e) {
@@ -538,6 +579,7 @@ app.post('/distanceMatrix', (req, res) => {
             }
         }
 
+        /*
         const filesRef = fs.readdirSync(folderReference).filter(file => file.endsWith(".json"));
         if (filesRef.length > 0) {
             for (const file of filesRef) {
@@ -550,6 +592,7 @@ app.post('/distanceMatrix', (req, res) => {
                 }
             }
         }
+        */
 
 
         // Initialize the distance matrix
@@ -583,6 +626,14 @@ app.post('/addReference', (req, res) => {
 
     const folderPath = req.body.path
     const sysexArray = [req.body.config]
+    const name = req.body.name
+
+    const filePath = `${folderPath}/${name}.wav`;
+
+    if (fs.existsSync(filePath)) {
+        console.log('exists')
+        return res.send("File already exists");
+    }
 
     if (!sysexArray || !Array.isArray(sysexArray)) {
         return res.status(400).send("Invalid SysEx data.");
@@ -592,13 +643,18 @@ app.post('/addReference', (req, res) => {
 
     // Save SysEx array to a JSON file
     const sysexPath = "../luaScript/sysex_batch.json";
-    fs.writeFileSync(sysexPath, JSON.stringify(sysexArray, null, 2));
+    fs.writeFileSync(sysexPath, JSON.stringify(sysexArray[0], null, 2));
 
 
     // Trigger Reaper rendering script
     // REAPER:
+    //const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
+    //const luaScriptPath = `"C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\renderRef.lua"`
+    const baseDir = path.resolve(__dirname, '..');
+    // Trigger Reaper rendering script
+    // REAPER:
     const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
-    const luaScriptPath = `"C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\renderRef.lua"`
+    const luaScriptPath = path.join(baseDir, 'src', 'luaScript', 'render.lua');
     exec(`${reaperPath} -nosplash -new -noactivate ${luaScriptPath}`, (error, stdout, stderr) => {
         if (error) {
             console.error("Error running Reaper script:", stderr);
@@ -607,6 +663,7 @@ app.post('/addReference', (req, res) => {
         console.log("after reaper")
         res.send("Rendering triggered successfully.");
 
+        /*
         const name = getNamefromConfig(sysexArray[0])
 
         const outputFilePath = path.join(folderPath, name + ".wav"); // Adjust file path
@@ -622,6 +679,7 @@ app.post('/addReference', (req, res) => {
                 res.send("Rendering completed successfully. Next step triggered.");
             }
         }, 3000); // Check every 3 seconds
+        */
     });
 })
 
@@ -664,6 +722,13 @@ async function refAnalysis(folderPath, name, configs, res) {
 
 }
 
+
+app.post('/refMel', (req, res) => {
+    const folderPath = req.body.path
+    const name = req.body.name
+    refMel(folderPath, name, res)
+})
+
 async function refMel(folderPath, name, res) {
     // Filter .wav files
     let jsonFiles = [name + ".json"];
@@ -677,7 +742,6 @@ async function refMel(folderPath, name, res) {
 
     // Capture output from the Python script
     pythonProcess.stdout.on('data', (data) => {
-        console.log(data)
     });
 
     pythonProcess.stderr.on('data', (error) => {
@@ -686,6 +750,7 @@ async function refMel(folderPath, name, res) {
 
     pythonProcess.on('close', (code) => {
         if (code === 0) {
+            console.log("RefMel closed")
             return res.status(200).send("done"); // Send the result back to the client
         } else {
             return res.status(500).send('Python script execution failed');
@@ -695,6 +760,7 @@ async function refMel(folderPath, name, res) {
 
 
 function wavAnalysis(folderPath, name, configs) {
+    console.log(name)
     return new Promise((resolve, reject) => {
         fs.readdir(folderPath, (err, files) => {
             if (err) {
@@ -707,13 +773,11 @@ function wavAnalysis(folderPath, name, configs) {
             // Path to the Python executable within the virtual environment
             const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
 
-
             // Spawn a Python process
             const pythonProcess = spawn(pythonExecutable, ['analysis.py', folderPath, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(configs)]);
 
             // Capture output from the Python script
             pythonProcess.stdout.on('data', (data) => {
-                console.log(data)
             });
 
             pythonProcess.stderr.on('data', (error) => {
@@ -748,7 +812,6 @@ function wavMel(folderPath, name) {
 
         // Capture output from the Python script
         pythonProcess.stdout.on('data', (data) => {
-            console.log(data)
         });
 
         pythonProcess.stderr.on('data', (error) => {
@@ -789,16 +852,14 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
     }
-
     console.log("do analysis")
     wavAnalysis(path.join("..", "..", "public", "upload"), req.file.filename.split('.')[0], []).then(v => {
         wavMel(path.join("..", "..", "public", "upload"), req.file.filename.split('.')[0]).then(v => {
             const file = req.file.filename.split('.')[0] + ".json"
+            console.log(file)
             // Step 3: Read the JSON output file
             fs.readFile(`../../public/upload/${file}`, "utf-8", (err, jsonData) => {
 
-
-                console.log(jsonData)
 
                 // Step 4: Parse JSON and extract required values
                 const jsonObject = JSON.parse(jsonData);
@@ -814,13 +875,12 @@ app.post("/upload", upload.single("file"), async (req, res) => {
                     centroid: jsonObject.centroid_frequencies,
                     rms: jsonObject.rms,
                     sampled: false,
+                    reference: false,
                     filename: req.file.filename
                 }];
 
                 // Step 5: Respond with extracted data
-                res.json({
-                    data: objects
-                });
+                res.json(objects);
             });
 
         })

@@ -10,7 +10,7 @@ export async function doAnalysis(collection, startindex, name = "") {
         body: JSON.stringify({
             path: "..\\..\\public\\sampled",
             path2: "..\\..\\public\\reference",
-            configs: JSON.stringify(collection),
+            configs: collection,
             startindex: startindex,
             name: name
         }),
@@ -24,21 +24,40 @@ export async function doAnalysis(collection, startindex, name = "") {
     return response
 }
 
+export async function refMel(name) {
+    console.log("refMel called")
+    const response = fetch("http://localhost:3000/refMel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            path: "..\\..\\public\\reference",
+            name: name,
+        }),
+    });
+}
+
 export async function addReference(config) {
+    let name = getShortNamefromConfig(config)
+
     const response = await fetch("http://localhost:3000/addReference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             path: "..\\..\\public\\reference",
             config: createSysexMessageFromConfig(config),
+            name: name,
         }),
     });
 
-    let name = getShortNamefromConfig(config)
 
     if (response.ok) {
-        const response = await doAnalysis([config], -28, name)
-        return response
+        const response1 = await doAnalysis([config], -28, name)
+            .then(v => {
+                console.log(name, "added to reference")
+                refMel(name)
+                return name
+            })
+        return response1
     } else {
         alert("Failed to do hrps.");
     }
@@ -79,6 +98,27 @@ export async function distanceMatrix() {
             );
         }
         return response.json();
+    } catch (err) {
+        console.error("Error fetching data:", err);
+    }
+}
+
+export async function readSpecificFile(folderName, fileName) {
+    try {
+        const response = await fetch("http://localhost:3000/readSpecificFile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ filePath: "..\\..\\public\\" + folderName, fileName }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Network response was not ok " + response.statusText);
+        }
+
+        const jsonObject = await response.json();
+        console.log("Received JSON Object:", jsonObject);
+        return jsonObject;
+
     } catch (err) {
         console.error("Error fetching data:", err);
     }

@@ -265,23 +265,30 @@
 </script>
 
 <div class="menu">
-  <label>
-    <input type="checkbox" bind:checked={isSingle} />
-    {isSingle ? "Single" : "All"}
-  </label>
+  <div class="left">
+    <label class="checkbox-label">
+      <input type="checkbox" bind:checked={isSingle} />
+      <span>{isSingle ? "Single" : "All"}</span>
+    </label>
 
-  <label>
-    <input type="checkbox" bind:checked={isSmall} />
-    {isSmall ? "Small" : "Large"}
-  </label>
-  <button on:click={handleButtonClick1}>Sample similar</button>
-  <button on:click={handleButtonClick2}>add to Export list</button>
-  <input
-    type="text"
-    bind:value={textInput}
-    maxlength="10"
-    placeholder="Config Name"
-  />
+    <label class="checkbox-label">
+      <input type="checkbox" bind:checked={isSmall} />
+      <span>{isSmall ? "Small" : "Large"}</span>
+    </label>
+  </div>
+
+  <div class="right">
+    <div class="buttons">
+      <button on:click={handleButtonClick1}>Sample similar</button>
+      <button on:click={handleButtonClick2}>Add to Export list</button>
+    </div>
+    <input
+      type="text"
+      bind:value={textInput}
+      maxlength="10"
+      placeholder="Config Name"
+    />
+  </div>
 </div>
 
 <div class="detail-container">
@@ -289,12 +296,14 @@
     <div class="label">
       Label: {selectedPoint.label}
     </div>
-    <button class="label" on:click={() => playWav(selectedPoint)}>
-      Play Wav</button
-    >
-    <button class="label" on:click={() => exclude(selectedPoint)}>
-      Exclude</button
-    >
+    <div class="button-container">
+      <button class="label" on:click={() => playWav(selectedPoint)}>
+        Play Wav
+      </button>
+      <button class="label" on:click={() => exclude(selectedPoint)}>
+        Exclude
+      </button>
+    </div>
 
     <div class="plot">
       <h5>Config:</h5>
@@ -344,16 +353,34 @@
     color: black;
   }
 
+  .button-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Optional: Adjust the gap between buttons */
+  }
+
   .label {
     font-size: 1rem;
     font-weight: bold;
     margin-bottom: 2px;
   }
 
-  label {
+  .left {
     display: flex;
-    align-items: center;
-    gap: 5px;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 0.5rem;
   }
 
   h5 {
@@ -381,6 +408,10 @@
   }
 
   .menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
     border: 1px solid #ccc;
     width: 400px;
     display: flex;
@@ -416,5 +447,12 @@
     border: 1px solid #ccc;
     border-radius: 4px;
     width: 120px;
+    margin-top: 0.5rem;
+  }
+
+  .left label {
+    display: flex;
+    align-items: center;
+    gap: -0.5rem;
   }
 </style>

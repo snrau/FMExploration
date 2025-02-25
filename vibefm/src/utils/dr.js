@@ -57,10 +57,36 @@ export function euclideanDistance(mfcc1, mfcc2) {
     return Math.sqrt(mfcc1.reduce((sum, val, i) => sum + Math.pow(val - mfcc2[i], 2), 0));
 }
 
-export function newPointOOD(newPoint, points, globalMaxDist, globalMeanDist) {
-    if (!newPoint || !Array.isArray(points) || points.length === 0) {
-        throw new Error("Invalid input: newPoint must be an array, and points must be a non-empty array.");
+export function calculateGlobalMeanDist(distanceMatrix) {
+    let totalDistance = 0;
+    let count = 0;
+
+    for (let i = 0; i < distanceMatrix.length; i++) {
+        for (let j = i; j < distanceMatrix[i].length; j++) {
+            if (i !== j) { // Exclude diagonal elements
+                totalDistance += distanceMatrix[i][j];
+                count++;
+            }
+        }
     }
+
+    const globalMeanDist = totalDistance / count;
+    return globalMeanDist;
+}
+
+export function newPointOOD(newPoint, points, distMatrix) {
+    if (!newPoint) {
+        throw new Error("Invalid input: points must be a non-empty array.");
+    }
+    if (!Array.isArray(points) || points.length === 0) {
+        // Apply repulsion effect
+        newPoint.x = 0;
+        newPoint.y = 0;
+        // Calculate final estimated position
+        return newPoint
+    }
+
+    let globalMeanDist = calculateGlobalMeanDist(distMatrix)
 
     // Compute distances between newPoint and all existing points
     let distances = points.map(p => ({
@@ -68,6 +94,8 @@ export function newPointOOD(newPoint, points, globalMaxDist, globalMeanDist) {
         y: p.y,
         dist: euclideanDistance(newPoint.analysis.mfcc.flat(), p.analysis.mfcc.flat())
     }));
+
+    console.log(distances)
 
     // Compute mean distance
     let meanDist = distances.reduce((sum, d) => sum + d.dist, 0) / distances.length;
@@ -91,7 +119,7 @@ export function newPointOOD(newPoint, points, globalMaxDist, globalMeanDist) {
     let inlierY = weightedY / sumWeights;
 
     // Process distant points with repulsion
-    let repulsionFactor = closePoints.length === 0 ? 0.01 : 0.005; // Adjust this value for weaker/stronger repulsion
+    let repulsionFactor = closePoints.length === 0 ? 0.05 : 0.005; // Adjust this value for weaker/stronger repulsion
     let repulsionX = 0, repulsionY = 0;
 
     distantPoints.forEach(({ x, y, dist }) => {

@@ -30,10 +30,13 @@ def main():
 
     count = 0
 
-    print(f"{json.loads(sys.argv[2])}", file=sys.stderr)
+    print(f"{configs}", file=sys.stderr)
 
     for wavFile in json.loads(sys.argv[2]):
-        index = int(wavFile.split("_")[1].split(".w")[0])
+        if "patch" in wavFile:
+            index = int(wavFile.split("_")[1].split(".w")[0])
+        else:
+            index = 0
         print(f"{index}", file=sys.stderr)
         input = os.path.join(path, wavFile)
         output = os.path.join(path, input.replace('.wav', '.json'))
@@ -80,7 +83,6 @@ def main():
 
         mel = librosa.feature.melspectrogram(y=x, sr=Fs, n_mels=128, fmax=8000)
         data['mel'] = mel
-        
 
         if len(configs) > 0:
             data["config"] = configs[index]

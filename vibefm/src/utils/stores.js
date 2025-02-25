@@ -11,8 +11,9 @@ export const edgeList = writable([]);
 
 export const excluded = writable([]);
 
-export const data = derived([drpoints, excluded], ([$drpoints, $excluded]) => {
-    return $drpoints.filter(d => !$excluded.includes(d.id))
+export const data = derived([drpoints, refList, excluded], ([$drpoints, $refList, $excluded]) => {
+    let temp = $drpoints.concat($refList);
+    return temp.filter(d => !$excluded.includes(d.id))
 });
 
 export const cellStateStore = writable({});
