@@ -37,6 +37,7 @@
         startingIndex,
         excluded,
         drpoints,
+        edgeList,
     } from "../utils/stores";
     import { onMount } from "svelte";
 

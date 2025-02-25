@@ -5,6 +5,7 @@
   import EnvelopeGlyph from "../glyphs/envelopeGlyph.svelte";
   import EnvelopeSimpleGlyph from "../glyphs/envelopeSimpleGlyph.svelte";
   import BrightnessGlyph from "../glyphs/brightnessGlyph.svelte";
+  import Reference from "../glyphs/reference.svelte";
   import { createSysexMessageFromConfig, dx7Parameters } from "../utils/dexed";
   import ConfigMatrixGlyph from "../glyphs/configMatrixGlyph.svelte";
   import { data } from "../utils/stores";
@@ -201,7 +202,7 @@
     >
       <!--{#if pointRenderer === "rect"}-->
       {#each $data as point, index}
-        {#if point.sampled}
+        {#if point.analysis.sampled}
           {#if point === selectedPoint && pointRenderer === "circle"}
             <rect
               x={xScale(point.x) - 5}

@@ -6,7 +6,11 @@
   import Algorithm from "./Algorithm.svelte";
   import { excluded, exportList, startingIndex } from "../utils/stores";
   import { getNamefromConfig } from "../utils/sysex";
-  import { progressiveSubgroupBlockSampling, sampleAllValues, sampleSingleValues } from "../utils/strategies";
+  import {
+    progressiveSubgroupBlockSampling,
+    sampleAllValues,
+    sampleSingleValues,
+  } from "../utils/strategies";
   import { sendReaper, writeEdges } from "../utils/serverRequests";
 
   export let selectedPoint = null;
@@ -21,14 +25,14 @@
     // sample new list of config
     const config = selectedPoint.config;
 
-    const percent = isSmall?5:100
+    const percent = isSmall ? 5 : 100;
 
-    let newConfigs = []
+    let newConfigs = [];
     //isSingle and isSmall for the 4 sampling ideas
-    if(isSingle){
-      newConfigs = sampleSingleValues(config, percent)
-    }else{
-      newConfigs = sampleAllValues(config, percent)
+    if (isSingle) {
+      newConfigs = sampleSingleValues(config, percent);
+    } else {
+      newConfigs = sampleAllValues(config, percent);
     }
 
     //const newConfigs = progressiveSubgroupBlockSampling(config, 20, false);
@@ -229,7 +233,7 @@
     if (!selectedPoint || !selectedPoint?.label) return;
     if (!matrixPlot) return;
 
-    const folder = selectedPoint.sampled ? "sampled" : "reference";
+    const folder = selectedPoint.analysis.sampled ? "sampled" : "reference";
     const imageUrl = `./${folder}/${selectedPoint.label}_mel.png`;
     const img = new Image();
     img.src = imageUrl;
@@ -245,8 +249,8 @@
     };
   };
 
-  function exclude(selectedPoint){
-    excluded.set([...$excluded, selectedPoint.id])
+  function exclude(selectedPoint) {
+    excluded.set([...$excluded, selectedPoint.id]);
   }
 
   // Watch for changes in selectedPoint and update the plots
@@ -265,7 +269,7 @@
     <input type="checkbox" bind:checked={isSingle} />
     {isSingle ? "Single" : "All"}
   </label>
-  
+
   <label>
     <input type="checkbox" bind:checked={isSmall} />
     {isSmall ? "Small" : "Large"}
