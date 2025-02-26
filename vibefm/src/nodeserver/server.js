@@ -7,6 +7,9 @@ import { startingIndex } from "../utils/stores.js";
 import multer from 'multer'
 
 
+const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
+
+
 
 const app = express();
 const PORT = 3000;
@@ -45,11 +48,10 @@ app.post("/send_sysex_batch", (req, res) => {
         const startindex = files.filter(file => file.endsWith(".wav")).length
         startingIndex.set(startindex)
 
-        const baseDir = path.resolve(__dirname, '..');
+        const baseDir = path.resolve(process.cwd(), '..');
         // Trigger Reaper rendering script
         // REAPER:
-        const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
-        const luaScriptPath = path.join(baseDir, 'src', 'luaScript', 'render.lua');
+        const luaScriptPath = path.join(baseDir, 'luaScript', 'render.lua');
         exec(`${reaperPath} -nosplash -new -noactivate ${luaScriptPath} ${startindex}`, (error, stdout, stderr) => {
             if (error) {
                 console.error("Error running Reaper script:", stderr);
@@ -639,7 +641,6 @@ app.post('/addReference', (req, res) => {
         return res.status(400).send("Invalid SysEx data.");
     }
 
-    console.log(sysexArray)
 
     // Save SysEx array to a JSON file
     const sysexPath = "../luaScript/sysex_batch.json";
@@ -650,11 +651,11 @@ app.post('/addReference', (req, res) => {
     // REAPER:
     //const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
     //const luaScriptPath = `"C:\\Users\\rausn\\Documents\\GitHub\\FMExploration\\vibefm\\src\\luaScript\\renderRef.lua"`
-    const baseDir = path.resolve(__dirname, '..');
+    const baseDir = path.resolve(process.cwd(), '..');
     // Trigger Reaper rendering script
     // REAPER:
-    const reaperPath = `"C:\\Program Files\\REAPER (x64)\\reaper.exe"`
-    const luaScriptPath = path.join(baseDir, 'src', 'luaScript', 'render.lua');
+
+    const luaScriptPath = path.join(baseDir, 'luaScript', 'renderRef.lua');
     exec(`${reaperPath} -nosplash -new -noactivate ${luaScriptPath}`, (error, stdout, stderr) => {
         if (error) {
             console.error("Error running Reaper script:", stderr);
