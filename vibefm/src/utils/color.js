@@ -1,4 +1,7 @@
 import * as d3 from 'd3'
+import { refList } from './stores';
+import { get } from 'svelte/store';
+import { euclideanDistance } from './dr';
 
 const characterColors = {
     harmonic: "rgb(0, 0, 255)",
@@ -27,6 +30,21 @@ export function getColor(point, brightnessExtent, pointColor) {
     } else if (pointColor === 'feedback') {
         const colorScale = d3.scaleSequential(d3.interpolateGreys).domain([0, 7]);
         color = colorScale(point.config[135])
+    } else if (pointColor === 'cluster') {
+        let ci = get(refList).indexOf(point)
+        if (ci === -1) {
+            get(refList).forEach((ref, i) => {
+                const dist = euclideanDistance(ref.analysis.mfcc.flat(), point.analysis.mfcc.flat())
+                if (dist < 1750) {
+                    ci = i % 10
+                }
+            })
+        }
+        if (ci === -1) {
+            color = d3.interpolateGreys(0.6)
+        } else {
+            color = d3.schemeTableau10[ci]
+        }
     }
 
     return color;

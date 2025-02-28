@@ -1036,7 +1036,7 @@ SYSEX MESSAGE: Parameter Change
         >analysis</button
     >
 
-    <button on:click={() => exportMFCC()}>mfcc</button>
+    <button on:click={() => exportMFCC(0)}>mfcc</button>
 
     <button on:click={() => distanceMatrix()}>calculate Distance</button>
 

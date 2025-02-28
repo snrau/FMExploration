@@ -26,15 +26,18 @@ def convert_ndarray_to_list(data):
 
 def main():
     path = sys.argv[1]
+    sysex = sys.argv[5] if len(sys.argv) > 5 else False
     configs = json.loads(sys.argv[4])
+    startindex = int(sys.argv[6]) if len(sys.argv) > 6 else 0
 
     count = 0
 
-    print(f"{configs}", file=sys.stderr)
+    
 
     for wavFile in json.loads(sys.argv[2]):
         if "patch" in wavFile:
-            index = int(wavFile.split("_")[1].split(".w")[0])
+            index = int(wavFile.split("_")[1].split(".w")[0]) 
+            index = index - startindex
         else:
             index = 0
         print(f"{index}", file=sys.stderr)
@@ -86,6 +89,8 @@ def main():
 
         if len(configs) > 0:
             data["config"] = configs[index]
+
+        data["sysex"] = sysex
 
         data_cleaned = convert_ndarray_to_list(data)
         try:

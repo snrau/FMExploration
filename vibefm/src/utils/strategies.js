@@ -120,29 +120,41 @@ export function progressiveSubgroupSingleParamSampling(
     return sampledCollection;
 }
 
+export function randomizeName(config) {
+    let c = [...config]
+    c = c.map((v, i) => {
+        if (i >= 145 && i < 155)
+            return getRandom(127)
+        else
+            return v
+    })
+    return c
+}
 
-export function sampleSingleValues(config, percent){
+
+export function sampleSingleValues(config, percent) {
     let configs = []
     const params = getChangableParameters()
     params.forEach(p => {
-        let c = [...config]
-        c[p.number] = sampleRandomValue(p.value, p.max, percent)
+        let c = randomizeName(config)
+        let v = sampleRandomValue(config[p.number], p.max, percent)
+        c[p.number] = v
         configs.push(c)
     })
     return configs
 }
 
-export function sampleAllValues(config, percent){
+export function sampleAllValues(config, percent, bound = 8) {
     let configs = []
     const params = getChangableParameters()
 
-    const bound = 8
     for (let i = 0; i < bound; i++) {
-        configs.push([...config]);
+        configs.push(randomizeName(config));
     }
     for (let i = 0; i < bound; i++) {
         params.forEach(p => {
-            configs[i][p.number] = sampleRandomValue(p.value, p.max, percent)
+            const v = sampleRandomValue(configs[i][p.number], p.max, percent)
+            configs[i][p.number] = v
         })
     }
     return configs

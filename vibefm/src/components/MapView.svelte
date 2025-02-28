@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { scaleLinear, zoom, select, drag } from "d3";
+  import { scaleLinear, zoom, select, drag, brush } from "d3";
   import { getColor } from "../utils/color";
   import EnvelopeGlyph from "../glyphs/envelopeGlyph.svelte";
   import EnvelopeSimpleGlyph from "../glyphs/envelopeSimpleGlyph.svelte";
@@ -8,9 +8,10 @@
   import Reference from "../glyphs/reference.svelte";
   import { createSysexMessageFromConfig, dx7Parameters } from "../utils/dexed";
   import ConfigMatrixGlyph from "../glyphs/configMatrixGlyph.svelte";
-  import { data } from "../utils/stores";
+  import { data, excluded } from "../utils/stores";
   import { interpolate } from "../utils/sampling";
   import { sendMessage } from "../utils/midi";
+  import { interpolatedConfig } from "../utils/stores";
 
   export let onPointClick;
   export let pointRenderer = null;
@@ -41,7 +42,11 @@
 
   let interpolateConfig = null;
 
+  let pointsToRemove = [];
+
   let recentConfig = null;
+
+  let isBrushing = false;
 
   const size = 1800;
   const offset = 5;
@@ -154,9 +159,8 @@
       aAlgo,
     );
     if (recentConfig !== interpolateConfig) {
-      console.log(interpolateConfig);
-
       sendMessage(createSysexMessageFromConfig(interpolateConfig));
+      interpolatedConfig.set(interpolateConfig);
     }
 
     // Move handle
@@ -169,6 +173,10 @@
   function removeConnection() {
     recentConfig = null;
     select("#interpolation").selectAll("*").remove();
+  }
+
+  function exclude(selectedPoint) {
+    excluded.set([...$excluded, ...selectedPoint]);
   }
 
   onMount(() => {
@@ -185,6 +193,51 @@
     //svg.call(zoomBehavior.transform, zoomTransform);
 
     svg.call(zoomBehavior);
+
+    const brushBehavior = brush().on("end", (event) => {
+      if (!event.selection) return;
+
+      const [[x0, y0], [x1, y1]] = event.selection;
+
+      // Assuming you have a way to get all points, e.g., from a data array
+      // Replace `allPoints` with your actual data points array
+      $data.forEach((point) => {
+        let transformedPoint = [xScale(point.x) / 2, yScale(point.y) / 2];
+        if (zoomTransform.apply) {
+          const transformedPoint = zoomTransform.apply([
+            xScale(point.x),
+            yScale(point.y),
+          ]);
+        }
+        if (
+          transformedPoint[0] >= x0 &&
+          transformedPoint[0] <= x1 &&
+          transformedPoint[1] >= y0 &&
+          transformedPoint[1] <= y1
+        ) {
+          pointsToRemove.push(point.id);
+        }
+      });
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "b" && !isBrushing) {
+        pointsToRemove = [];
+        isBrushing = true;
+        svg.append("g").attr("id", "brushcontainer").call(brushBehavior);
+        svg.style("cursor", "default");
+      }
+    });
+
+    window.addEventListener("keyup", (e) => {
+      if (e.key === "b") {
+        if (pointsToRemove.length > 0) exclude(pointsToRemove);
+        isBrushing = false;
+        svg.select("#brushcontainer").remove(); // Remove brush behavior
+
+        svg.style("cursor", "default");
+      }
+    });
   });
 </script>
 
@@ -193,14 +246,12 @@
     bind:this={container}
     width={size}
     height={size}
-    style="background: #f0f0f0;"
     on:click={handleSvgClick}
   >
     <g
       id={"map"}
       transform="translate({zoomTransform.x},{zoomTransform.y}) scale({zoomTransform.k})"
     >
-      {console.log(selectedPoint)}
       <!--{#if pointRenderer === "rect"}-->
       {#each $data as point, index}
         {#if point.analysis.sampled}
@@ -257,9 +308,19 @@
               selection={point === selectedPoint ? null : selectedPoint}
             />
           {/if}
-        {:else}
+        {:else if point.analysis.sysex || !point.analysis.reference}
           <Reference
             data={point.label}
+            x={xScale(point.x) - 10}
+            y={yScale(point.y) - 10}
+            class1="point"
+            fill={getColor(point, brightnessExtent, pointColor)}
+            onClick={(e) => handleClick(e, point)}
+            selected={point === selectedPoint}
+          />
+        {:else}
+          <Reference
+            data={point.label + "(int)"}
             x={xScale(point.x) - 10}
             y={yScale(point.y) - 10}
             class1="point"

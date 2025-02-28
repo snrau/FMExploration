@@ -61,7 +61,7 @@
 
     function generateLayout() {
         oldAlgorithm = algorithm;
-        //if (config === null) return;
+        if (config === null) return;
         const layout = layouts[algorithm];
         modulatorPositions = [];
         connectionLines = [];
@@ -200,6 +200,9 @@
     }
 
     function drawDiagram() {
+        if (!config) {
+            return;
+        }
         const values = calcFreqAndLevel();
         const svg = d3.select("#svg-container");
         svg.selectAll("*").remove(); // Clear previous diagram

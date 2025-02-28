@@ -39,6 +39,8 @@
         excluded,
         drpoints,
         edgeList,
+        interpolatedConfig,
+        updateView,
     } from "../utils/stores";
     import { onMount } from "svelte";
 
@@ -47,6 +49,8 @@
     let sysexIndex = 0;
 
     let oodpoint = null;
+
+    let textInput = "Inter0";
 
     let globalMaxDist = 0;
     let globalMeanDist = 0;
@@ -62,6 +66,12 @@
 
     $: referencePoint = null;
 
+    $: $updateView,
+        async () => {
+            await loadSetup();
+            calcDistance();
+        };
+
     let dropdownOptions = [
         "LoadDataFromFiles",
         "getSimilarity",
@@ -75,29 +85,63 @@
 
     // onMount Midiaccess requesten
 
+    async function loadSetup() {
+        sampledList.set(await readSampled());
+        tempRef = await readRef();
+        edgeList.set(await readEdges());
+        jsonDataList.set($sampledList);
+        jsonDataList.set(doAnalysisForValues($jsonDataList));
+        startingIndex.set(
+            Math.max(
+                ...$jsonDataList.map(
+                    (d) => d.filename.split("_")[1].split(".")[0],
+                ),
+            ) + 1,
+        );
+        console.log($startingIndex);
+    }
+    async function calcDistance() {
+        if ($jsonDataList.length !== 0) {
+            distMatrix.set(await distanceMatrix());
+            //DR from distMatrix
+            let points = getDrProjectedPoints($distMatrix, "tsne", true);
+            let temp = [];
+            $jsonDataList.forEach((v, i) => {
+                temp.push({
+                    id: i,
+                    x: points[i][0],
+                    y: points[i][1],
+                    label: v.filename.split(".")[0],
+                    config: v.config,
+                    analysis: v,
+                });
+            });
+            drpoints.set([...temp]);
+            tempRef = doAnalysisForValues(tempRef);
+            refList.set(
+                tempRef.map((v, i) => {
+                    let datapoint = {
+                        id: 5000 + i,
+                        label: v.filename.split(".")[0],
+                        config: v.config,
+                        analysis: v,
+                    };
+                    return newPointOOD(datapoint, $data, $distMatrix);
+                }),
+            );
+        }
+    }
+
     // Function to handle dropdown button clicks
     async function handleDropdownClick(option) {
         if (option === "LoadDataFromFiles") {
-            sampledList.set(await readSampled());
-            tempRef = await readRef();
-            edgeList.set(await readEdges());
-            jsonDataList.set($sampledList);
-            jsonDataList.set(doAnalysisForValues($jsonDataList));
-            startingIndex.set(
-                Math.max(
-                    ...$jsonDataList.map(
-                        (d) => d.filename.split("_")[1].split(".")[0],
-                    ),
-                ) + 1,
-            );
-            console.log($startingIndex);
-            // load edges as well
-            alert("Data imported");
+            await loadSetup();
+            calcDistance();
         } else if (option === "getSimilarity") {
             if ($jsonDataList.length !== 0) {
                 distMatrix.set(await distanceMatrix());
                 //DR from distMatrix
-                let points = getDrProjectedPoints($distMatrix, "mds", true);
+                let points = getDrProjectedPoints($distMatrix, "tsne", true);
                 let temp = [];
                 $jsonDataList.forEach((v, i) => {
                     if (
@@ -145,7 +189,8 @@
         } else if (option === "changeColor") {
             if (pointColor === "brightHarmonic") pointColor = "algorithm";
             else if (pointColor === "algorithm") pointColor = "feedback";
-            else if (pointColor === "feedback") pointColor = "brightHarmonic";
+            else if (pointColor === "feedback") pointColor = "cluster";
+            else if (pointColor === "cluster") pointColor = "brightHarmonic";
         } else if (option === "resetExportList") {
             exportList.set([]);
         } else if (option === "Export list") {
@@ -160,7 +205,6 @@
 
     // Function to handle point click
     function handlePointClick(event, point) {
-        console.log(event, point);
         if (event?.ctrlKey) {
             if (selectedPoint) {
                 referencePoint = point;
@@ -180,7 +224,7 @@
     function handleReference(e) {
         const config = sysexList[sysexIndex];
         // codec for adding reference
-        let test = addReference(config);
+        let test = addReference(config, true);
         test.then(async (v) => {
             const object = await readSpecificFile("reference", v + ".json");
             const analyzed = doAnalysisForValues([object])[0];
@@ -192,6 +236,31 @@
             };
             refList.set([...$refList, newPointOOD(datapoint, $drpoints)]);
         });
+    }
+
+    function handleInterpolation(e) {
+        let config = [...$interpolatedConfig];
+        if (config === []) return;
+
+        for (let i = 0; i < 10; i++) {
+            config[145 + i] = textInput.charCodeAt(i) || 32;
+        }
+        // codec for adding reference
+        let test = addReference(config, false);
+        test.then(async (v) => {
+            const object = await readSpecificFile("reference", v + ".json");
+            const analyzed = doAnalysisForValues([object])[0];
+            let datapoint = {
+                id: 5000 + $refList.length,
+                label: analyzed.filename.split(".")[0],
+                config: analyzed.config,
+                analysis: analyzed,
+            };
+            refList.set([...$refList, newPointOOD(datapoint, $drpoints)]);
+        });
+        referencePoint = null;
+        textInput = "Inter";
+        interpolatedConfig.set([]);
     }
 
     async function importWavFile(e) {
@@ -266,6 +335,18 @@
                     </button>
                 </div>
             {/if}
+            <p>Interpolation</p>
+            <input
+                type="text"
+                bind:value={textInput}
+                maxlength="10"
+                placeholder="Config Name"
+            />
+            <div class="center-wrapper">
+                <button on:click={handleInterpolation}>
+                    Add as Reference
+                </button>
+            </div>
             <p>New wav file</p>
             <div class="center-wrapper">
                 <input

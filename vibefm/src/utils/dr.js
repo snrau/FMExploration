@@ -1,4 +1,6 @@
 import * as druid from '@saehrimnir/druidjs'
+import { distMatrix } from './stores'
+import { get } from 'svelte/store'
 
 export function getDrProjectedPoints(distMatrix, drmethod = 'mds', precomputed = true) {
     const druidMatrix = druid.Matrix.from(distMatrix)
@@ -74,7 +76,7 @@ export function calculateGlobalMeanDist(distanceMatrix) {
     return globalMeanDist;
 }
 
-export function newPointOOD(newPoint, points, distMatrix) {
+export function newPointOOD(newPoint, points, distMatrix1 = null) {
     if (!newPoint) {
         throw new Error("Invalid input: points must be a non-empty array.");
     }
@@ -85,8 +87,10 @@ export function newPointOOD(newPoint, points, distMatrix) {
         // Calculate final estimated position
         return newPoint
     }
+    if (distMatrix1 === null)
+        distMatrix1 = get(distMatrix)
 
-    let globalMeanDist = calculateGlobalMeanDist(distMatrix)
+    let globalMeanDist = calculateGlobalMeanDist(distMatrix1) * 3 / 4;
 
     // Compute distances between newPoint and all existing points
     let distances = points.map(p => ({
@@ -94,8 +98,6 @@ export function newPointOOD(newPoint, points, distMatrix) {
         y: p.y,
         dist: euclideanDistance(newPoint.analysis.mfcc.flat(), p.analysis.mfcc.flat())
     }));
-
-    console.log(distances)
 
     // Compute mean distance
     let meanDist = distances.reduce((sum, d) => sum + d.dist, 0) / distances.length;
@@ -131,8 +133,6 @@ export function newPointOOD(newPoint, points, distMatrix) {
         repulsionX += (directionX / length) * repulsionWeight;
         repulsionY += (directionY / length) * repulsionWeight;
     });
-
-    console.log(closePoints, distantPoints, globalMeanDist, inlierX, repulsionX, inlierY, repulsionY)
 
     // Apply repulsion effect
     newPoint.x = inlierX + repulsionX;

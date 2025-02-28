@@ -1,8 +1,14 @@
-local base_dir = os.getenv("BASE_DIR") or "."
+local script_path = debug.getinfo(1, "S").source:match("@(.*)"):gsub("\\", "/")
+local base_dir = script_path:match("(.*/)")
+base_dir = base_dir:match("(.*/).*/.*/") -- Go two levels up
 
-local sysex_file = base_dir .. "/src/luaScript/sysex_batch.json"  -- JSON file written by Node.js
-local midi_path = base_dir .. "/src/luaScript/c4.mid"             -- MIDI file for playback
-local output_dir = base_dir .. "/public/reference/"               -- Output folder for WAV files
+reaper.ShowConsoleMsg(base_dir .. '\n')
+
+local sysex_file = base_dir .. "src/luaScript/sysex_batch.json"  -- JSON file written by Node.js
+local midi_path = base_dir .. "src/luaScript/c4.mid"             -- MIDI file for playback
+local output_dir = base_dir .. "public/reference/"               -- Output folder for WAV files
+
+reaper.ShowConsoleMsg(output_dir .. '\n')
 
 local midi_port = "loopMIDI Port 1"
 
@@ -179,23 +185,24 @@ if sysex_data then
     reaper.SetMediaTrackInfo_Value(sender, "I_MIDIHWOUT", midiHardwareOutputValue)
 
     value = true
-    for index, sysex in ipairs(sysex_data) do
-        reaper.ShowConsoleMsg(tostring(index), "Success", 0)
-        reaper.ShowConsoleMsg(convert_sysex_to_readable(sysex), "Success", 0)
+    sysex = sysex_data
+    reaper.ShowConsoleMsg(convert_sysex_to_readable(sysex), "Success", 0)
+    reaper.ShowConsoleMsg("\n", "Success", 0)
+
+    index = 1
+    
+    --reaper.TrackFX_SetPreset(track, retval, 1)
+    if value then
+        local sysexstring = convert_sysex(sysex)
+        local hexStr = convert_sysex_to_readable(sysex)
+        reaper.ShowConsoleMsg("SysEx (Hex): " .. hexStr .. "\n")
         reaper.ShowConsoleMsg("\n", "Success", 0)
-        
-        --reaper.TrackFX_SetPreset(track, retval, 1)
+        value = send_patch(sysexstring, index - 1, sender)
         if value then
-            local sysexstring = convert_sysex(sysex)
-            local hexStr = convert_sysex_to_readable(sysex)
-            reaper.ShowConsoleMsg("SysEx (Hex): " .. hexStr .. "\n")
-            reaper.ShowConsoleMsg("\n", "Success", 0)
-            value = send_patch(sysexstring, index - 1, sender)
-            if value then
-                value = render_patch(index - 1, sysex)
-            end
+            value = render_patch(index - 1, sysex)
         end
     end
+
     if value then
         reaper.ShowConsoleMsg("Batch rendering completed!", "Success", 0)
         --reaper.Main_OnCommand(40860, 0)

@@ -32,18 +32,23 @@
     // Filtered data
     $: filteredData = parameters
         .filter((d) => d[1].change === true && d[1].number < 145)
-        .map((d) => {
+        .map((d, i) => {
             const baseValue = config[d[1].number];
             let value = baseValue;
+
+            const row =
+                Math.floor(i / cols) === 6 ? 6 : 5 - Math.floor(i / cols);
+            const col = i % cols;
 
             if (selection && selection.config) {
                 const selectionValue = selection.config[d[1].number];
                 value = baseValue - selectionValue; // Difference normalized by max
-                console.log(value, baseValue, selectionValue);
             }
 
             return {
                 ...d[1],
+                row,
+                col,
                 name: d[0],
                 value,
                 color:
@@ -56,8 +61,6 @@
     function drawMatrix() {
         const svgElement = d3.select(svg);
         svgElement.selectAll("*").remove(); // Clear previous content
-
-        console.log(filteredData);
 
         const background = svgElement
             .append("rect")
@@ -73,8 +76,8 @@
             .data(filteredData)
             .join("rect")
             .attr("class", "cell")
-            .attr("x", (d, i) => (i % cols) * cellSize + padding / 2)
-            .attr("y", (d, i) => Math.floor(i / cols) * cellSize + padding / 2)
+            .attr("x", (d, i) => d.col * cellSize + padding / 2)
+            .attr("y", (d, i) => d.row * cellSize + padding / 2)
             .attr("width", cellSize - padding)
             .attr("height", cellSize - padding)
             .attr("fill", (d) => d.color)

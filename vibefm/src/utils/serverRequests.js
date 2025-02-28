@@ -3,7 +3,8 @@ import { createSysexMessageFromConfig } from "./dexed";
 import { startingIndex } from "./stores";
 import { getNamefromConfig, getShortNamefromConfig } from "./sysex";
 
-export async function doAnalysis(collection, startindex, name = "") {
+export async function doAnalysis(collection, startindex, name = "", sysex = true) {
+
     const response = await fetch("http://localhost:3000/analysis", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -12,12 +13,18 @@ export async function doAnalysis(collection, startindex, name = "") {
             path2: "..\\..\\public\\reference",
             configs: collection,
             startindex: startindex,
-            name: name
+            name: name,
+            sysex: sysex
         }),
     });
 
     if (response.ok) {
-        console.log("analysis done");
+        if (startindex !== -28) {
+            exportMFCC(startindex)
+        }
+        if (response.ok) {
+            console.log("analysis done");
+        }
     } else {
         alert("Failed to do hrps.");
     }
@@ -36,7 +43,7 @@ export async function refMel(name) {
     });
 }
 
-export async function addReference(config) {
+export async function addReference(config, sysex) {
     let name = getShortNamefromConfig(config)
 
     const response = await fetch("http://localhost:3000/addReference", {
@@ -51,7 +58,7 @@ export async function addReference(config) {
 
 
     if (response.ok) {
-        const response1 = await doAnalysis([config], -28, name)
+        const response1 = await doAnalysis([config], -28, name, sysex)
             .then(v => {
                 console.log(name, "added to reference")
                 refMel(name)
@@ -64,17 +71,18 @@ export async function addReference(config) {
 
 }
 
-export async function exportMFCC() {
+export async function exportMFCC(start) {
     const response = await fetch("http://localhost:3000/exportMFCC", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             path: "..\\..\\public\\sampled",
+            start: start,
         }),
     });
 
     if (response.ok) {
-        console.log("analysis done");
+        console.log("mfcc done");
     } else {
         alert("Failed to do mfcc.");
     }
@@ -337,19 +345,21 @@ export async function readSampled() {
 
 
 export async function writeEdges(point, newConfigs, startingIndex) {
+
     if (newConfigs.length === 0) return null;
 
     let temp = []
 
-    for (let i = startingIndex; i < newConfigs.length; i++) {
+    for (let i = startingIndex; i < startingIndex + newConfigs.length; i++) {
         temp.push("patch_" + i)
     }
+
 
     // {selectedpoint.filename: [newname, ...], ...} (newname is 'patch_' + (startindex + i))
     const response = await fetch("http://localhost:3000/writeEdges", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ point: point.filename.split('.')[0], array: temp, edges: "..\\..\\public\\connection.json", }),
+        body: JSON.stringify({ point: point.label, array: temp, edges: "..\\..\\public\\connection.json", }),
     });
 
     if (response.ok) {
@@ -375,7 +385,6 @@ export async function sendReaper(collection) {
         arr.map((v, i) => v / Object.entries(dx7Parameters)[i][1].max),
     );*/
 
-    console.log(allMessages);
     const response = await fetch("http://localhost:3000/send_sysex_batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -383,7 +392,7 @@ export async function sendReaper(collection) {
     });
 
     if (response.ok) {
-        const response = await doAnalysis(collection, get(startingIndex))
+        const response = await doAnalysis(collection, get(startingIndex), "", true)
 
         if (response.ok) {
             console.log("Finished analysis");

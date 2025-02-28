@@ -4,7 +4,12 @@
   import { extent } from "d3-array";
   import { playWav } from "../utils/midi";
   import Algorithm from "./Algorithm.svelte";
-  import { excluded, exportList, startingIndex } from "../utils/stores";
+  import {
+    excluded,
+    exportList,
+    startingIndex,
+    updateView,
+  } from "../utils/stores";
   import { getNamefromConfig } from "../utils/sysex";
   import {
     progressiveSubgroupBlockSampling,
@@ -21,6 +26,9 @@
 
   // sample tree structure
   const handleButtonClick1 = () => {
+    if (!selectedPoint?.config) {
+      return;
+    }
     console.log(selectedPoint);
     // sample new list of config
     const config = selectedPoint.config;
@@ -32,17 +40,22 @@
     if (isSingle) {
       newConfigs = sampleSingleValues(config, percent);
     } else {
-      newConfigs = sampleAllValues(config, percent);
+      newConfigs = sampleAllValues(config, percent, 3);
     }
 
     //const newConfigs = progressiveSubgroupBlockSampling(config, 20, false);
     // do analysis on this configs (only on these so new request)
-    sendReaper(newConfigs);
+    sendReaper(newConfigs).then((res) => {
+      updateView.set(!updateView);
+    });
     // write json with connections {selectedpoint.filename: [newname, ...], ...} (newname is 'patch_' + (startindex + i))
     writeEdges(selectedPoint, newConfigs, $startingIndex);
   };
 
   const handleButtonClick2 = () => {
+    if (!selectedPoint?.config) {
+      return;
+    }
     if (selectedPoint) {
       let temp = selectedPoint.config;
 
@@ -255,7 +268,9 @@
 
   // Watch for changes in selectedPoint and update the plots
   $: if (selectedPoint) {
-    textInput = getNamefromConfig(selectedPoint.config);
+    if (selectedPoint?.config) {
+      textInput = getNamefromConfig(selectedPoint.config);
+    }
     renderArrayPlot();
     renderMatrixPlot();
     renderHarmonicPlot();
@@ -308,8 +323,8 @@
     <div class="plot">
       <h5>Config:</h5>
       <Algorithm
-        algorithm={selectedPoint.config[134]}
-        config={selectedPoint.config}
+        algorithm={selectedPoint?.config ? selectedPoint?.config[134] : 0}
+        config={selectedPoint?.config}
       ></Algorithm>
       <!--<div class="plotcontainer" bind:this={arrayPlot}></div>-->
     </div>

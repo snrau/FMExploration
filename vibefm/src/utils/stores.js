@@ -18,5 +18,9 @@ export const data = derived([drpoints, refList, excluded], ([$drpoints, $refList
 
 export const cellStateStore = writable({});
 
+export const interpolatedConfig = writable([]);
+
 
 export const startingIndex = writable(0)
+
+export const updateView = writable(false)

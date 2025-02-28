@@ -65,26 +65,29 @@ export function getRandom(max) {
 }
 
 export function sampleRandomValue(initialValue, pmax, range = 100) {
-    let output = Math.random() * 100
+    let output = Math.floor(Math.random() * 100)
     if (range >= 100) {
-        if(initialValue === output)
-            return sampleRandomValue(initialValue, range)
+        if (initialValue === output)
+            return sampleRandomValue(initialValue, pmax, range)
         else
             return output; // Allow any value between 0 and 100
     }
-  
-    let newrange = Math.ceil((pmax+1)*range*0.01)
+
+    let newrange = Math.ceil((pmax + 1) * range * 0.01)
+    console.log("range: ", newrange, pmax, range)
 
     const min = Math.max(0, initialValue - newrange);
     const max = Math.min(pmax, initialValue + newrange);
 
-    output = Math.random() * (max - min) + min;
+    output = Math.floor(Math.random() * (max - min) + min);
 
-    if(initialValue === output)
-        return sampleRandomValue(initialValue, newrange)
+    console.log("output: ", output, initialValue)
+
+    if (initialValue === output)
+        return sampleRandomValue(initialValue, pmax, range)
     else
         return output; // Allow any value between 0 and 100
-  }
+}
 
 export function selectARandomBlock() {
     let block =
@@ -128,7 +131,7 @@ export function interpolate(configA, configB, percent, algoA) {
     });
 }
 
-export function getChangableParameters(){
+export function getChangableParameters() {
     // Get parameter keys in order to maintain consistent index positions
     const parameters = Object.keys(dx7Parameters);
 
@@ -140,9 +143,9 @@ export function getChangableParameters(){
 
     const cells = get(cellStateStore)
     const changableParameters = changeParams.filter(d => {
-        if(cells[d] === undefined && !cells[d] && dx7Parameters[d].number !== 134){
+        if (cells[d] === undefined && !cells[d] && dx7Parameters[d].number !== 134 && dx7Parameters[d].number < 140) {
             return true
-        }else{
+        } else {
             return false
         }
     })

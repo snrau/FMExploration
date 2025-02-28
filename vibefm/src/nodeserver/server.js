@@ -35,26 +35,32 @@ app.post("/send_sysex_batch", (req, res) => {
         return res.status(400).send("Invalid SysEx data.");
     }
 
-    // Save SysEx array to a JSON file
-    const sysexPath = "../luaScript/sysex_batch.json";
-    fs.writeFileSync(sysexPath, JSON.stringify(sysexArray, null, 2));
+    let startindex = 0
 
     fs.readdir("..\\..\\public\\sampled", (err, files) => {
+        // Filter .wav files
+        startindex = files.filter(file => file.endsWith(".json")).length
+        startingIndex.set(startindex)
+
+
+        // Save SysEx array to a JSON file
+        const sysexPath = "../luaScript/sysex_batch.json";
+        fs.writeFileSync(sysexPath, JSON.stringify([startindex, sysexArray], null, 2));
+
         if (err) {
             return res.status(500).json({ error: "Failed to read directory" });
         }
 
-        // Filter .wav files
-        const startindex = files.filter(file => file.endsWith(".wav")).length
-        startingIndex.set(startindex)
+
 
         const baseDir = path.resolve(process.cwd(), '..');
         // Trigger Reaper rendering script
         // REAPER:
         const luaScriptPath = path.join(baseDir, 'luaScript', 'render.lua');
-        exec(`${reaperPath} -nosplash -new -noactivate ${luaScriptPath} ${startindex}`, (error, stdout, stderr) => {
+
+        exec(`${reaperPath} -nosplash -new -noactivate ${luaScriptPath}`, (error, stdout, stderr) => {
             if (error) {
-                console.error("Error running Reaper script:", stderr);
+                console.error("Error running Reaper script:", stderr, error);
                 return res.status(500).send("Failed to trigger rendering.");
             }
             res.send("Rendering triggered successfully.");
@@ -76,6 +82,7 @@ app.post('/analysis', (req, res) => {
     const folderPath2 = req.body.path2
     const startindex = req.body.startindex
     const name = req.body.name
+    const sysex = req.body.sysex
 
     if (startindex !== -28) {
 
@@ -85,16 +92,18 @@ app.post('/analysis', (req, res) => {
             }
 
             // Filter .wav files
-            wavFiles = files.filter(file => file.endsWith(".wav"));
+            wavFiles = files.filter(file => file.endsWith(".wav"))
 
-            wavFiles = wavFiles.filter((f, i) => i >= startindex)
+            wavFiles = wavFiles.filter((f, i) => parseInt(f.split('_')[1].split('.wav')[0]) >= startindex)
+
+            console.log(wavFiles)
 
             // Path to the Python executable within the virtual environment
             const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
 
 
             // Spawn a Python process
-            const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs)]);
+            const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs), false, startindex]);
 
             // Capture output from the Python script
             pythonProcess.stdout.on('data', (data) => {
@@ -126,7 +135,7 @@ app.post('/analysis', (req, res) => {
             const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
 
             // Spawn a Python process
-            const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path2, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs)]);
+            const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path2, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs), sysex]);
 
             // Capture output from the Python script
             pythonProcess.stdout.on('data', (data) => {
@@ -151,6 +160,7 @@ app.post('/exportMFCC', (req, res) => {
 
     let jsonFiles = []
     const folderPath = req.body.path
+    const start = req.body.start
 
     fs.readdir(folderPath, (err, files) => {
         if (err) {
@@ -158,7 +168,7 @@ app.post('/exportMFCC', (req, res) => {
         }
 
         // Filter .wav files
-        jsonFiles = files.filter(file => file.endsWith(".json"));
+        jsonFiles = files.filter(file => file.endsWith(".json") && parseInt(file.split('_')[1].split('.json')[0]) >= start);
 
         // Path to the Python executable within the virtual environment
         const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
@@ -247,6 +257,7 @@ app.post('/readData', (req, res) => {
                                     rms: jsonObject.rms,
                                     sampled: true,
                                     reference: false,
+                                    sysex: false,
                                     filename: file
                                 });
                             } catch (e) {
@@ -363,6 +374,7 @@ app.post('/readSpecificFile', (req, res) => {
                     rms: jsonObject.rms,
                     sampled: folderPath.includes("sampled") ? true : false,
                     reference: folderPath.includes("reference") ? true : false,
+                    sysex: jsonObject.sysex,
                     filename: fileName
                 };
 
@@ -422,6 +434,7 @@ app.post('/readRef', (req, res) => {
                                     rms: jsonObject.rms,
                                     sampled: false,
                                     reference: true,
+                                    sysex: jsonObject.sysex,
                                     filename: file
                                 });
                             } catch (e) {
@@ -529,6 +542,7 @@ app.post('/WriteEdges', (req, res) => {
                     if (!existingSet.has(item)) {
                         existingSet.add(item);
                     }
+                    jsonData[item] = jsonData[item] || [];
                 });
 
                 // Convert Set back to an array
@@ -629,6 +643,7 @@ app.post('/addReference', (req, res) => {
     const folderPath = req.body.path
     const sysexArray = [req.body.config]
     const name = req.body.name
+
 
     const filePath = `${folderPath}/${name}.wav`;
 
@@ -775,7 +790,7 @@ function wavAnalysis(folderPath, name, configs) {
             const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
 
             // Spawn a Python process
-            const pythonProcess = spawn(pythonExecutable, ['analysis.py', folderPath, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(configs)]);
+            const pythonProcess = spawn(pythonExecutable, ['analysis.py', folderPath, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(configs), false]);
 
             // Capture output from the Python script
             pythonProcess.stdout.on('data', (data) => {
@@ -877,6 +892,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
                     rms: jsonObject.rms,
                     sampled: false,
                     reference: false,
+                    sysex: false,
                     filename: req.file.filename
                 }];
 
