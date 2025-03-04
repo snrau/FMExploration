@@ -17,6 +17,7 @@
     sampleSingleValues,
   } from "../utils/strategies";
   import { sendReaper, writeEdges } from "../utils/serverRequests";
+  import * as d3 from "d3";
 
   export let selectedPoint = null;
 
@@ -29,7 +30,6 @@
     if (!selectedPoint?.config) {
       return;
     }
-    console.log(selectedPoint);
     // sample new list of config
     const config = selectedPoint.config;
 
@@ -91,6 +91,197 @@
   let centroidPlot; // Reference for the 2D array plot
   let rmsPlot; // Reference for the 2D array plot
 
+  const renderArrayPlot = () => {
+    if (!selectedPoint || !selectedPoint?.config) return;
+    if (!arrayPlot) return;
+
+    const data = selectedPoint.config.map((v, i) => ({ x: i, y: v }));
+
+    const svg = d3
+      .select(arrayPlot)
+      .html("")
+      .append("svg")
+      .attr("width", 350)
+      .attr("height", 120)
+      .append("g")
+      .attr("transform", "translate(2,2)");
+
+    const x = d3
+      .scaleLinear()
+      .domain([0, data.length - 1])
+      .range([0, 346]);
+    const y = d3
+      .scaleLinear()
+      .domain([d3.min(data, (d) => d.y), d3.max(data, (d) => d.y)])
+      .range([118, 0]);
+
+    const line = d3
+      .line()
+      .x((d) => x(d.x))
+      .y((d) => y(d.y));
+
+    svg
+      .append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1.5)
+      .attr("d", line);
+  };
+
+  const renderCentroidPlot = () => {
+    if (!selectedPoint) return;
+    if (!centroidPlot) return;
+
+    const data = selectedPoint.analysis.centroid[0].map((v, i) => ({
+      x: i,
+      y: v,
+    }));
+
+    const svg = d3
+      .select(centroidPlot)
+      .html("")
+      .append("svg")
+      .attr("width", 350)
+      .attr("height", 120)
+      .append("g")
+      .attr("transform", "translate(2,2)");
+
+    const x = d3
+      .scaleLinear()
+      .domain([0, data.length - 1])
+      .range([0, 346]);
+    const y = d3
+      .scaleLinear()
+      .domain([d3.min(data, (d) => d.y), d3.max(data, (d) => d.y)])
+      .range([118, 0]);
+
+    const line = d3
+      .line()
+      .x((d) => x(d.x))
+      .y((d) => y(d.y));
+
+    svg
+      .append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1.5)
+      .attr("d", line);
+  };
+
+  const renderRMSPlot = () => {
+    if (!selectedPoint) return;
+    if (!rmsPlot) return;
+
+    const data = selectedPoint.analysis.rms[0].map((v, i) => ({ x: i, y: v }));
+
+    const svg = d3
+      .select(rmsPlot)
+      .html("")
+      .append("svg")
+      .attr("width", 350)
+      .attr("height", 120)
+      .append("g")
+      .attr("transform", "translate(2,2)");
+
+    const x = d3
+      .scaleLinear()
+      .domain([0, data.length - 1])
+      .range([0, 346]);
+    const y = d3
+      .scaleLinear()
+      .domain([d3.min(data, (d) => d.y), d3.max(data, (d) => d.y)])
+      .range([118, 0]);
+
+    const line = d3
+      .line()
+      .x((d) => x(d.x))
+      .y((d) => y(d.y));
+
+    svg
+      .append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1.5)
+      .attr("d", line);
+  };
+
+  const renderHarmonicPlot = () => {
+    if (!selectedPoint) return;
+    if (!harmonicPlot) return;
+
+    const harmonicData = selectedPoint.analysis.hrps.harmonic.map((v, i) => ({
+      x: i,
+      y: v,
+    }));
+    const residualData = selectedPoint.analysis.hrps.residual.map((v, i) => ({
+      x: i,
+      y: v,
+    }));
+    const percussiveData = selectedPoint.analysis.hrps.percussive.map(
+      (v, i) => ({ x: i, y: v }),
+    );
+
+    const svg = d3
+      .select(harmonicPlot)
+      .html("")
+      .append("svg")
+      .attr("width", 350)
+      .attr("height", 120)
+      .append("g")
+      .attr("transform", "translate(2,2)");
+
+    const x = d3
+      .scaleLinear()
+      .domain([0, harmonicData.length - 1])
+      .range([0, 346]);
+    const y = d3
+      .scaleLinear()
+      .domain([
+        d3.min(
+          harmonicData.concat(residualData).concat(percussiveData),
+          (d) => d.y,
+        ),
+        d3.max(
+          harmonicData.concat(residualData).concat(percussiveData),
+          (d) => d.y,
+        ),
+      ])
+      .range([118, 0]);
+
+    const line = d3
+      .line()
+      .x((d) => x(d.x))
+      .y((d) => y(d.y));
+
+    svg
+      .append("path")
+      .datum(harmonicData)
+      .attr("fill", "none")
+      .attr("stroke", "blue")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+    svg
+      .append("path")
+      .datum(residualData)
+      .attr("fill", "none")
+      .attr("stroke", "orange")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+
+    svg
+      .append("path")
+      .datum(percussiveData)
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("stroke-width", 2)
+      .attr("d", line);
+  };
+
+  /*
   // Function to render the 1D array plot
   const renderArrayPlot = () => {
     if (!selectedPoint || !selectedPoint?.config) return;
@@ -240,6 +431,7 @@
     harmonicPlot.innerHTML = "";
     harmonicPlot.appendChild(plot);
   };
+  */
 
   // Function to render the 2D array plot
   const renderMatrixPlot = () => {

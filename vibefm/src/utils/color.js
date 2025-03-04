@@ -15,6 +15,7 @@ function normalizeBrightness(value, brightnessExtent) {
 }
 
 export function getColor(point, brightnessExtent, pointColor) {
+    console.log("change color", point)
     let color
 
     if (pointColor === "brightHarmonic") {

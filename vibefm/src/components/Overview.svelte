@@ -288,7 +288,6 @@
             }
         } else {
             selectedPoint = point;
-            console.log(selectedPoint);
             referencePoint = null; // Reset if Ctrl is not held
             if (point && point?.config)
                 sendMessage(createSysexMessageFromConfig(point.config));

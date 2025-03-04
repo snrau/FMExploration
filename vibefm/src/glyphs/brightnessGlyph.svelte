@@ -108,6 +108,13 @@
         path.attr("stroke-width", selected ? 3 : 1);
     }
 
+    function adjustFill() {
+        background.attr("stroke", fill);
+        path.attr("stroke", fill);
+    }
+
+    $: fill, adjustFill();
+
     $: data, drawPlot();
     $: selected, adjustSelect();
 

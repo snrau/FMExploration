@@ -105,6 +105,15 @@
     }
   }
 
+  let x1 = 0;
+  let y1 = 0;
+  let x2 = 0;
+  let y2 = 0;
+  // Get relative mouse position along the line
+  let dx = 0;
+  let dy = 0;
+  let length = 0;
+
   function drawConnection() {
     if (!selectedPoint || !referencePoint) return;
 
@@ -121,7 +130,7 @@
       .attr("cx", (xScale(selectedPoint.x) + xScale(referencePoint.x)) / 2)
       .attr("cy", (yScale(selectedPoint.y) + yScale(referencePoint.y)) / 2)
       .attr("r", 5)
-      .attr("fill", "green")
+      .attr("fill", "lightgreen")
       .classed("draggable-handle", true)
       .call(
         drag()
@@ -129,21 +138,22 @@
           .on("drag", dragged)
           .on("end", (e) => {}),
       );
+
+    x1 = xScale(selectedPoint.x);
+    y1 = yScale(selectedPoint.y);
+    x2 = xScale(referencePoint.x);
+    y2 = yScale(referencePoint.y);
+    // Get relative mouse position along the line
+    dx = x2 - x1;
+    dy = y2 - y1;
+    length = Math.sqrt(dx * dx + dy * dy);
   }
 
   let aAlgo = true;
 
   function dragged(e) {
     if (!e) return;
-    let x1 = xScale(selectedPoint.x);
-    let y1 = yScale(selectedPoint.y);
-    let x2 = xScale(referencePoint.x);
-    let y2 = yScale(referencePoint.y);
 
-    // Get relative mouse position along the line
-    let dx = x2 - x1;
-    let dy = y2 - y1;
-    let length = Math.sqrt(dx * dx + dy * dy);
     let t = ((e.x - x1) * dx + (e.y - y1) * dy) / (length * length);
 
     interpolationValue = Math.max(0, Math.min(1, t)); // Keep value between 0 and 1
@@ -152,6 +162,7 @@
     } else if (interpolationValue === 0) {
       aAlgo = true;
     }
+
     interpolateConfig = interpolate(
       selectedPoint.config,
       referencePoint.config,
@@ -167,7 +178,7 @@
     select(this)
       .attr("cx", x1 + interpolationValue * dx)
       .attr("cy", y1 + interpolationValue * dy)
-      .attr("fill", aAlgo ? "green" : "yellow");
+      .attr("fill", aAlgo ? "lightgreen" : "darkgreen");
   }
 
   function removeConnection() {
@@ -309,19 +320,6 @@
               selection={point === selectedPoint ? null : selectedPoint}
             />
           {/if}
-        {:else if point.analysis.sysex || point.analysis.reference}
-          <Reference
-            data={point}
-            x={xScale(point.x) - 10}
-            y={yScale(point.y) - 10}
-            class1="point"
-            fill={getColor(point, brightnessExtent, pointColor)}
-            onClick={(e) => handleClick(e, point)}
-            selected={point === selectedPoint}
-            {pointRenderer}
-            {selectedPoint}
-            interpolation={false}
-          ></Reference>
         {:else}
           <Reference
             data={point}
@@ -333,7 +331,7 @@
             selected={point === selectedPoint}
             {pointRenderer}
             {selectedPoint}
-            interpolation={true}
+            interpolation={!(point.analysis.sysex || point.analysis.reference)}
           ></Reference>
         {/if}
       {/each}
