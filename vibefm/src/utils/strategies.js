@@ -1,5 +1,5 @@
 import { dx7Parameters } from "./dexed";
-import { getChangableParameters, getChangesArrayLimited, getRandom, randomizeBlock, sampleRandomValue, selectARandomBlock, uniformSamplingFull, uniformSamplingRestricted } from "./sampling";
+import { getChangableParameters, getChangesArrayLimited, getRandom, getRandomConfig, randomizeBlock, sampleRandomValue, selectARandomBlock, selectARandomOP, uniformSamplingFull, uniformSamplingRestricted } from "./sampling";
 
 // change whole blocks
 export function progressiveSubgroupBlockSampling(sample, num = 50, primer = true) {
@@ -19,7 +19,7 @@ export function progressiveSubgroupBlockSampling(sample, num = 50, primer = true
 
 export function generateCombinations(
     objDict,
-    samplingStrategy = "uniformRandomRestrict",
+    samplingStrategy = "uniformRandomFull",
     num = 50,
 ) {
     let changeArray =
@@ -47,7 +47,6 @@ export function generateCombinations(
                     JSON.stringify(sampledCollection[j])
                 ) {
                     successful = false;
-                    console.log(sampledCollection[i], sampledCollection[j]);
                 }
             }
         } while (successful === false);
@@ -131,6 +130,44 @@ export function randomizeName(config) {
     return c
 }
 
+function checkIfAlreadyThere(sampledCollection, gen, i) {
+    let successful = true;
+    sampledCollection.forEach((sampled, j) => {
+        if (j < i) {
+            if (
+                JSON.stringify(gen) ===
+                JSON.stringify(sampled)
+            ) {
+                successful = false;
+            }
+        } else return successful
+    })
+    return successful
+}
+
+export function sampleBlockValues(config, percent, bound = 8) {
+    let configs = []
+    const params = getChangableParameters()
+
+    for (let i = 0; i < bound; i++) {
+        configs.push(randomizeName(config));
+    }
+    for (let i = 0; i < bound; i++) {
+        let gen = [...configs[i]]
+        const block = selectARandomOP();
+        const blockParams = params.filter(p => p.number >= block[0] && p.number <= block[1])
+        do {
+            blockParams.forEach(p => {
+                const v = sampleRandomValue(configs[i][p.number], p.max, percent)
+                gen[p.number] = v
+            })
+        } while (!checkIfAlreadyThere(configs, gen, i))
+        configs[i] = [...gen]
+
+    }
+    return configs
+}
+
 
 export function sampleSingleValues(config, percent) {
     let configs = []
@@ -152,10 +189,26 @@ export function sampleAllValues(config, percent, bound = 8) {
         configs.push(randomizeName(config));
     }
     for (let i = 0; i < bound; i++) {
-        params.forEach(p => {
-            const v = sampleRandomValue(configs[i][p.number], p.max, percent)
-            configs[i][p.number] = v
-        })
+        let gen = [...configs[i]]
+        do {
+            params.forEach(p => {
+                const v = sampleRandomValue(configs[i][p.number], p.max, percent)
+                gen[p.number] = v
+            })
+        } while (!checkIfAlreadyThere(configs, gen, i))
+        configs[i] = [...gen]
     }
     return configs
+}
+
+export function getMultipleRandoms(num) {
+    let randoms = []
+    for (let i = 0; i < num; i++) {
+        let gen = []
+        do {
+            gen = getRandomConfig()
+        } while (!checkIfAlreadyThere(randoms, gen, i))
+        randoms.push(gen)
+    }
+    return randoms
 }

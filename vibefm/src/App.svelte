@@ -18,14 +18,18 @@
 </script>
 
 <div class="app-container">
+  <!--
   <SideMenu callback={handleNavigation} />
+  
   <div class="main-content">
     {#if currentView === "synth"}
-      <Overview />
+      
     {:else if currentView === "about"}
       <DexedConnectionView />
     {/if}
   </div>
+  -->
+  <Overview />
 </div>
 
 <style>

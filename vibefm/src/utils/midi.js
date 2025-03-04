@@ -26,7 +26,7 @@ export function sendMessage(m, mout = null) {
 }
 
 export function playWav(point) {
-    const folder = point.sampled ? "sampled" : "reference";
+    const folder = point.analysis.sampled ? "sampled" : "reference";
     const filePath = `./${folder}/${point.label}.wav`;
 
     if (audio) {

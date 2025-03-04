@@ -78,9 +78,11 @@
             .append("rect")
             .attr("width", width)
             .attr("height", height)
-            .attr("pointer-events", "all") // Ensure it captures click events
+            .attr("pointer-events", "all")
+            .attr("stroke", fill)
             .attr("stroke-width", selected ? 2 : 1)
-            .attr("fill", selected ? "white" : "transparent");
+            .attr("fill", selected ? "white" : "transparent")
+            .on("click", () => onClick());
 
         const importantPoints = getImportantPoints(data);
         let line = d3

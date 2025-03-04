@@ -257,6 +257,8 @@
     img.style.height = "100%";
 
     img.onload = () => {
+      if (!matrixPlot) return;
+
       matrixPlot.innerHTML = "";
       matrixPlot.appendChild(img);
     };
@@ -277,32 +279,46 @@
     renderCentroidPlot();
     renderRMSPlot();
   }
+
+  onMount(() => {
+    if (selectedPoint) {
+      renderArrayPlot();
+      renderMatrixPlot();
+      renderHarmonicPlot();
+      renderCentroidPlot();
+      renderRMSPlot();
+    }
+  });
 </script>
 
 <div class="menu">
   <div class="left">
     <label class="checkbox-label">
-      <input type="checkbox" bind:checked={isSingle} />
+      <input class="checkbox" type="checkbox" bind:checked={isSingle} />
       <span>{isSingle ? "Single" : "All"}</span>
     </label>
 
     <label class="checkbox-label">
-      <input type="checkbox" bind:checked={isSmall} />
+      <input class="checkbox" type="checkbox" bind:checked={isSmall} />
       <span>{isSmall ? "Small" : "Large"}</span>
     </label>
   </div>
 
   <div class="right">
     <div class="buttons">
-      <button on:click={handleButtonClick1}>Sample similar</button>
-      <button on:click={handleButtonClick2}>Add to Export list</button>
+      <button class="full-height" on:click={handleButtonClick1}
+        >Sample similar</button
+      >
+      <div class="stacked">
+        <button on:click={handleButtonClick2}>Add to Export list</button>
+        <input
+          type="text"
+          bind:value={textInput}
+          maxlength="10"
+          placeholder="Config Name"
+        />
+      </div>
     </div>
-    <input
-      type="text"
-      bind:value={textInput}
-      maxlength="10"
-      placeholder="Config Name"
-    />
   </div>
 </div>
 
@@ -360,19 +376,12 @@
     flex-direction: column;
     gap: 5px;
     padding: 5px;
-    width: 400px;
-    height: 900px;
+    width: 500px;
+    height: 985px;
     overflow-y: auto;
     background: #ffffff;
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
     color: black;
-  }
-
-  .button-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px; /* Optional: Adjust the gap between buttons */
   }
 
   .label {
@@ -384,18 +393,42 @@
   .left {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 0.5rem;
   }
 
   .right {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: flex-start;
   }
 
   .buttons {
     display: flex;
     gap: 0.5rem;
+    height: 100%;
+  }
+
+  .full-height {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stacked {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    margin-left: 10px;
+  }
+
+  .stacked button,
+  .stacked input {
+    margin-top: 10px;
+    width: 100%;
   }
 
   h5 {
@@ -409,6 +442,12 @@
     justify-content: center;
   }
 
+  .checkbox {
+    max-width: 50px;
+    max-height: 50px;
+    gap: 0.5rem;
+  }
+
   .plotcontainer {
     width: 350px;
     display: flex;
@@ -417,26 +456,19 @@
     justify-content: center;
   }
 
-  img {
-    max-width: 100%;
-    max-height: 100%;
-  }
-
   .menu {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 3fr;
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
     border: 1px solid #ccc;
-    width: 400px;
-    display: flex;
+    width: 500px;
     margin: 5 0px;
     border-bottom: 1px solid #ccc;
     border: 1px solid #ccc;
-    display: flex;
     gap: 5px;
     padding: 5px;
-    width: 400px;
     background: #ffffff;
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
     color: black;
@@ -467,7 +499,7 @@
 
   .left label {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: -0.5rem;
   }
 </style>

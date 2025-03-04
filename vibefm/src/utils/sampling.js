@@ -12,6 +12,13 @@ export function uniformSamplingFull() {
     return temp;
 }
 
+export function getRandomConfig() {
+    let temp = Object.keys(dx7Parameters).map((param) =>
+        dx7Parameters[param].change ? Math.floor(Math.random() * dx7Parameters[param].max) : dx7Parameters[param].default,
+    );
+    return temp
+}
+
 export function uniformSamplingRestricted(changeArray) {
     let temp = Object.keys(dx7Parameters).map((param) =>
         dx7Parameters[param].change ? null : dx7Parameters[param].default,
@@ -74,14 +81,12 @@ export function sampleRandomValue(initialValue, pmax, range = 100) {
     }
 
     let newrange = Math.ceil((pmax + 1) * range * 0.01)
-    console.log("range: ", newrange, pmax, range)
 
     const min = Math.max(0, initialValue - newrange);
     const max = Math.min(pmax, initialValue + newrange);
 
     output = Math.floor(Math.random() * (max - min) + min);
 
-    console.log("output: ", output, initialValue)
 
     if (initialValue === output)
         return sampleRandomValue(initialValue, pmax, range)
@@ -95,6 +100,14 @@ export function selectARandomBlock() {
         Object.keys(dx7Blocks)[getRandom(Object.keys(dx7Blocks).length)]
         ];
     return block[Object.keys(block)[getRandom(Object.keys(block).length)]];
+}
+
+export function selectARandomOP() {
+    let block =
+        dx7Blocks[
+        Object.keys(dx7Blocks)[getRandom(Object.keys(dx7Blocks).length)]
+        ];
+    return block.All
 }
 
 export function randomizeBlock(sample, blockrange) {

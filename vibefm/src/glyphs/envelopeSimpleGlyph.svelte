@@ -21,6 +21,8 @@
         .scaleLinear()
         .domain(d3.extent(data, (d, i) => i))
         .range([padding, width - padding]);
+
+    extent = d3.extent(data, (d, i) => d);
     let yScale = d3
         .scaleLinear()
         .domain(extent)
@@ -42,11 +44,7 @@
         let first = true;
 
         for (let i = 1; i < data.length - 1; i++) {
-            if (
-                data[i] > data[i - 1] &&
-                data[i] > data[i + 1] &&
-                data[i] > 0.001
-            ) {
+            if (data[i] > data[i - 1] && data[i] > data[i + 1]) {
                 // Local maximum
                 if (first) {
                     importantPoints.push({ index: i, value: data[i] });
@@ -109,14 +107,15 @@
             .attr("pointer-events", "all")
             .attr("stroke", fill)
             .attr("stroke-width", selected ? 2 : 1)
-            .attr("fill", selected ? "white" : "transparent");
+            .attr("fill", selected ? "white" : "transparent")
+            .on("click", () => onClick());
 
         const importantPoints = getImportantPoints(data);
         let line = d3
             .line()
             .x((d, i) => xScale(d.index))
             .y((d, i) => yScale(d.value))
-            .curve(d3.curveCatmullRom);
+            .curve(d3.curveLinear);
 
         // Add line
         path = svgElement
@@ -125,7 +124,8 @@
             .attr("d", line)
             .attr("stroke", fill)
             .attr("stroke-width", selected ? 3 : 1)
-            .attr("fill", "none");
+            .attr("fill", "none")
+            .on("click", () => onClick());
     }
 
     function adjustSelect() {

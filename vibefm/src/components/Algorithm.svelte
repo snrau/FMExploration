@@ -44,7 +44,7 @@
     };
 
     let xOffset = 5; // Initial X offset
-    let yOffset = 5; // Lower Y offset so outputs are at the bottom
+    let yOffset = 15; // Lower Y offset so outputs are at the bottom
     let boxWidth = 35;
     let boxHeight = 20;
     let spacingX = 55; // Space between modulators

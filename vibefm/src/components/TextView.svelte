@@ -2,22 +2,22 @@
   import ConfigHistogram from "./ConfigHistogram.svelte";
   import ConfigIntensity from "./ConfigIntensity.svelte";
 
-  export let title = "Title";
   export let content = "Content";
   export let parameters = null;
   export let configs = null;
 </script>
 
 <div class="container">
+  <!--
   <div class="small-view">
-    <h3>{title}</h3>
     <p>{content}</p>
   </div>
+  -->
 
   <div class="config-container">
     {#if parameters && configs}
       <ConfigHistogram {parameters} {configs} binnumber={7}></ConfigHistogram>
-      <ConfigIntensity {parameters} {configs} binnumber={7}></ConfigIntensity>
+      <!--<ConfigIntensity {parameters} {configs} binnumber={7}></ConfigIntensity>-->
     {/if}
   </div>
 </div>
@@ -43,8 +43,8 @@
   }
 
   .config-container {
-    padding: 10px;
-    margin-top: 20px;
+    padding-left: 10px;
+    margin-top: 5px;
     max-width: 300px;
   }
 </style>

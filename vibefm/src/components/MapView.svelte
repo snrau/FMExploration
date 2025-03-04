@@ -30,7 +30,7 @@
     if (event.altKey || event.ctrlKey) return;
 
     // Check if the clicked target is NOT a point
-    if (!event.target.classList.contains("point")) {
+    if (event.target.id === "full-svg") {
       onPointClick(event, null);
     }
   }
@@ -48,7 +48,7 @@
 
   let isBrushing = false;
 
-  const size = 1800;
+  const size = 2000;
   const offset = 5;
 
   const glyphsize = 20;
@@ -247,6 +247,7 @@
     width={size}
     height={size}
     on:click={handleSvgClick}
+    id={"full-svg"}
   >
     <g
       id={"map"}
@@ -274,7 +275,7 @@
               fill={getColor(point, brightnessExtent, pointColor)}
               on:click={(e) => handleClick(e, point)}
             ></circle>
-          {:else if pointRenderer === "glyph"}
+          {:else if pointRenderer === "envelope"}
             <EnvelopeSimpleGlyph
               data={point.analysis.rms[0]}
               x={xScale(point.x) - 10}
@@ -308,26 +309,32 @@
               selection={point === selectedPoint ? null : selectedPoint}
             />
           {/if}
-        {:else if point.analysis.sysex || !point.analysis.reference}
+        {:else if point.analysis.sysex || point.analysis.reference}
           <Reference
-            data={point.label}
+            data={point}
             x={xScale(point.x) - 10}
             y={yScale(point.y) - 10}
             class1="point"
             fill={getColor(point, brightnessExtent, pointColor)}
             onClick={(e) => handleClick(e, point)}
             selected={point === selectedPoint}
-          />
+            {pointRenderer}
+            {selectedPoint}
+            interpolation={false}
+          ></Reference>
         {:else}
           <Reference
-            data={point.label + "(int)"}
+            data={point}
             x={xScale(point.x) - 10}
             y={yScale(point.y) - 10}
             class1="point"
             fill={getColor(point, brightnessExtent, pointColor)}
             onClick={(e) => handleClick(e, point)}
             selected={point === selectedPoint}
-          />
+            {pointRenderer}
+            {selectedPoint}
+            interpolation={true}
+          ></Reference>
         {/if}
       {/each}
     </g>
