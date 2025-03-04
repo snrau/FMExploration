@@ -38,3 +38,10 @@ then
 Open the link in a browser.
 
 Open a second cmd and run `npm run server` also from the vibefm directory
+
+
+# Functions
+
+1.  multi exclude: press `b` and brush the points to exclude
+2.  Interpolation: select a point, press `ctrl` and select the other point, drag the handle
+3.  Zoom + Pan: press `alt` and drag or zoom
