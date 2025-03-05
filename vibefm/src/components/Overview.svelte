@@ -114,6 +114,7 @@
         "resetExclude",
     ];
 
+    let addPrimer = true;
     let sampleNumber = 10;
 
     // onMount Midiaccess requesten
@@ -149,7 +150,7 @@
                 collection = sampleBlockValues(primer, value, sampleNumber);
             }
         }
-        if (primer.length > 0 && strategy !== "allRandom")
+        if (primer.length > 0 && strategy !== "allRandom" && addPrimer)
             collection = [primer, ...collection];
 
         console.log(collection, primer);
@@ -513,6 +514,14 @@
                                 <option value={glyph}>{glyph}</option>
                             {/each}
                         </select>
+                    </div>
+                    <div class="center-wrapper-full">
+                        <input
+                            class="checkbox"
+                            type="checkbox"
+                            bind:checked={addPrimer}
+                        />
+                        <span>{addPrimer ? "addPrimer" : "noPrimer"}</span>
                     </div>
                 {/if}
                 {#if strategy === "primer"}
