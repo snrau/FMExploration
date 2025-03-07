@@ -54,7 +54,16 @@ export function getDrProjectedPoints(distMatrix, drmethod = 'mds', precomputed =
 
 export function euclideanDistance(mfcc1, mfcc2) {
     if (mfcc1.length !== mfcc2.length) {
-        throw new Error("MFCC matrices must have the same length.");
+        let m1l = mfcc1.length % 20
+        let m2l = mfcc2.length % 20
+        let minlength = Math.max(m1l, m2l)
+        let t1 = []
+        let t2 = []
+        for(let i = 0; i<20;i++){
+            t1 = t1.concat(mfcc1.slice(i*m1l, (i*m1l)+minlength))
+            t2 = t2.concat(mfcc2.slice(i*m2l, (i*m2l)+minlength))
+        }
+        Math.sqrt(t1.reduce((sum, val, i) => sum + Math.pow(val - t2[i], 2), 0));
     }
     return Math.sqrt(mfcc1.reduce((sum, val, i) => sum + Math.pow(val - mfcc2[i], 2), 0));
 }

@@ -119,15 +119,17 @@
             {selected}
         />
     {:else if pointRenderer === "config"}
-        <ConfigMatrixGlyph
-            config={data.config}
-            x={10}
-            y={20}
-            cellSize={7}
-            {onClick}
-            parameters={Object.entries(dx7Parameters)}
-            selection={data === selectedPoint ? null : selectedPoint}
-        />
+        {#if data?.config}
+            <ConfigMatrixGlyph
+                config={data?.config}
+                x={10}
+                y={20}
+                cellSize={7}
+                {onClick}
+                parameters={Object.entries(dx7Parameters)}
+                selection={data === selectedPoint ? null : selectedPoint}
+            />
+        {/if}
     {/if}
 </svg>
 

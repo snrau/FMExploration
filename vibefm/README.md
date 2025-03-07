@@ -17,6 +17,7 @@ create two virtual Ports:
 # Reaper 
 Install reaper and find the path to its exe. 
 copy this path to the variable `reaperPath` in the file server.js line 10.
+Also copy the file `dkjson.lua`from "vibefm/src/luaScript" next to the "reaper.exe".
 
 Open Reaper a single time to set preferences:
 open Options -> Preference 
