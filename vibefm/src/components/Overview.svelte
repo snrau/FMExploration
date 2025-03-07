@@ -502,7 +502,7 @@
                             on:change={() => {
                                 if (paramChange === "single") {
                                     prev = sampleNumber;
-                                    sampleNumber = 37;
+                                    sampleNumber = getChangableParameters().length();
                                 } else {
                                     sampleNumber =
                                         prev !== 0 ? prev : sampleNumber;
