@@ -2,6 +2,7 @@
     import * as d3 from "d3";
     import { onMount } from "svelte";
     import EnvelopeSimpleGlyph from "./envelopeSimpleGlyph.svelte";
+    import EnvelopeGlyph from "./envelopeGlyph.svelte";
     import { dx7Parameters } from "../utils/dexed";
     import BrightnessGlyph from "./brightnessGlyph.svelte";
     import ConfigMatrixGlyph from "./configMatrixGlyph.svelte";
@@ -89,14 +90,14 @@
         <circle
             cx={width / 2}
             cy={(height * 2) / 3}
-            r={selected ? 6 : 4}
+            r={selected ? 10 : 8}
             class="point"
             {fill}
             stroke={selected ? "black" : "none"}
             stroke-width={selected ? 2 : 0}
         ></circle>
     {:else if pointRenderer === "envelope"}
-        <EnvelopeSimpleGlyph
+        <EnvelopeGlyph
             data={data.analysis.rms[0]}
             x={20}
             y={20}

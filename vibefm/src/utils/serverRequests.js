@@ -89,7 +89,7 @@ export async function exportMFCC(start) {
     return response
 }
 
-export async function distanceMatrix() {
+export async function distanceMatrix(withRef) {
     try {
         const response = await fetch("http://localhost:3000/distanceMatrix", {
             method: "POST",
@@ -97,6 +97,7 @@ export async function distanceMatrix() {
             body: JSON.stringify({
                 sampled: "..\\..\\public\\sampled",
                 ref: "..\\..\\public\\reference",
+                withRef: withRef,
             }),
         })
 

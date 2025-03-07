@@ -578,6 +578,8 @@ app.post('/distanceMatrix', (req, res) => {
     const mfccMatrices = [];
     const folderPath = req.body.sampled
     const folderReference = req.body.ref
+    const withRef = req.body.withRef
+
 
     try {
         const files = fs.readdirSync(folderPath).filter(file => file.endsWith(".json"));
@@ -592,6 +594,20 @@ app.post('/distanceMatrix', (req, res) => {
                 mfccMatrices.push(data.mfcc.flat());
             } else {
                 throw new Error(`The key "mfcc" is not found in the JSON file: ${file}`);
+            }
+        }
+
+        if (withRef) {
+            const files = fs.readdirSync(folderReference).filter(file => file.endsWith(".json"));
+
+            for (const file of files) {
+                const filePath = `${folderReference}/${file}`;
+                const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+                if (data.mfcc) {
+                    mfccMatrices.push(data.mfcc.flat());
+                } else {
+                    throw new Error(`The key "mfcc" is not found in the JSON file: ${file}`);
+                }
             }
         }
 

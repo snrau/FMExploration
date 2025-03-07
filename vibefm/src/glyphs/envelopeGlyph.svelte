@@ -21,9 +21,11 @@
         .scaleLinear()
         .domain(d3.extent(data, (d, i) => i))
         .range([padding, width - padding]);
+
+    let extent1 = d3.extent(data, (d, i) => d);
     let yScale = d3
         .scaleLinear()
-        .domain(extent)
+        .domain(extent1)
         .range([height - padding, padding]);
 
     // Line generator
@@ -35,10 +37,11 @@
         if (!data || data.length === 0) return [];
 
         const importantPoints = [];
-        importantPoints.push({ index: 0, value: data[0] }); // Add the first point
+        importantPoints.push({ index: 0, value: 0 });
+        importantPoints.push({ index: 1, value: data[0] }); // Add the first point
 
         let lastMax = null;
-        for (let i = 1; i < data.length - 1; i++) {
+        for (let i = 2; i < data.length - 1; i++) {
             if (data[i] > data[i - 1] && data[i] > data[i + 1]) {
                 // Local maximum
                 importantPoints.push({ index: i, value: data[i] });
@@ -102,12 +105,19 @@
     }
 
     function adjustSelect() {
-        background
-            .attr("stroke-width", selected ? 2 : 1)
-            .attr("fill", selected ? "white" : "transparent");
-        path.attr("stroke-width", selected ? 3 : 1);
+        if (background)
+            background
+                .attr("stroke-width", selected ? 2 : 1)
+                ?.attr("fill", selected ? "white" : "transparent");
+        if (path) path.attr("stroke-width", selected ? 3 : 1);
     }
 
+    function adjustFill() {
+        if (background) background?.attr("stroke", fill);
+        if (path) path.attr("stroke", fill);
+    }
+
+    $: fill, adjustFill();
     $: data, drawPlot();
     $: selected, adjustSelect();
 

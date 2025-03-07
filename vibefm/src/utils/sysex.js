@@ -116,10 +116,10 @@ export function getShortNamefromConfig(config) {
     return config
         .slice(145, 155)
         .map((code) => {
-            if (code !== 32)
+            if (code !== 32 && code !== 92)
                 return String.fromCharCode(code)
             else
                 return ""
         })
-        .join("")
+        .join("").replace("/", "").replace(String.fromCharCode(92), "")
 }

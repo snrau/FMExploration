@@ -63,7 +63,7 @@ export function euclideanDistance(mfcc1, mfcc2) {
             t1 = t1.concat(mfcc1.slice(i * m1l, (i * m1l) + minlength))
             t2 = t2.concat(mfcc2.slice(i * m2l, (i * m2l) + minlength))
         }
-        Math.sqrt(t1.reduce((sum, val, i) => sum + Math.pow(val - t2[i], 2), 0));
+        return Math.sqrt(t1.reduce((sum, val, i) => sum + Math.pow(val - t2[i], 2), 0));
     }
     return Math.sqrt(mfcc1.reduce((sum, val, i) => sum + Math.pow(val - mfcc2[i], 2), 0));
 }

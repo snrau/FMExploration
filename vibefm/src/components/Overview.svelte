@@ -50,7 +50,7 @@
         sampleSingleValues,
         getMultipleRandoms,
     } from "../utils/strategies";
-    import { getRandomConfig } from "../utils/sampling";
+    import { getRandomConfig, getChangableParameters } from "../utils/sampling";
 
     let sysexList = [];
 
@@ -89,6 +89,8 @@
     let valueChange = "full";
     const paramOptions = ["all", "single", "operator"];
     let paramChange = "all";
+
+    let withRef = true;
 
     $: pointRenderer = "circle";
     $: pointColor = "brightHarmonic";
@@ -176,8 +178,9 @@
     }
     async function calcDistance() {
         if ($jsonDataList.length !== 0) {
-            distMatrix.set(await distanceMatrix());
+            distMatrix.set(await distanceMatrix(withRef));
             //DR from distMatrix
+
             let points = getDrProjectedPoints($distMatrix, "tsne", true);
             let temp = [];
             $jsonDataList.forEach((v, i) => {
@@ -192,17 +195,35 @@
             });
             drpoints.set([...temp]);
             tempRef = doAnalysisForValues(tempRef);
-            refList.set(
-                tempRef.map((v, i) => {
-                    let datapoint = {
-                        id: 5000 + i,
-                        label: v.filename.split(".")[0],
-                        config: v.config,
-                        analysis: v,
-                    };
-                    return newPointOOD(datapoint, $data, $distMatrix);
-                }),
-            );
+            console.log(tempRef, $drpoints, $distMatrix);
+            if (!withRef) {
+                refList.set(
+                    tempRef.map((v, i) => {
+                        let datapoint = {
+                            id: 5000 + i,
+                            label: v.filename.split(".")[0],
+                            config: v.config,
+                            analysis: v,
+                        };
+                        return newPointOOD(datapoint, $data, $distMatrix);
+                    }),
+                );
+            } else {
+                let offset = $jsonDataList.length;
+                refList.set(
+                    tempRef.map((v, i) => {
+                        let datapoint = {
+                            id: 5000 + i,
+                            label: v.filename.split(".")[0],
+                            config: v.config,
+                            analysis: v,
+                            x: points[i + offset][0],
+                            y: points[i + offset][1],
+                        };
+                        return datapoint;
+                    }),
+                );
+            }
         }
     }
 
@@ -451,9 +472,15 @@
                         >Recalculate Distances</button
                     >
                 </div>
-                <div class="center-wrapper">
-                    <span>load from Json</span>
+                <div class="center-wrapper-full">
+                    <input
+                        class="checkbox"
+                        type="checkbox"
+                        bind:checked={withRef}
+                    />
+                    <span>{withRef ? "use ref Layout" : "no ref layout"}</span>
                 </div>
+                <span>load from Json</span>
                 <div class="center-wrapper">
                     <div class="center-wrapper">
                         <input
@@ -502,7 +529,8 @@
                             on:change={() => {
                                 if (paramChange === "single") {
                                     prev = sampleNumber;
-                                    sampleNumber = getChangableParameters().length();
+                                    sampleNumber =
+                                        getChangableParameters().length();
                                 } else {
                                     sampleNumber =
                                         prev !== 0 ? prev : sampleNumber;

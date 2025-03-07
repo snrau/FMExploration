@@ -281,13 +281,13 @@
             <circle
               cx={xScale(point.x)}
               cy={yScale(point.y)}
-              r={glyphsize / 4}
+              r={glyphsize / 2}
               class="point"
               fill={getColor(point, brightnessExtent, pointColor)}
               on:click={(e) => handleClick(e, point)}
             ></circle>
           {:else if pointRenderer === "envelope"}
-            <EnvelopeSimpleGlyph
+            <EnvelopeGlyph
               data={point.analysis.rms[0]}
               x={xScale(point.x) - 10}
               y={yScale(point.y) - 10}

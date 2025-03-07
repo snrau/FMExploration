@@ -22,10 +22,10 @@
         .domain(d3.extent(data, (d, i) => i))
         .range([padding, width - padding]);
 
-    extent = d3.extent(data, (d, i) => d);
+    let extent1 = d3.extent(data, (d, i) => d);
     let yScale = d3
         .scaleLinear()
-        .domain(extent)
+        .domain(extent1)
         .range([height - padding, padding]);
 
     // Line generator
@@ -41,8 +41,40 @@
         importantPoints.push({ index: 1, value: data[1] });
 
         let lastMax = null;
+        let lastFirstMin = null;
         let first = true;
+        for (let i = 1; i < data.length - 1; i++) {
+            if (data[i] - data[1] < 0.0001 && !first) {
+                lastFirstMin = { index: i, value: data[i] };
+            }
+            if (data[i] > data[i - 1] && data[i] > data[i + 1]) {
+                // Local maximum
+                if (first) {
+                    importantPoints.push({ index: i, value: data[i] });
+                    first = false;
+                }
+                lastMax = { index: i, value: data[i] };
+            }
+        }
+        //console.log(lastMax, lastFirstMin);
+        //if (lastFirstMin !== null) importantPoints.push(lastFirstMin);
+        //if (lastMax !== null) importantPoints.push(lastMax);
 
+        let start = 50; //lastMax ? lastMax.index + 1 : 1;
+        for (let i = start; i < data.length - 3; i++) {
+            const slope = (data[i + 1] - data[i - 1]) / 2;
+            if (slope < 0.0001) {
+                importantPoints.push({ index: i, value: data[i] });
+                break;
+            }
+        }
+
+        importantPoints.push({
+            index: data.length - 1,
+            value: data[data.length - 1],
+        });
+
+        /*
         for (let i = 1; i < data.length - 1; i++) {
             if (data[i] > data[i - 1] && data[i] > data[i + 1]) {
                 // Local maximum
@@ -89,6 +121,7 @@
                 value: data[data.length - 1],
             }); // Add the last point
         }
+        */
 
         const r = importantPoints.sort((a, b) => a.index - b.index);
 
