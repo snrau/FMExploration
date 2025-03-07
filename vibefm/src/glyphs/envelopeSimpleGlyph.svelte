@@ -129,19 +129,16 @@
     }
 
     function adjustSelect() {
-        if(background)
-        background
-            .attr("stroke-width", selected ? 2 : 1)
-            .attr("fill", selected ? "white" : "transparent");
-        if(path)
-        path.attr("stroke-width", selected ? 3 : 1);
+        if (background)
+            background
+                .attr("stroke-width", selected ? 2 : 1)
+                ?.attr("fill", selected ? "white" : "transparent");
+        if (path) path.attr("stroke-width", selected ? 3 : 1);
     }
 
     function adjustFill() {
-        if(background)
-        background.attr("stroke", fill);
-        if(path)
-        path.attr("stroke", fill);
+        if (background) background?.attr("stroke", fill);
+        if (path) path.attr("stroke", fill);
     }
 
     $: fill, adjustFill();
