@@ -87,7 +87,8 @@ def main():
         mel = librosa.feature.melspectrogram(y=x, sr=Fs, n_mels=128, fmax=8000)
         data['mel'] = mel
 
-        if len(configs) > 0:
+        print(len(configs), index, configs)
+        if len(configs) > 0 and len(configs) > index:
             data["config"] = configs[index]
 
         data["sysex"] = sysex
