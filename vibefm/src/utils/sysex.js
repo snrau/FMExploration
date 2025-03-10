@@ -1,3 +1,5 @@
+import { sendMessage } from "./midi";
+
 export async function importSysexFile(event) {
     return new Promise((resolve, reject) => {
         const file = event.target.files[0];
@@ -50,6 +52,29 @@ function parseSysEx(data) {
     }
 
     return voices
+}
+
+
+export function sendChanges(nConfig, oConfig){
+    nConfig.forEach((v,i) => {
+        if(v !== oConfig[i])
+            sendMessage(changeSingleParameter(v,i))
+    })
+}
+
+function changeSingleParameter(number, value) {
+    
+    // Determine AA byte
+    let AA = number < 128 ? 0x00 : 0x01;
+    // Determine BB byte
+    let BB =
+        number < 128 ? number : number - 128;
+    // CC byte is just the value (within validated range)
+    let CC = value;
+    // Format the message as an array of bytes
+    let sysexMessage = [0xf0, 0x43, 0x10, AA, BB, CC, 0xf7];
+
+    return sysexMessage;
 }
 
 function parseVoice(voice) {

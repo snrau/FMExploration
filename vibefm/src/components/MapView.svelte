@@ -8,10 +8,11 @@
   import Reference from "../glyphs/reference.svelte";
   import { createSysexMessageFromConfig, dx7Parameters } from "../utils/dexed";
   import ConfigMatrixGlyph from "../glyphs/configMatrixGlyph.svelte";
-  import { data, excluded } from "../utils/stores";
+  import { data, excluded, sysexInterpolation } from "../utils/stores";
   import { interpolate } from "../utils/sampling";
   import { sendMessage } from "../utils/midi";
   import { interpolatedConfig } from "../utils/stores";
+  import {sendChanges} from "../utils/sysex"
 
   export let onPointClick;
   export let pointRenderer = null;
@@ -170,7 +171,10 @@
       aAlgo,
     );
     if (recentConfig !== interpolateConfig) {
-      sendMessage(createSysexMessageFromConfig(interpolateConfig));
+      if($sysexInterpolation)
+        sendChanges(recentConfig, interpolateConfig)
+      else
+        sendMessage(createSysexMessageFromConfig(interpolateConfig));
       interpolatedConfig.set(interpolateConfig);
     }
 
