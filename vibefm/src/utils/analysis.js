@@ -1,3 +1,5 @@
+import { scaleLinear } from "d3";
+
 export function doAnalysisForValues(objects) {
 
     objects.forEach(object => {
@@ -11,9 +13,38 @@ export function doAnalysisForValues(objects) {
 
 function calculateBrightness(object) {
 
+
+
     let max = Math.max(...object.centroid[0])
-    let mean = calculateMeanExcludingZeros(object.centroid[0])
-    object.brightness = { max: max, mean: mean }
+    object.brightness = { max: max, mean: 0 }
+    object = adjustCentroid(object)
+
+    return object
+}
+
+function adjustCentroid(object) {
+    let centroid = object.centroid[0]
+    let rms = object.rms[0]
+    let max = Math.max(...rms)
+    let min = Math.min(...rms)
+    let scale = scaleLinear().domain([min, max]).range([0.1, 1])
+    let adjustedCentroid = centroid.map((value, index) => {
+        return value * scale(rms[index])
+    })
+    object.centroid = [adjustedCentroid]
+
+    // Calculate weighted mean
+    let weightedSum = 0;
+    let sumOfWeights = 0;
+    for (let i = 0; i < adjustedCentroid.length; i++) {
+        if (adjustedCentroid[i] !== 0) {
+            weightedSum += adjustedCentroid[i]
+            sumOfWeights += scale(rms[i]);
+        }
+    }
+    let weightedMean = weightedSum / sumOfWeights;
+
+    object.brightness.mean = weightedMean;
     return object
 }
 

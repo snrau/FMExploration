@@ -12,7 +12,7 @@
   import { interpolate } from "../utils/sampling";
   import { sendMessage } from "../utils/midi";
   import { interpolatedConfig } from "../utils/stores";
-  import {sendChanges} from "../utils/sysex"
+  import { sendChanges } from "../utils/sysex";
 
   export let onPointClick;
   export let pointRenderer = null;
@@ -170,12 +170,11 @@
       interpolationValue,
       aAlgo,
     );
-    if (recentConfig !== interpolateConfig) {
-      if($sysexInterpolation)
-        sendChanges(recentConfig, interpolateConfig)
-      else
-        sendMessage(createSysexMessageFromConfig(interpolateConfig));
+    if (JSON.stringify(recentConfig) !== JSON.stringify(interpolateConfig)) {
+      if ($sysexInterpolation) sendChanges(recentConfig, interpolateConfig);
+      else sendMessage(createSysexMessageFromConfig(interpolateConfig));
       interpolatedConfig.set(interpolateConfig);
+      recentConfig = [...interpolateConfig];
     }
 
     // Move handle

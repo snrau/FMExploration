@@ -13,6 +13,7 @@
         addReference,
         readSpecificFile,
         sendReaper,
+        doAnalysis,
     } from "../utils/serverRequests";
     import {
         getDrProjectedPoints,
@@ -42,7 +43,7 @@
         edgeList,
         interpolatedConfig,
         updateView,
-        sysexInterpolation
+        sysexInterpolation,
     } from "../utils/stores";
     import { onMount } from "svelte";
     import {
@@ -628,16 +629,18 @@
                         >Add as Reference</button
                     >
                 </div>
-
                 <div class="center-wrapper-full">
                     <input
                         class="checkbox"
                         type="checkbox"
                         bind:checked={$sysexInterpolation}
                     />
-                    <span>{$sysexInterpolation ? "sendSingle" : "sendWhole"}</span>
+                    <span
+                        >{$sysexInterpolation
+                            ? "sendSingle"
+                            : "sendWhole"}</span
+                    >
                 </div>
-                
             {/if}
 
             <p on:click={() => toggleSection("reference")}>Reference</p>

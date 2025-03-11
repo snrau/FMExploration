@@ -55,15 +55,16 @@ function parseSysEx(data) {
 }
 
 
-export function sendChanges(nConfig, oConfig){
-    nConfig.forEach((v,i) => {
-        if(v !== oConfig[i])
-            sendMessage(changeSingleParameter(v,i))
+export function sendChanges(oConfig, nConfig) {
+
+    nConfig.forEach((v, i) => {
+        if (oConfig === null || v !== oConfig[i] && i < 144)
+            sendMessage(changeSingleParameter(i, v))
     })
 }
 
 function changeSingleParameter(number, value) {
-    
+
     // Determine AA byte
     let AA = number < 128 ? 0x00 : 0x01;
     // Determine BB byte
