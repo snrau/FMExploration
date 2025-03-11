@@ -65,6 +65,8 @@
 
     let tempRef = [];
 
+    let collection = [];
+
     let prev = 0;
 
     let testOODtrigger = false;
@@ -127,7 +129,7 @@
     }
 
     async function sample(strategy, valueChange, paramChange) {
-        let collection = [];
+        collection = [];
         let value = 100;
         if (valueChange !== "full") {
             value = parseInt(valueChange.split("%")[0]);
@@ -564,6 +566,12 @@
                         on:click={() =>
                             sample(strategy, valueChange, paramChange)}
                         >Sample</button
+                    >
+                </div>
+                <div class="center-wrapper">
+                    <button
+                        on:click={() => doAnalysis(collection, $startingIndex)}
+                        >doAnalysis</button
                     >
                 </div>
                 <!--

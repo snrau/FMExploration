@@ -30,8 +30,9 @@ export function playWav(point) {
     const filePath = `./${folder}/${point.label}.wav`;
 
     if (audio) {
-        audio.pause();
-        audio.currentTime = 0; // Reset playback to the beginning
+        audio.pause()
+        audio = null
+        return
     }
 
     audio = new Audio(filePath);
