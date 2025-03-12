@@ -538,22 +538,22 @@
     </div>
 
     <div class="plot">
-      <h5>Mel-Spectogram:</h5>
+      <h5>Mel-Frequency Spectrogram:</h5>
       <div class="plotcontainer" bind:this={matrixPlot}></div>
     </div>
 
     <div class="plot">
-      <h5>Harmonics:</h5>
+      <h5>Harmonics-Percussive:</h5>
       <div class="plotcontainer" bind:this={harmonicPlot}></div>
     </div>
 
     <div class="plot">
-      <h5>Centroid:</h5>
+      <h5>Brightness:</h5>
       <div class="plotcontainer" bind:this={centroidPlot}></div>
     </div>
 
     <div class="plot">
-      <h5>RMS:</h5>
+      <h5>Envelope:</h5>
       <div class="plotcontainer" bind:this={rmsPlot}></div>
     </div>
   {:else}
