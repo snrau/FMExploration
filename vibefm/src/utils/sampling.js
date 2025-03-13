@@ -13,8 +13,21 @@ export function uniformSamplingFull() {
 }
 
 export function getRandomConfig() {
-    let temp = Object.keys(dx7Parameters).map((param) =>
-        dx7Parameters[param].change ? Math.floor(Math.random() * dx7Parameters[param].max) : dx7Parameters[param].default,
+    let changeable = getChangableParameters()
+    let i = 0
+    let result = 0
+    let temp = Object.keys(dx7Parameters).map((param) =>{
+        if(dx7Parameters[param].change){
+            if(changeable[i])
+                result = Math.floor(Math.random() * dx7Parameters[param].max)
+            else 
+                result = dx7Parameters[param].default
+            i++
+            return result
+        }else{
+            return dx7Parameters[param].default
+        } 
+    }
     );
     return temp
 }

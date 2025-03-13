@@ -31,7 +31,7 @@ def main():
         sysex = sys.argv[5]
     configs = json.loads(sys.argv[4])
     startindex = 0
-    if len(sys.argv) > 6:
+    if len(sys.argv) > 6 and sys.argv[6] != 'null':
         startindex = int(sys.argv[6])
 
     count = 0
