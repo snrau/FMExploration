@@ -71,11 +71,11 @@ export function getRandom(max) {
     return Math.floor(Math.random() * max);
 }
 
-export function sampleRandomValue(initialValue, pmax, range = 100) {
+export function sampleRandomValue(initialValue, pmax, range = 100, round=0) {
     let output = Math.floor(Math.random() * 100)
     if (range >= 100) {
-        if (initialValue === output)
-            return sampleRandomValue(initialValue, pmax, range)
+        if (initialValue === output && round<4)
+            return sampleRandomValue(initialValue, pmax, range, round+1)
         else
             return output; // Allow any value between 0 and 100
     }
@@ -89,7 +89,7 @@ export function sampleRandomValue(initialValue, pmax, range = 100) {
 
 
     if (initialValue === output)
-        return sampleRandomValue(initialValue, pmax, range)
+        return sampleRandomValue(initialValue, pmax, range, round+1)
     else
         return output; // Allow any value between 0 and 100
 }

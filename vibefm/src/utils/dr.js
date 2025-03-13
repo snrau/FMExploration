@@ -3,6 +3,9 @@ import { distMatrix } from './stores'
 import { get } from 'svelte/store'
 
 export function getDrProjectedPoints(distMatrix, drmethod = 'mds', precomputed = true) {
+
+    if(distMatrix.length <3)
+        return [[0,0],[1,1]]
     const druidMatrix = druid.Matrix.from(distMatrix)
 
     let DR

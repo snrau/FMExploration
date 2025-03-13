@@ -583,8 +583,11 @@ app.post('/distanceMatrix', (req, res) => {
 
     try {
         const files = fs.readdirSync(folderPath).filter(file => file.endsWith(".json"));
-        if (files.length < 2) {
-            return res.status(400).json({ error: "At least two JSON files are required for distance calculation." });
+        let refFiles = []
+        if (withRef) {
+            refFiles = fs.readdirSync(folderReference).filter(file => file.endsWith(".json"));
+        if (files.length + refFiles.length < 2) {
+            return res.json([[0,1],[1,0]])
         }
 
         for (const file of files) {
