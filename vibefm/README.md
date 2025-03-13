@@ -32,8 +32,9 @@ go to options -> Active Midi inputs -> the "loopMIDI Port" has to be ticked, the
 
 # Project 
 Go to vibefm in console. 
-Once: `npm install .`
-then
+Once: `npm install .` and create three folders in the 'public' directory named 'sampled', 'reference' and 'upload'.
+
+Then each time to start the project:
 Start the project `npm run dev`
 
 Open the link in a browser.
