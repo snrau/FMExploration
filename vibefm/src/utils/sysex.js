@@ -134,7 +134,12 @@ function parseVoice(voice) {
 export function getNamefromConfig(config) {
     return config
         .slice(145, 155)
-        .map((code) => String.fromCharCode(code))
+        .map((code) => {
+            if (code !== 32 && code !== 92 && code !== 47 && code !== 46)
+                return String.fromCharCode(code)
+            else
+                return ""
+        })
         .join("")
 }
 
