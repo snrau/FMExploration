@@ -130,7 +130,7 @@
     g.append("circle")
       .attr("cx", (xScale(selectedPoint.x) + xScale(referencePoint.x)) / 2)
       .attr("cy", (yScale(selectedPoint.y) + yScale(referencePoint.y)) / 2)
-      .attr("r", 5)
+      .attr("r", 20)
       .attr("fill", "lightgreen")
       .classed("draggable-handle", true)
       .call(
