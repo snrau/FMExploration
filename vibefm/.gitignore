@@ -24,3 +24,7 @@ signal
 *.njsproj
 *.sln
 *.sw?
+
+./public/reference/*
+./public/sampled/*
+./public/upload/*
