@@ -181,7 +181,7 @@
         );
     }
     async function calcDistance() {
-        if ($jsonDataList.length !== 0) {
+        if ($jsonDataList.length !== 0 || withRef && refList.length !== 0) {
             distMatrix.set(await distanceMatrix(withRef));
             //DR from distMatrix
 

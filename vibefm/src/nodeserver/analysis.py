@@ -26,9 +26,13 @@ def convert_ndarray_to_list(data):
 
 def main():
     path = sys.argv[1]
-    sysex = sys.argv[5] if len(sys.argv) > 5 else False
+    sysex = False
+    if len(sys.argv) > 5:
+        sysex = sys.argv[5]
     configs = json.loads(sys.argv[4])
-    startindex = int(sys.argv[6]) if len(sys.argv) > 6 else 0
+    startindex = 0
+    if len(sys.argv) > 6:
+        startindex = int(sys.argv[6])
 
     count = 0
 

@@ -135,7 +135,7 @@ app.post('/analysis', (req, res) => {
             const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
 
             // Spawn a Python process
-            const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path2, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs), sysex]);
+            const pythonProcess = spawn(pythonExecutable, ['analysis.py', req.body.path2, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(req.body.configs), sysex, startindex]);
 
             // Capture output from the Python script
             pythonProcess.stdout.on('data', (data) => {
@@ -584,7 +584,7 @@ app.post('/distanceMatrix', (req, res) => {
     try {
         const files = fs.readdirSync(folderPath).filter(file => file.endsWith(".json"));
         let refFiles = []
-        if (withRef) {
+        if (withRef) 
             refFiles = fs.readdirSync(folderReference).filter(file => file.endsWith(".json"));
         if (files.length + refFiles.length < 2) {
             return res.json([[0,1],[1,0]])
@@ -733,7 +733,7 @@ async function refAnalysis(folderPath, name, configs, res) {
 
 
         // Spawn a Python process
-        const pythonProcess = spawn(pythonExecutable, ['analysis.py', folderPath, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(configs)]);
+        const pythonProcess = spawn(pythonExecutable, ['analysis.py', folderPath, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(configs), true, 0]);
 
         // Capture output from the Python script
         pythonProcess.stdout.on('data', (data) => {
@@ -809,7 +809,7 @@ function wavAnalysis(folderPath, name, configs) {
             const pythonExecutable = './signal/Scripts/python.exe'; // Use './venv/Scripts/python.exe' on Windows
 
             // Spawn a Python process
-            const pythonProcess = spawn(pythonExecutable, ['analysis.py', folderPath, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(configs), false]);
+            const pythonProcess = spawn(pythonExecutable, ['analysis.py', folderPath, JSON.stringify(wavFiles), JSON.stringify(wavFiles.map(file => file.replace(".wav", ".json"))), JSON.stringify(configs), false, 0]);
 
             // Capture output from the Python script
             pythonProcess.stdout.on('data', (data) => {
