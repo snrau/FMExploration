@@ -123,7 +123,7 @@ function convert_sysex_to_name(sysex)
     for i = startIndex, endIndex do
         local charCode = sysex[i]
         -- Convert the ASCII number to a character and append to the result string
-        if charCode ~= 32 then
+        if charCode ~= 32 and charCode ~= 92 and charCode ~= 47 and charCode ~= 46 then
             result = result .. string.char(charCode)
         end
     end

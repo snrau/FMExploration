@@ -25,6 +25,6 @@ signal
 *.sln
 *.sw?
 
-./public/reference/*
-./public/sampled/*
-./public/upload/*
+./public/*/*.json
+./public/*/*.wav
+./public/*/*.png
