@@ -9,6 +9,7 @@
     exportList,
     startingIndex,
     updateView,
+    numSamples,
   } from "../utils/stores";
   import { getNamefromConfig } from "../utils/sysex";
   import {
@@ -40,7 +41,7 @@
     if (isSingle) {
       newConfigs = sampleSingleValues(config, percent);
     } else {
-      newConfigs = sampleAllValues(config, percent, 3);
+      newConfigs = sampleAllValues(config, percent, $numSamples);
     }
 
     //const newConfigs = progressiveSubgroupBlockSampling(config, 20, false);
@@ -150,11 +151,20 @@
     const x = d3
       .scaleLinear()
       .domain([0, data.length - 1])
-      .range([0, 346]);
+      .range([20, 346]);
     const y = d3
       .scaleLinear()
       .domain([d3.min(data, (d) => d.y), d3.max(data, (d) => d.y)])
-      .range([118, 0]);
+      .range([100, 0]);
+
+    const xAxis = d3
+      .axisBottom(x)
+      .ticks(0)
+      .tickFormat((t) => {
+        if (t === 200) return "";
+        else return t;
+      });
+    const yAxis = d3.axisLeft(y).ticks(0);
 
     const line = d3
       .line()
@@ -168,6 +178,32 @@
       .attr("stroke", "black")
       .attr("stroke-width", 1.5)
       .attr("d", line);
+
+    svg
+      .append("g")
+      .attr("transform", "translate(0,100)") // Position x-axis at the bottom
+      .call(xAxis);
+
+    svg.append("g").attr("transform", "translate(20,0)").call(yAxis);
+
+    // Add x-axis title
+    svg
+      .append("text")
+      .attr("transform", "translate(150,117)") // Position x-axis title
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("time");
+
+    // Add y-axis title
+    svg
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -5)
+      .attr("x", -50)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("centroid freq.");
   };
 
   const renderRMSPlot = () => {
@@ -188,11 +224,20 @@
     const x = d3
       .scaleLinear()
       .domain([0, data.length - 1])
-      .range([0, 346]);
+      .range([20, 346]);
     const y = d3
       .scaleLinear()
       .domain([d3.min(data, (d) => d.y), d3.max(data, (d) => d.y)])
-      .range([118, 0]);
+      .range([100, 0]);
+
+    const xAxis = d3
+      .axisBottom(x)
+      .ticks(0)
+      .tickFormat((t) => {
+        if (t === 200) return "";
+        else return t;
+      });
+    const yAxis = d3.axisLeft(y).ticks(0);
 
     const line = d3
       .line()
@@ -206,6 +251,32 @@
       .attr("stroke", "black")
       .attr("stroke-width", 1.5)
       .attr("d", line);
+
+    svg
+      .append("g")
+      .attr("transform", "translate(0,100)") // Position x-axis at the bottom
+      .call(xAxis);
+
+    svg.append("g").attr("transform", "translate(20,0)").call(yAxis);
+
+    // Add x-axis title
+    svg
+      .append("text")
+      .attr("transform", "translate(150,117)") // Position x-axis title
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("time");
+
+    // Add y-axis title
+    svg
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", -5)
+      .attr("x", -50)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("rms-energy");
   };
 
   const renderHarmonicPlot = () => {
@@ -249,7 +320,19 @@
           (d) => d.y,
         ),
       ])
-      .range([118, 0]);
+      .range([100, 0]);
+
+    const xAxis = d3
+      .axisBottom(x)
+      .ticks(0)
+      .tickFormat((t) => {
+        if (t / 500 === 200) return "";
+        else return t / 500;
+      });
+    svg
+      .append("g")
+      .attr("transform", "translate(0,100)") // Position x-axis at the bottom
+      .call(xAxis);
 
     const line = d3
       .line()
@@ -279,6 +362,14 @@
       .attr("stroke", "red")
       .attr("stroke-width", 2)
       .attr("d", line);
+
+    // Add x-axis title
+    svg
+      .append("text")
+      .attr("transform", "translate(150,117)") // Position x-axis title
+      .style("text-anchor", "middle")
+      .style("font-size", "12px")
+      .text("time");
   };
 
   /*
@@ -641,7 +732,7 @@
   }
 
   .plotcontainer {
-    width: 350px;
+    width: 450px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -670,14 +761,15 @@
     margin: 2px;
     padding: 5px 10px;
     border: none;
-    background: #007bff;
-    color: white;
+    background: rgb(225, 225, 225);
+    color: rgb(0, 0, 0);
     cursor: pointer;
     border-radius: 4px;
   }
 
   .menu button:hover {
-    background: #0056b3;
+    background: #525252;
+    color: white;
   }
 
   .menu input {

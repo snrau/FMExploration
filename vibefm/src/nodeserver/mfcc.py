@@ -77,13 +77,13 @@ def plot_mel(mel, output_path):
 
     mel_spectrogram_db = librosa.power_to_db(mel, ref=np.max)
 
-    img = librosa.display.specshow(mel_spectrogram_db, x_axis='time', sr=22050, fmax=8000, ax=ax)
+    img = librosa.display.specshow(mel_spectrogram_db, x_axis='time', y_axis='mel', sr=22050, fmax=8000, ax=ax)
     colorbar = plt.colorbar(img, cax=cax, format='%+2.0f dB')
     colorbar.ax.tick_params(labelsize=6) 
 
 
      # Remove extra space around the plot
-    ax.axis("off")  # Turn off axis for clean output
+    # ax.axis("off")  # Turn off axis for clean output
 
     # Save the plot as a PNG image
     image_path = output_path.replace(".json", "_mel.png")

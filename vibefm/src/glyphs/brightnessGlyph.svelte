@@ -20,6 +20,7 @@
         .scaleLinear()
         .domain(d3.extent(data, (d, i) => i))
         .range([padding, width - padding]);
+
     let yScale = d3
         .scaleLinear()
         .domain(d3.extent(data, (d, i) => d))
@@ -89,7 +90,7 @@
             .line()
             .x((d, i) => xScale(d.index))
             .y((d, i) => yScale(d.value))
-            .curve(d3.curveCatmullRom);
+            .curve(d3.curveLinear);
 
         // Add line
         path = svgElement
@@ -102,19 +103,16 @@
     }
 
     function adjustSelect() {
-        if(background)
+        if (background)
             background
                 .attr("stroke-width", selected ? 2 : 1)
                 .attr("fill", selected ? "white" : "transparent");
-        if(path)
-            path.attr("stroke-width", selected ? 3 : 1);
+        if (path) path.attr("stroke-width", selected ? 3 : 1);
     }
 
     function adjustFill() {
-        if(background)
-        background.attr("stroke", fill);
-        if(path)
-        path.attr("stroke", fill);
+        if (background) background.attr("stroke", fill);
+        if (path) path.attr("stroke", fill);
     }
 
     $: fill, adjustFill();
@@ -135,7 +133,7 @@
     {height}
     {x}
     {y}
-    on:click={() => onClick()}
+    on:click={onClick}
     viewBox={`0 0 ${width} ${height}`}
 ></svg>
 

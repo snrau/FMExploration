@@ -398,7 +398,7 @@ export async function sendReaper(collection) {
         if (response.ok) {
             console.log("Finished analysis");
         } else {
-            alert("Failed to do hrps.");
+            alert("click 'doAnalysis' as it automatically failed.");
         }
         console.log("Rendering done!");
     } else {

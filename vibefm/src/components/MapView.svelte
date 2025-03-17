@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { scaleLinear, zoom, select, drag, brush } from "d3";
+  import { scaleLinear, zoom, select, drag, brush, selectAll } from "d3";
   import { getColor } from "../utils/color";
   import EnvelopeGlyph from "../glyphs/envelopeGlyph.svelte";
   import EnvelopeSimpleGlyph from "../glyphs/envelopeSimpleGlyph.svelte";
@@ -33,7 +33,9 @@
     // Check if the clicked target is NOT a point
     if (event.target.id === "full-svg") {
       onPointClick(event, null);
+      removeConnection();
     }
+    removeConnection();
   }
 
   let interpolationValue = 0.5;
@@ -52,7 +54,7 @@
   const size = 2000;
   const offset = 5;
 
-  const glyphsize = 20;
+  let glyphsize = 20;
 
   let container; // Reference to the SVG container
   let zoomTransform = { x: 0, y: 0, k: 0.5 }; // Initial zoom state
@@ -117,6 +119,7 @@
 
   function drawConnection() {
     if (!selectedPoint || !referencePoint) return;
+    removeConnection();
 
     let g = select("#map").append("g").attr("id", "interpolation"); // Adjust this to your SVG container
     g.append("line")
@@ -186,12 +189,14 @@
 
   function removeConnection() {
     recentConfig = null;
-    select("#interpolation").selectAll("*").remove();
+    selectAll("#interpolation").selectAll("*").remove();
   }
 
   function exclude(selectedPoint) {
     excluded.set([...$excluded, ...selectedPoint]);
   }
+
+  $: selectedPoint, removeConnection();
 
   onMount(() => {
     const svg = select(container);
@@ -267,13 +272,14 @@
       id={"map"}
       transform="translate({zoomTransform.x},{zoomTransform.y}) scale({zoomTransform.k})"
     >
-      <!--{#if pointRenderer === "rect"}-->
-      {#each $data as point, index}
-        {#if point.analysis.sampled}
+      {console.log($data.length)}
+      {#if $data.length <= 2}
+        {(glyphsize = 200)}
+        {#each $data as point, index}
           {#if point === selectedPoint && pointRenderer === "circle"}
             <rect
-              x={xScale(point.x) - 5}
-              y={yScale(point.y) - 5}
+              x={100 + 300 * index}
+              y={500}
               width={glyphsize / 2}
               height={glyphsize / 2}
               class="point"
@@ -282,8 +288,8 @@
             ></rect>;
           {:else if pointRenderer === "circle"}
             <circle
-              cx={xScale(point.x)}
-              cy={yScale(point.y)}
+              cx={100 + 300 * index}
+              cy={500}
               r={glyphsize / 2}
               class="point"
               fill={getColor(point, brightnessExtent, pointColor)}
@@ -292,8 +298,8 @@
           {:else if pointRenderer === "envelope"}
             <EnvelopeGlyph
               data={point.analysis.rms[0]}
-              x={xScale(point.x) - 10}
-              y={yScale(point.y) - 10}
+              x={100 + 300 * index}
+              y={500}
               width={glyphsize}
               height={glyphsize}
               fill={getColor(point, brightnessExtent, pointColor)}
@@ -304,8 +310,8 @@
           {:else if pointRenderer === "brightness"}
             <BrightnessGlyph
               data={point.analysis.centroid[0]}
-              x={xScale(point.x) - 10}
-              y={yScale(point.y) - 10}
+              x={100 + 300 * index}
+              y={500}
               width={glyphsize}
               height={glyphsize}
               fill={getColor(point, brightnessExtent, pointColor)}
@@ -315,29 +321,91 @@
           {:else if pointRenderer === "config"}
             <ConfigMatrixGlyph
               config={point.config}
-              x={xScale(point.x) - 10}
-              y={yScale(point.y) - 10}
+              x={100 + 300 * index}
+              y={500}
               cellSize={glyphsize / 5}
               onClick={(e) => handleClick(e, point)}
               parameters={Object.entries(dx7Parameters)}
               selection={point === selectedPoint ? null : selectedPoint}
             />
           {/if}
-        {:else}
-          <Reference
-            data={point}
-            x={xScale(point.x) - 10}
-            y={yScale(point.y) - 10}
-            class1="point"
-            fill={getColor(point, brightnessExtent, pointColor)}
-            onClick={(e) => handleClick(e, point)}
-            selected={point === selectedPoint}
-            {pointRenderer}
-            {selectedPoint}
-            interpolation={!(point.analysis.sysex || point.analysis.reference)}
-          ></Reference>
-        {/if}
-      {/each}
+        {/each}
+      {:else}
+        {(glyphsize = 20)}
+        <!--{#if pointRenderer === "rect"}-->
+        {#each $data as point, index}
+          {#if point.analysis.sampled}
+            {#if point === selectedPoint && pointRenderer === "circle"}
+              <rect
+                x={xScale(point.x) - glyphsize / 4}
+                y={yScale(point.y) - glyphsize / 4}
+                width={glyphsize / 2}
+                height={glyphsize / 2}
+                class="point"
+                fill={getColor(point, brightnessExtent, pointColor)}
+                on:click={(e) => handleClick(e, point)}
+              ></rect>;
+            {:else if pointRenderer === "circle"}
+              <circle
+                cx={xScale(point.x)}
+                cy={yScale(point.y)}
+                r={glyphsize / 2}
+                class="point"
+                fill={getColor(point, brightnessExtent, pointColor)}
+                on:click={(e) => handleClick(e, point)}
+              ></circle>
+            {:else if pointRenderer === "envelope"}
+              <EnvelopeGlyph
+                data={point.analysis.rms[0]}
+                x={xScale(point.x) - glyphsize / 2}
+                y={yScale(point.y) - glyphsize / 2}
+                width={glyphsize}
+                height={glyphsize}
+                fill={getColor(point, brightnessExtent, pointColor)}
+                onClick={(e) => handleClick(e, point)}
+                selected={point === selectedPoint}
+                extent={rmsExtent}
+              />
+            {:else if pointRenderer === "brightness"}
+              <BrightnessGlyph
+                data={point.analysis.centroid[0]}
+                x={xScale(point.x) - glyphsize / 2}
+                y={yScale(point.y) - glyphsize / 2}
+                width={glyphsize}
+                height={glyphsize}
+                fill={getColor(point, brightnessExtent, pointColor)}
+                onClick={(e) => handleClick(e, point)}
+                selected={point === selectedPoint}
+              />
+            {:else if pointRenderer === "config"}
+              <ConfigMatrixGlyph
+                config={point.config}
+                x={xScale(point.x) - glyphsize / 2}
+                y={yScale(point.y) - glyphsize / 2}
+                cellSize={glyphsize / 5}
+                onClick={(e) => handleClick(e, point)}
+                parameters={Object.entries(dx7Parameters)}
+                selection={point === selectedPoint ? null : selectedPoint}
+              />
+            {/if}
+          {:else}
+            <Reference
+              data={point}
+              x={xScale(point.x) - glyphsize / 2}
+              y={yScale(point.y) - glyphsize / 2}
+              class1="point"
+              fill={getColor(point, brightnessExtent, pointColor)}
+              onClick={(e) => handleClick(e, point)}
+              selected={point === selectedPoint}
+              {pointRenderer}
+              {selectedPoint}
+              interpolation={!(
+                point.analysis.sysex || point.analysis.reference
+              )}
+            ></Reference>
+          {/if}
+        {/each}
+      {/if}
     </g>
   </svg>
 </div>

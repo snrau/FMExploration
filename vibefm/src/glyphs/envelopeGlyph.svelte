@@ -134,7 +134,7 @@
     {height}
     {x}
     {y}
-    on:click={() => onClick()}
+    on:click={onClick}
     viewBox={`0 0 ${width} ${height}`}
 ></svg>
 

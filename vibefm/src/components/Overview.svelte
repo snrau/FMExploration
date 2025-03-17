@@ -44,6 +44,7 @@
         interpolatedConfig,
         updateView,
         sysexInterpolation,
+        numSamples,
     } from "../utils/stores";
     import { onMount } from "svelte";
     import {
@@ -181,7 +182,7 @@
         );
     }
     async function calcDistance() {
-        if ($jsonDataList.length !== 0 || withRef && refList.length !== 0) {
+        if ($jsonDataList.length !== 0 || (withRef && refList.length !== 0)) {
             distMatrix.set(await distanceMatrix(withRef));
             //DR from distMatrix
 
@@ -504,7 +505,10 @@
                         type="number"
                         id="sample-number"
                         bind:value={sampleNumber}
-                        on:change={(prev = 0)}
+                        on:change={() => {
+                            prev = 0;
+                            numSamples.set(sampleNumber);
+                        }}
                         min="1"
                     />
                 </div>
@@ -540,6 +544,7 @@
                                         prev !== 0 ? prev : sampleNumber;
                                     prev = 0;
                                 }
+                                numSamples.set(sampleNumber);
                             }}
                         >
                             {#each paramOptions as glyph}

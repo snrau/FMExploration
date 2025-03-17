@@ -27,3 +27,5 @@ export const interpolatedConfig = writable([]);
 export const startingIndex = writable(0)
 
 export const updateView = writable(false)
+
+export const numSamples = writable(10)
