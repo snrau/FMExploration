@@ -91,6 +91,37 @@ def plot_mel(mel, output_path):
     plt.close()
 
 
+def plot_mel_glyph(mel, output_path):
+    """
+    Plot the MFCC matrix as a heatmap and save it as an image.
+    """
+
+    mel = np.array(mel)
+
+    # Adjust figure size to achieve desired pixel dimensions
+    dpi = 100  # Dots per inch (scaling factor)
+    width_in_inches = 350 / dpi
+    height_in_inches = 350 / dpi
+
+    fig = plt.figure(figsize=(width_in_inches, height_in_inches), dpi=dpi)
+    from matplotlib.gridspec import GridSpec
+
+    ax = fig.add_subplot(111)  # Heatmap on the left (7/8)
+
+    mel_spectrogram_db = librosa.power_to_db(mel, ref=np.max)
+
+    img = librosa.display.specshow(mel_spectrogram_db, x_axis='time', y_axis='mel', sr=22050, fmax=8000, ax=ax)
+
+
+     # Remove extra space around the plot
+    ax.axis("off")  # Turn off axis for clean output
+
+    # Save the plot as a PNG image
+    image_path = output_path.replace(".json", "_mel_glyph.png")
+    plt.savefig(image_path, dpi=dpi, bbox_inches="tight", pad_inches=0)
+    plt.close()
+
+
 def main():
     path = sys.argv[1]
     count = 0
@@ -117,6 +148,7 @@ def main():
             with open(input, 'w') as file:
                 json.dump(clean_data, file, indent=4)
         plot_mel(mel, input)
+        plot_mel_glyph(mel, input)
         count += 1
     
     

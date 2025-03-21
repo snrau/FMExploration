@@ -86,7 +86,7 @@
     };
 
     const colorOptions = ["brightHarmonic", "algorithm", "feedback", "cluster"];
-    const glyphOptions = ["circle", "envelope", "brightness", "config"];
+    const glyphOptions = ["circle", "envelope", "brightness", "config", "mel"];
 
     const strategyOptions = ["allRandom", "seedRandom", "primer"];
     let strategy = "allRandom";

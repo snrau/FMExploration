@@ -6,6 +6,7 @@
     import { dx7Parameters } from "../utils/dexed";
     import BrightnessGlyph from "./brightnessGlyph.svelte";
     import ConfigMatrixGlyph from "./configMatrixGlyph.svelte";
+    import MelGlyph from "./melGlyph.svelte";
 
     export let data;
     export let width = 80; // Width of the mini plot
@@ -131,6 +132,16 @@
                 selection={data === selectedPoint ? null : selectedPoint}
             />
         {/if}
+    {:else if pointRenderer === "mel"}
+        <MelGlyph
+            {data}
+            x={20}
+            y={20}
+            width={width / 2}
+            height={height - 30}
+            {onClick}
+            {selected}
+        />
     {/if}
 </svg>
 

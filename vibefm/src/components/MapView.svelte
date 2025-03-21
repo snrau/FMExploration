@@ -13,6 +13,7 @@
   import { sendMessage } from "../utils/midi";
   import { interpolatedConfig } from "../utils/stores";
   import { sendChanges } from "../utils/sysex";
+  import MelGlyph from "../glyphs/melGlyph.svelte";
 
   export let onPointClick;
   export let pointRenderer = null;
@@ -328,6 +329,16 @@
               parameters={Object.entries(dx7Parameters)}
               selection={point === selectedPoint ? null : selectedPoint}
             />
+          {:else if pointRenderer === "mel"}
+            <MelGlyph
+              data={point}
+              x={100 + 300 * index}
+              y={500}
+              width={glyphsize}
+              height={glyphsize}
+              onClick={(e) => handleClick(e, point)}
+              selected={point === selectedPoint}
+            />
           {/if}
         {/each}
       {:else}
@@ -386,6 +397,16 @@
                 onClick={(e) => handleClick(e, point)}
                 parameters={Object.entries(dx7Parameters)}
                 selection={point === selectedPoint ? null : selectedPoint}
+              />
+            {:else if pointRenderer === "mel"}
+              <MelGlyph
+                data={point}
+                x={xScale(point.x) - glyphsize / 2}
+                y={yScale(point.y) - glyphsize / 2}
+                width={glyphsize}
+                height={glyphsize}
+                onClick={(e) => handleClick(e, point)}
+                selected={point === selectedPoint}
               />
             {/if}
           {:else}
