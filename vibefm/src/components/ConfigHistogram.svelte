@@ -9,12 +9,13 @@
     export let binnumber = 10;
 
     const margin = 25;
+    const paddingsvg = 10;
 
     const rows = 7;
     const cols = 6;
-    const padding = 3;
-    const width = margin + cols * cellSize;
-    const height = margin + rows * cellSize;
+    const padding = 0.5;
+    const width = margin + cols * cellSize + paddingsvg;
+    const height = margin + rows * cellSize + paddingsvg;
     let svg;
     let intensity = false;
 
@@ -67,6 +68,7 @@
             .attr("height", cellSize - padding)
             .attr("fill", "white")
             .attr("stroke", "black")
+            .attr("stroke-width", 0.1)
             .on("click", function (event, d) {
                 const store = {
                     ...$cellStateStore,
@@ -230,11 +232,53 @@
 </script>
 
 <svg bind:this={svg} {width} {height}></svg>
-<button
-    on:click={() => {
-        (intensity = !intensity), drawMatrix();
-    }}>Change Representation</button
->
+<label class="flex items-center gap-4 p-2 rounded-lg bg-base-200 shadow-md">
+    <!-- Bars Label with Icon -->
+    <div class="flex items-center gap-1">
+        <svg
+            class="w-5 h-5 p-1"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 6h16M4 12h8m-8 6h16"
+            ></path>
+        </svg>
+        <span class="label-text font-medium">Bars</span>
+    </div>
+
+    <!-- Toggle Switch -->
+    <input
+        type="checkbox"
+        class="toggle toggle-lg toggle-primary"
+        bind:checked={intensity}
+        on:change={drawMatrix}
+    />
+
+    <!-- Opacity Label with Icon -->
+    <div class="flex items-center gap-1">
+        <svg
+            class="w-5 h-5 p-1"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 3v1m0 16v1m8.66-11.66l-.71.71M4.05 4.05l-.71.71M21 12h1M3 12H2m16.95 4.95l-.71.71M6.34 17.66l-.71.71"
+            ></path>
+        </svg>
+        <span class="label-text font-medium">Opacity</span>
+    </div>
+</label>
 
 <style>
     svg {

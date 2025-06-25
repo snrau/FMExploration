@@ -445,281 +445,447 @@
     function toggleSection(section) {
         sections[section] = !sections[section];
     }
+
+    let activesection = "uploadSysEx";
+    /*uploadSysEx: true,
+        currentSession: false,
+        sample: false,
+        visualization: false,
+        interpolation: false,
+        reference: false,
+        newWavFile: false,
+        export: false,
+        */
+
+    function changeTab(name, element) {
+        activesection = name;
+        document
+            .querySelectorAll("ul > li")
+            .forEach((el) => el.classList.remove("active-tab"));
+        document.getElementById(name).classList.add("active-tab");
+    }
 </script>
 
-<div class="container">
-    <div class="left">
-        <div class="left-top">
-            <h2>VibeFM</h2>
-            <p on:click={() => toggleSection("uploadSysEx")}>Upload SysEx</p>
-            {#if sections.uploadSysEx}
-                <div class="center-wrapper">
-                    <input type="file" accept=".syx" on:change={handleImport} />
-                </div>
-                <select bind:value={sysexIndex}>
-                    {#each sysexList as item, index}
-                        <option value={index}>{getNamefromConfig(item)}</option>
-                    {/each}
-                </select>
-            {/if}
-
-            <p on:click={() => toggleSection("currentSession")}>
-                Load Sessions
-            </p>
-            {#if sections.currentSession}
-                <div class="center-wrapper">
-                    <button on:click={loadCurrentSession}
-                        >Load Current Session</button
-                    >
-                </div>
-                <div class="center-wrapper">
-                    <button on:click={calcDistance}
-                        >Recalculate Distances</button
-                    >
-                </div>
-                <div class="center-wrapper-full">
-                    <input
-                        class="checkbox"
-                        type="checkbox"
-                        bind:checked={withRef}
-                    />
-                    <span>{withRef ? "use ref Layout" : "no ref layout"}</span>
-                </div>
-                <span>load from Json</span>
-                <div class="center-wrapper">
-                    <div class="center-wrapper">
-                        <input
-                            type="file"
-                            accept=".json"
-                            on:change={importJsonFile}
-                        />
-                    </div>
-                </div>
-            {/if}
-
-            <p on:click={() => toggleSection("sample")}>Sample</p>
-            {#if sections.sample}
-                <div class="center-wrapper-full">
-                    <label for="sample-number">Samples:</label>
-                    <input
-                        type="number"
-                        id="sample-number"
-                        bind:value={sampleNumber}
-                        on:change={() => {
-                            prev = 0;
-                            numSamples.set(sampleNumber);
-                        }}
-                        min="1"
-                    />
-                </div>
-                <div class="center-wrapper-full">
-                    <label for="strategy-select">Strategy:</label>
-                    <select id="strategy-select" bind:value={strategy}>
-                        {#each strategyOptions as glyph}
-                            <option value={glyph}>{glyph}</option>
-                        {/each}
-                    </select>
-                </div>
-                {#if strategy !== "allRandom"}
-                    <div class="center-wrapper-full">
-                        <label for="value-select">Valuechange:</label>
-                        <select id="value-select" bind:value={valueChange}>
-                            {#each valueOptions as glyph}
-                                <option value={glyph}>{glyph}</option>
-                            {/each}
-                        </select>
-                    </div>
-                    <div class="center-wrapper-full">
-                        <label for="param-select">Paramchange:</label>
-                        <select
-                            id="param-select"
-                            bind:value={paramChange}
-                            on:change={() => {
-                                if (paramChange === "single") {
-                                    prev = sampleNumber;
-                                    sampleNumber =
-                                        getChangableParameters().length();
-                                } else {
-                                    sampleNumber =
-                                        prev !== 0 ? prev : sampleNumber;
-                                    prev = 0;
-                                }
-                                numSamples.set(sampleNumber);
-                            }}
-                        >
-                            {#each paramOptions as glyph}
-                                <option value={glyph}>{glyph}</option>
-                            {/each}
-                        </select>
-                    </div>
-                    <div class="center-wrapper-full">
-                        <input
-                            class="checkbox"
-                            type="checkbox"
-                            bind:checked={addPrimer}
-                        />
-                        <span>{addPrimer ? "addPrimer" : "noPrimer"}</span>
-                    </div>
-                {/if}
-                {#if strategy === "primer"}
-                    {#if sysexList.length > 0}
-                        <span>{getNamefromConfig(sysexList[sysexIndex])}</span>
-                    {:else}
-                        <span>No Primer available</span>
-                    {/if}
-                {/if}
-                <div class="center-wrapper">
-                    <button
-                        on:click={() =>
-                            sample(strategy, valueChange, paramChange)}
-                        >Sample</button
-                    >
-                </div>
-                <div class="center-wrapper">
-                    <button
-                        on:click={() => doAnalysis(collection, $startingIndex)}
-                        >doAnalysis</button
-                    >
-                </div>
-                <!--
-                    call function with different sample stategies
-                    then automatically do the analysis and then recalculate the distances
-                    sample("random", false, false);
-                    have small and large changes and single or all parameter changes
-
-                    // completely random -> all
-                    // similar random seed -> single, all, block, small, large
-                    // similar primer -> single, all, block, small, large
-                    
-                -->
-            {/if}
-
-            <p on:click={() => toggleSection("visualization")}>Visualization</p>
-            {#if sections.visualization}
-                <div class="center-wrapper-full">
-                    <label for="color-select">Color:</label>
-                    <select id="color-select" bind:value={pointColor}>
-                        {#each colorOptions as color}
-                            <option value={color}>{color}</option>
-                        {/each}
-                    </select>
-                </div>
-                <div class="center-wrapper-full">
-                    <label for="glyph-select">Glyph:</label>
-                    <select id="glyph-select" bind:value={pointRenderer}>
-                        {#each glyphOptions as glyph}
-                            <option value={glyph}>{glyph}</option>
-                        {/each}
-                    </select>
-                </div>
-                <div class="center-wrapper">
-                    <button on:click={() => excluded.set([])}
-                        >Reset excluded</button
-                    >
-                </div>
-            {/if}
-
-            <p on:click={() => toggleSection("interpolation")}>Interpolation</p>
-            {#if sections.interpolation}
-                <div class="center-wrapper">
-                    <input
-                        type="text"
-                        bind:value={textInput}
-                        maxlength="10"
-                        placeholder="Config Name"
-                    />
-                </div>
-                <div class="center-wrapper">
-                    <button on:click={handleInterpolation}
-                        >Add as Reference</button
-                    >
-                </div>
-                <div class="center-wrapper-full">
-                    <input
-                        class="checkbox"
-                        type="checkbox"
-                        bind:checked={$sysexInterpolation}
-                    />
+<div
+    class="grid grid-cols-[30px_300px_1fr_500px] gap-4 h-screen bg-base-200 text-base-content p-4"
+>
+    <div class="flex h-full">
+        <ul
+            class="bg-base-200 rounded-lg w-[30px] py-2 px-0 space-y-1 flex flex-col gap-2"
+        >
+            <li
+                class="active-tab relative w-full h-[70px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                id="uploadSysEx"
+                on:click={() => changeTab("uploadSysEx", this)}
+            >
+                <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        >{$sysexInterpolation
-                            ? "sendSingle"
-                            : "sendWhole"}</span
+                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        >SysEx</span
                     >
                 </div>
-            {/if}
-
-            <p on:click={() => toggleSection("reference")}>Reference</p>
-            {#if sections.reference}
-                <div class="center-wrapper">
-                    {#if sysexList.length > 0 && sysexIndex >= 0}
-                        <span>{getNamefromConfig(sysexList[sysexIndex])}</span>
-                    {:else}
-                        <span>No Sysex Reference selected</span>
-                    {/if}
+            </li>
+            <li
+                class="relative w-full h-[70px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                id="currentSession"
+                on:click={changeTab("currentSession", this)}
+            >
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span
+                        class="text-sm font-semibold rotate-90 text-primary-content"
+                    >
+                        Session
+                    </span>
                 </div>
-                {#if sysexList.length > 0}
-                    <div class="center-wrapper">
-                        <button on:click={handleReference}>
-                            Add as Reference
-                        </button>
-                    </div>
+            </li>
+
+            <li
+                class="relative w-full h-[70px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                id="sample"
+                on:click={changeTab("sample", this)}
+            >
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span
+                        class="text-sm font-semibold rotate-90 text-primary-content"
+                    >
+                        Sample
+                    </span>
+                </div>
+            </li>
+            <li
+                class="relative w-full h-[100px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                id="visualization"
+                on:click={changeTab("visualization", this)}
+            >
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span
+                        class="text-sm font-semibold rotate-90 text-primary-content"
+                    >
+                        Visualization
+                    </span>
+                </div>
+            </li>
+            <li
+                class="relative w-full h-[100px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                id="interpolation"
+                on:click={changeTab("interpolation", this)}
+            >
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span
+                        class="text-sm font-semibold rotate-90 text-primary-content"
+                    >
+                        Interpolation
+                    </span>
+                </div>
+            </li>
+            <li
+                class="relative w-full h-[105px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                id="reference"
+                on:click={changeTab("reference", this)}
+            >
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span
+                        class="text-sm font-semibold rotate-90 text-primary-content"
+                    >
+                        SyxReference
+                    </span>
+                </div>
+            </li>
+            <li
+                class="relative w-full h-[105px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                id="newWavFile"
+                on:click={changeTab("newWavFile", this)}
+            >
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span
+                        class="text-sm font-semibold rotate-90 text-primary-content"
+                    >
+                        WavReference
+                    </span>
+                </div>
+            </li>
+            <li
+                class="relative w-full h-[70px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                id="export"
+                on:click={changeTab("export", this)}
+            >
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span
+                        class="text-sm font-semibold rotate-90 text-primary-content"
+                    >
+                        Export
+                    </span>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Left Sidebar Card -->
+    <aside class="card bg-base-100 shadow-xl overflow-hidden">
+        <div class="card-body p-4">
+            <!-- Header -->
+            <h2 class="card-title text-primary">VibeFM</h2>
+
+            <div class="mt-4">
+                {#if activesection === "uploadSysEx"}
+                    <div>uploadSysEx</div>
                 {/if}
-            {/if}
+                {#if activesection === "currentSession"}
+                    <div>currentSession</div>
+                {/if}
+                {#if activesection === "sample"}
+                    <div>sample</div>
+                {/if}
+            </div>
 
-            <p on:click={() => toggleSection("newWavFile")}>New wav file</p>
-            {#if sections.newWavFile}
-                <div class="center-wrapper">
-                    <input
-                        type="file"
-                        accept=".wav"
-                        multiple
-                        on:change={importWavFile}
-                    />
-                </div>
-            {/if}
+            <!-- Section Navigation -->
+            <div class="mt-4 space-y-2">
+                <div>
+                    <div
+                        class="mt-2 p-3 rounded-lg bg-base-200 shadow-inner space-y-4"
+                    >
+                        {#if activesection === "uploadSysEx"}
+                            <input
+                                type="file"
+                                accept=".syx"
+                                on:change={handleImport}
+                                class="file-input file-input-bordered w-full"
+                            />
+                            <select
+                                bind:value={sysexIndex}
+                                class="select select-bordered w-full"
+                            >
+                                {#each sysexList as item, index}
+                                    <option value={index}
+                                        >{getNamefromConfig(item)}</option
+                                    >
+                                {/each}
+                            </select>
+                        {/if}
 
-            <p on:click={() => toggleSection("export")}>Export</p>
-            {#if sections.export}
-                <div class="center-wrapper">
-                    <button on:click={() => exportList.set([])}
-                        >Reset export list</button
-                    >
+                        {#if activesection === "currentSession"}
+                            <button
+                                on:click={loadCurrentSession}
+                                class="btn btn-primary w-full"
+                                >Load Current Session</button
+                            >
+                            <button
+                                on:click={calcDistance}
+                                class="btn btn-secondary w-full"
+                                >Recalculate Distances</button
+                            >
+
+                            <label class="flex items-center gap-2">
+                                <span class="label-text">Ref Layout</span>
+                                <input
+                                    type="checkbox"
+                                    bind:checked={withRef}
+                                    class="toggle toggle-sm toggle-primary"
+                                />
+                            </label>
+
+                            <input
+                                type="file"
+                                accept=".json"
+                                on:change={importJsonFile}
+                                class="file-input file-input-bordered w-full"
+                            />
+                        {/if}
+
+                        {#if activesection === "sample"}
+                            <label class="form-control w-full">
+                                <div class="label">
+                                    <span class="label-text">Samples</span>
+                                </div>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    bind:value={sampleNumber}
+                                    on:change={() => {
+                                        prev = 0;
+                                        numSamples.set(sampleNumber);
+                                    }}
+                                    class="input input-bordered w-full"
+                                />
+                            </label>
+
+                            <select
+                                bind:value={strategy}
+                                class="select select-bordered w-full"
+                            >
+                                {#each strategyOptions as glyph}
+                                    <option value={glyph}>{glyph}</option>
+                                {/each}
+                            </select>
+
+                            {#if strategy !== "allRandom"}
+                                <select
+                                    bind:value={valueChange}
+                                    class="select select-bordered w-full"
+                                >
+                                    {#each valueOptions as glyph}
+                                        <option value={glyph}>{glyph}</option>
+                                    {/each}
+                                </select>
+
+                                <select
+                                    bind:value={paramChange}
+                                    class="select select-bordered w-full"
+                                    on:change={() => {
+                                        if (paramChange === "single") {
+                                            prev = sampleNumber;
+                                            sampleNumber =
+                                                getChangableParameters().length();
+                                        } else {
+                                            sampleNumber =
+                                                prev !== 0
+                                                    ? prev
+                                                    : sampleNumber;
+                                            prev = 0;
+                                        }
+                                        numSamples.set(sampleNumber);
+                                    }}
+                                >
+                                    {#each paramOptions as glyph}
+                                        <option value={glyph}>{glyph}</option>
+                                    {/each}
+                                </select>
+
+                                <label class="flex items-center gap-2">
+                                    <span class="label-text">Add Primer</span>
+                                    <input
+                                        type="checkbox"
+                                        bind:checked={addPrimer}
+                                        class="toggle toggle-sm toggle-primary"
+                                    />
+                                </label>
+                            {/if}
+
+                            {#if strategy === "primer"}
+                                <p class="text-sm font-medium">
+                                    {#if sysexList.length > 0}
+                                        {getNamefromConfig(
+                                            sysexList[sysexIndex],
+                                        )}
+                                    {:else}
+                                        <span class="italic text-gray-500"
+                                            >No Primer available</span
+                                        >
+                                    {/if}
+                                </p>
+                            {/if}
+
+                            <div class="flex gap-2">
+                                <button
+                                    class="btn btn-primary w-full"
+                                    on:click={() =>
+                                        sample(
+                                            strategy,
+                                            valueChange,
+                                            paramChange,
+                                        )}
+                                >
+                                    Sample
+                                </button>
+                                <button
+                                    class="btn btn-secondary w-full"
+                                    on:click={() =>
+                                        doAnalysis(collection, $startingIndex)}
+                                >
+                                    Analyze
+                                </button>
+                            </div>
+                        {/if}
+
+                        {#if activesection === "visualization"}
+                            <select
+                                bind:value={pointColor}
+                                class="select select-bordered w-full"
+                            >
+                                {#each colorOptions as color}
+                                    <option value={color}>{color}</option>
+                                {/each}
+                            </select>
+                            <select
+                                bind:value={pointRenderer}
+                                class="select select-bordered w-full"
+                            >
+                                {#each glyphOptions as glyph}
+                                    <option value={glyph}>{glyph}</option>
+                                {/each}
+                            </select>
+                            <button
+                                class="btn btn-outline btn-warning w-full mt-2"
+                                on:click={() => excluded.set([])}
+                            >
+                                Reset Excluded
+                            </button>
+                        {/if}
+
+                        {#if activesection === "interpolation"}
+                            <input
+                                type="text"
+                                bind:value={textInput}
+                                maxlength="10"
+                                placeholder="Config Name"
+                                class="input input-bordered w-full"
+                            />
+                            <button
+                                class="btn btn-primary w-full mt-2"
+                                on:click={handleInterpolation}
+                                >Add as Reference</button
+                            >
+
+                            <label class="flex items-center gap-2">
+                                <span class="label-text">Send Whole</span>
+                                <input
+                                    type="checkbox"
+                                    bind:checked={$sysexInterpolation}
+                                    class="toggle toggle-sm toggle-primary"
+                                />
+                            </label>
+                        {/if}
+
+                        {#if activesection === "reference"}
+                            <p class="text-sm">
+                                {#if sysexList.length > 0 && sysexIndex >= 0}
+                                    {getNamefromConfig(sysexList[sysexIndex])}
+                                {:else}
+                                    <span class="italic text-gray-500"
+                                        >No Reference Selected</span
+                                    >
+                                {/if}
+                            </p>
+                            {#if sysexList.length > 0}
+                                <button
+                                    class="btn btn-primary w-full mt-1"
+                                    on:click={handleReference}
+                                    >Add as Reference</button
+                                >
+                            {/if}
+                        {/if}
+
+                        {#if activesection === "newWavFile"}
+                            <input
+                                type="file"
+                                accept=".wav"
+                                multiple
+                                on:change={importWavFile}
+                                class="file-input file-input-bordered w-full"
+                            />
+                        {/if}
+
+                        {#if activesection === "export"}
+                            <button
+                                class="btn btn-outline w-full"
+                                on:click={() => exportList.set([])}
+                                >Reset Export List</button
+                            >
+                            <button
+                                class="btn btn-primary w-full"
+                                on:click={() => writeSysEx(exportList)}
+                                >Export Config.syx</button
+                            >
+                            <button
+                                class="btn btn-secondary w-full"
+                                on:click={() => exportSession()}
+                                >Export Session</button
+                            >
+                        {/if}
+                    </div>
                 </div>
-                <div class="center-wrapper">
-                    <button on:click={() => writeSysEx(exportList)}
-                        >Export Config.syx</button
-                    >
-                </div>
-                <div class="center-wrapper">
-                    <button on:click={() => exportSession()}
-                        >Export Session</button
-                    >
-                </div>
-            {/if}
+            </div>
         </div>
 
-        <div class="left-bottom">
+        <footer
+            class="p-4 bg-base-300 text-sm text-center text-gray-600 font-mono"
+        >
             <TextView
                 content="testOOD: {testOODtrigger} - points: {$data.length}"
                 parameters={Object.entries(dx7Parameters)}
                 configs={$jsonDataList.map((j) => j.config)}
-            ></TextView>
-        </div>
-    </div>
+            />
+        </footer>
+    </aside>
 
-    <div class="middle">
+    <!-- Middle Map Card -->
+    <main
+        class="card bg-base-100 shadow-xl overflow-hidden flex items-center justify-center"
+    >
         <MapView
             {pointRenderer}
             {pointColor}
             onPointClick={handlePointClick}
             {selectedPoint}
             {referencePoint}
+            class="w-full h-full"
         />
-    </div>
+    </main>
 
-    <div class="right">
-        <DetailView {selectedPoint}></DetailView>
-    </div>
+    <!-- Right Detail Card -->
+    <aside class="card bg-base-100 shadow-xl p-4 overflow-auto">
+        <DetailView {selectedPoint} />
+    </aside>
 </div>
 
 <style>
@@ -731,6 +897,15 @@
         color: rgb(0, 0, 0);
         cursor: pointer;
         border-radius: 10px;
+    }
+
+    .active-tab {
+        background-color: hsl(var(--p));
+        color: white;
+    }
+
+    .active-tab span {
+        color: white;
     }
 
     h2 {
