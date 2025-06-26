@@ -585,82 +585,119 @@
     </div>
 
     <!-- Left Sidebar Card -->
-    <aside class="card bg-base-100 shadow-xl overflow-hidden">
-        <div class="card-body p-4">
+    <aside
+        class="card bg-base-100 shadow-xl overflow-hidden px-1 py-10"
+        style="padding:1em"
+    >
+        <div class="card-body py-2">
             <!-- Header -->
-            <h2 class="card-title text-primary">VibeFM</h2>
-
-            <div class="mt-4">
-                {#if activesection === "uploadSysEx"}
-                    <div>uploadSysEx</div>
-                {/if}
-                {#if activesection === "currentSession"}
-                    <div>currentSession</div>
-                {/if}
-                {#if activesection === "sample"}
-                    <div>sample</div>
-                {/if}
-            </div>
+            <h1 class="card-title text-primary justify-center pb-2">VibeFM</h1>
 
             <!-- Section Navigation -->
-            <div class="mt-4 space-y-2">
+            <div class="mt-3 space-y-3">
                 <div>
-                    <div
-                        class="mt-2 p-3 rounded-lg bg-base-200 shadow-inner space-y-4"
-                    >
-                        {#if activesection === "uploadSysEx"}
-                            <input
-                                type="file"
-                                accept=".syx"
-                                on:change={handleImport}
-                                class="file-input file-input-bordered w-full"
-                            />
-                            <select
-                                bind:value={sysexIndex}
-                                class="select select-bordered w-full"
-                            >
-                                {#each sysexList as item, index}
-                                    <option value={index}
-                                        >{getNamefromConfig(item)}</option
+                    {#if activesection === "uploadSysEx"}
+                        <div class="card bg-base-100 p-6">
+                            <h2 class="text-l font-bold mb-6 pb-6">
+                                Upload SysEx File
+                            </h2>
+
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text"
+                                        >Select .syx file</span
                                     >
-                                {/each}
-                            </select>
-                        {/if}
-
-                        {#if activesection === "currentSession"}
-                            <button
-                                on:click={loadCurrentSession}
-                                class="btn btn-primary w-full"
-                                >Load Current Session</button
-                            >
-                            <button
-                                on:click={calcDistance}
-                                class="btn btn-secondary w-full"
-                                >Recalculate Distances</button
-                            >
-
-                            <label class="flex items-center gap-2">
-                                <span class="label-text">Ref Layout</span>
+                                </label>
                                 <input
-                                    type="checkbox"
-                                    bind:checked={withRef}
-                                    class="toggle toggle-sm toggle-primary"
+                                    type="file"
+                                    accept=".syx"
+                                    on:change={handleImport}
+                                    class="file-input file-input-lg file-input-primary file-input-bordered w-full"
                                 />
-                            </label>
+                            </div>
 
-                            <input
-                                type="file"
-                                accept=".json"
-                                on:change={importJsonFile}
-                                class="file-input file-input-bordered w-full"
-                            />
-                        {/if}
+                            <div class="form-control w-full mt-4">
+                                <label class="label">
+                                    <span class="label-text"
+                                        >Choose Configuration</span
+                                    >
+                                </label>
+                                <select
+                                    bind:value={sysexIndex}
+                                    class="select select-primary select-md select-bordered w-full"
+                                >
+                                    {#each sysexList as item, index}
+                                        <option value={index}>
+                                            {getNamefromConfig(item)}
+                                        </option>
+                                    {/each}
+                                </select>
+                            </div>
+                        </div>
+                    {/if}
 
-                        {#if activesection === "sample"}
-                            <label class="form-control w-full">
-                                <div class="label">
-                                    <span class="label-text">Samples</span>
-                                </div>
+                    {#if activesection === "currentSession"}
+                        <div class="card bg-base-100 p-6 space-y-4">
+                            <h2 class="text-l font-bold mb-6 pb-6">
+                                Current Session
+                            </h2>
+                            <div class="form-control w-full">
+                                <button
+                                    on:click={loadCurrentSession}
+                                    class="btn text-primary btn-primary w-full"
+                                >
+                                    Load Current Session
+                                </button>
+                            </div>
+
+                            <div class="form-control w-full">
+                                <button
+                                    on:click={calcDistance}
+                                    class="btn text-primary btn-primary w-full"
+                                >
+                                    Recalculate Distances
+                                </button>
+                            </div>
+
+                            <div class="form-control items-center text-center">
+                                <label
+                                    class="label cursor-pointer flex flex-col justify-between"
+                                >
+                                    <span class="label-text">
+                                        Include references for <br />
+                                        distance calculation
+                                    </span>
+                                    <input
+                                        type="checkbox"
+                                        bind:checked={withRef}
+                                        class="toggle toggle-primary toggle-md mt-1"
+                                    />
+                                </label>
+                            </div>
+
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text">Import Json</span>
+                                </label>
+                                <input
+                                    type="file"
+                                    accept=".json"
+                                    on:change={importJsonFile}
+                                    class="file-input file-input-lg file-input-primary file-input-bordered w-full"
+                                />
+                            </div>
+                        </div>
+                    {/if}
+
+                    {#if activesection === "sample"}
+                        <div class="card bg-base-100 pt-6">
+                            <h2 class="text-l font-bold mb-6 pb-3">Sampling</h2>
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text"
+                                        >Number of samples</span
+                                    >
+                                </label>
                                 <input
                                     type="number"
                                     min="1"
@@ -669,79 +706,127 @@
                                         prev = 0;
                                         numSamples.set(sampleNumber);
                                     }}
-                                    class="input input-bordered w-full"
+                                    class="input input-primary my-0 input-bordered w-full max-w-xs"
                                 />
-                            </label>
+                            </div>
 
-                            <select
-                                bind:value={strategy}
-                                class="select select-bordered w-full"
-                            >
-                                {#each strategyOptions as glyph}
-                                    <option value={glyph}>{glyph}</option>
-                                {/each}
-                            </select>
+                            <div class="form-control w-full mt-2">
+                                <label class="label">
+                                    <span class="label-text"
+                                        >Choose Configuration</span
+                                    >
+                                </label>
+                                <select
+                                    bind:value={strategy}
+                                    class="select select-primary select-md select-bordered w-full"
+                                >
+                                    {#each strategyOptions as glyph}
+                                        <option value={glyph}>{glyph}</option>
+                                    {/each}
+                                </select>
+                            </div>
 
                             {#if strategy !== "allRandom"}
-                                <select
-                                    bind:value={valueChange}
-                                    class="select select-bordered w-full"
+                                <!-- Value Select -->
+                                <div
+                                    class="flex flex-col sm:flex-row py-3 gap-3 justify-center w-full"
                                 >
-                                    {#each valueOptions as glyph}
-                                        <option value={glyph}>{glyph}</option>
-                                    {/each}
-                                </select>
-
-                                <select
-                                    bind:value={paramChange}
-                                    class="select select-bordered w-full"
-                                    on:change={() => {
-                                        if (paramChange === "single") {
-                                            prev = sampleNumber;
-                                            sampleNumber =
-                                                getChangableParameters().length();
-                                        } else {
-                                            sampleNumber =
-                                                prev !== 0
-                                                    ? prev
-                                                    : sampleNumber;
-                                            prev = 0;
-                                        }
-                                        numSamples.set(sampleNumber);
-                                    }}
-                                >
-                                    {#each paramOptions as glyph}
-                                        <option value={glyph}>{glyph}</option>
-                                    {/each}
-                                </select>
-
-                                <label class="flex items-center gap-2">
-                                    <span class="label-text">Add Primer</span>
-                                    <input
-                                        type="checkbox"
-                                        bind:checked={addPrimer}
-                                        class="toggle toggle-sm toggle-primary"
-                                    />
-                                </label>
-                            {/if}
-
-                            {#if strategy === "primer"}
-                                <p class="text-sm font-medium">
-                                    {#if sysexList.length > 0}
-                                        {getNamefromConfig(
-                                            sysexList[sysexIndex],
-                                        )}
-                                    {:else}
-                                        <span class="italic text-gray-500"
-                                            >No Primer available</span
+                                    <div
+                                        class="form-control w-full sm:max-w-xs"
+                                    >
+                                        <label class="label">
+                                            <span class="label-text"
+                                                >Value Change</span
+                                            >
+                                        </label>
+                                        <select
+                                            bind:value={valueChange}
+                                            class="select select-sm select-primary select-bordered w-full max-w-xs"
                                         >
+                                            {#each valueOptions as glyph}
+                                                <option value={glyph}
+                                                    >{glyph}</option
+                                                >
+                                            {/each}
+                                        </select>
+                                    </div>
+
+                                    <!-- Parameter Select -->
+                                    <div
+                                        class="form-control w-full sm:max-w-xs"
+                                    >
+                                        <label class="label">
+                                            <span class="label-text"
+                                                >Parameter Change</span
+                                            >
+                                        </label>
+                                        <select
+                                            bind:value={paramChange}
+                                            class="select select-sm select-primary select-bordered w-full max-w-xs"
+                                            on:change={() => {
+                                                if (paramChange === "single") {
+                                                    prev = sampleNumber;
+                                                    sampleNumber =
+                                                        getChangableParameters().length();
+                                                } else {
+                                                    sampleNumber =
+                                                        prev !== 0
+                                                            ? prev
+                                                            : sampleNumber;
+                                                    prev = 0;
+                                                }
+                                                numSamples.set(sampleNumber);
+                                            }}
+                                        >
+                                            {#each paramOptions as glyph}
+                                                <option value={glyph}
+                                                    >{glyph}</option
+                                                >
+                                            {/each}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="flex flex-col sm:flex-row pt-3 gap-3 justify-center w-full"
+                                >
+                                    <!-- Add Primer Toggle -->
+                                    <div class="form-control">
+                                        <label class="label flex flex-col">
+                                            <span class="label-text"
+                                                >Add Primer</span
+                                            >
+                                            <input
+                                                type="checkbox"
+                                                bind:checked={addPrimer}
+                                                class="toggle toggle-sm toggle-primary"
+                                            />
+                                        </label>
+                                    </div>
+
+                                    {#if strategy === "primer"}
+                                        <p class="text-sm font-medium">
+                                            {#if sysexList.length > 0}
+                                                {getNamefromConfig(
+                                                    sysexList[sysexIndex],
+                                                )}
+                                            {:else}
+                                                <span
+                                                    class="italic text-gray-500"
+                                                    >No Primer available</span
+                                                >
+                                            {/if}
+                                        </p>
                                     {/if}
-                                </p>
+                                </div>
                             {/if}
 
-                            <div class="flex gap-2">
+                            <!-- Action Buttons -->
+                            <div
+                                class="flex flex-col sm:flex-row py-3 justify-center w-full"
+                            >
                                 <button
-                                    class="btn btn-primary w-full"
+                                    class="btn text-primary btn-primary w-25"
                                     on:click={() =>
                                         sample(
                                             strategy,
@@ -752,118 +837,225 @@
                                     Sample
                                 </button>
                                 <button
-                                    class="btn btn-secondary w-full"
+                                    class="btn text-primary btn-primary w-25"
                                     on:click={() =>
                                         doAnalysis(collection, $startingIndex)}
                                 >
                                     Analyze
                                 </button>
                             </div>
-                        {/if}
+                        </div>
 
-                        {#if activesection === "visualization"}
+                        <!--
+                        {#if strategy !== "allRandom"}
                             <select
-                                bind:value={pointColor}
+                                bind:value={valueChange}
                                 class="select select-bordered w-full"
                             >
-                                {#each colorOptions as color}
-                                    <option value={color}>{color}</option>
-                                {/each}
-                            </select>
-                            <select
-                                bind:value={pointRenderer}
-                                class="select select-bordered w-full"
-                            >
-                                {#each glyphOptions as glyph}
+                                {#each valueOptions as glyph}
                                     <option value={glyph}>{glyph}</option>
                                 {/each}
                             </select>
-                            <button
-                                class="btn btn-outline btn-warning w-full mt-2"
-                                on:click={() => excluded.set([])}
-                            >
-                                Reset Excluded
-                            </button>
-                        {/if}
 
-                        {#if activesection === "interpolation"}
-                            <input
-                                type="text"
-                                bind:value={textInput}
-                                maxlength="10"
-                                placeholder="Config Name"
-                                class="input input-bordered w-full"
-                            />
-                            <button
-                                class="btn btn-primary w-full mt-2"
-                                on:click={handleInterpolation}
-                                >Add as Reference</button
+                            <select
+                                bind:value={paramChange}
+                                class="select select-bordered w-full"
+                                on:change={() => {
+                                    if (paramChange === "single") {
+                                        prev = sampleNumber;
+                                        sampleNumber =
+                                            getChangableParameters().length();
+                                    } else {
+                                        sampleNumber =
+                                            prev !== 0 ? prev : sampleNumber;
+                                        prev = 0;
+                                    }
+                                    numSamples.set(sampleNumber);
+                                }}
                             >
+                                {#each paramOptions as glyph}
+                                    <option value={glyph}>{glyph}</option>
+                                {/each}
+                            </select>
 
                             <label class="flex items-center gap-2">
-                                <span class="label-text">Send Whole</span>
+                                <span class="label-text">Add Primer</span>
                                 <input
                                     type="checkbox"
-                                    bind:checked={$sysexInterpolation}
+                                    bind:checked={addPrimer}
                                     class="toggle toggle-sm toggle-primary"
                                 />
                             </label>
                         {/if}
 
-                        {#if activesection === "reference"}
-                            <p class="text-sm">
-                                {#if sysexList.length > 0 && sysexIndex >= 0}
+                        {#if strategy === "primer"}
+                            <p class="text-sm font-medium">
+                                {#if sysexList.length > 0}
                                     {getNamefromConfig(sysexList[sysexIndex])}
                                 {:else}
                                     <span class="italic text-gray-500"
-                                        >No Reference Selected</span
+                                        >No Primer available</span
                                     >
                                 {/if}
                             </p>
-                            {#if sysexList.length > 0}
-                                <button
-                                    class="btn btn-primary w-full mt-1"
-                                    on:click={handleReference}
-                                    >Add as Reference</button
-                                >
-                            {/if}
                         {/if}
 
-                        {#if activesection === "newWavFile"}
-                            <input
-                                type="file"
-                                accept=".wav"
-                                multiple
-                                on:change={importWavFile}
-                                class="file-input file-input-bordered w-full"
-                            />
-                        {/if}
-
-                        {#if activesection === "export"}
-                            <button
-                                class="btn btn-outline w-full"
-                                on:click={() => exportList.set([])}
-                                >Reset Export List</button
-                            >
+                        <div class="flex gap-2">
                             <button
                                 class="btn btn-primary w-full"
-                                on:click={() => writeSysEx(exportList)}
-                                >Export Config.syx</button
+                                on:click={() =>
+                                    sample(strategy, valueChange, paramChange)}
                             >
+                                Sample
+                            </button>
                             <button
                                 class="btn btn-secondary w-full"
-                                on:click={() => exportSession()}
-                                >Export Session</button
+                                on:click={() =>
+                                    doAnalysis(collection, $startingIndex)}
+                            >
+                                Analyze
+                            </button>
+                        </div>
+                        -->
+                    {/if}
+
+                    {#if activesection === "visualization"}
+                        <div class="card bg-base-100 pt-6">
+                            <h2 class="text-l font-bold mb-6 pb-1">
+                                Visualization
+                            </h2>
+                            <div class="form-control w-full mt-2">
+                                <label class="label">
+                                    <span class="label-text">Color</span>
+                                </label>
+                                <select
+                                    bind:value={pointColor}
+                                    class="select select-primary select-md select-bordered w-full"
+                                >
+                                    {#each colorOptions as color}
+                                        <option value={color}>{color}</option>
+                                    {/each}
+                                </select>
+                            </div>
+                            <!--
+                        <select
+                            bind:value={pointColor}
+                            class="select select-bordered w-full"
+                        >
+                            {#each colorOptions as color}
+                                <option value={color}>{color}</option>
+                            {/each}
+                        </select>
+                        -->
+                            <div class="form-control w-full mt-2">
+                                <label class="label">
+                                    <span class="label-text">Glyph</span>
+                                </label>
+                                <select
+                                    bind:value={pointRenderer}
+                                    class="select select-primary select-md select-bordered w-full"
+                                >
+                                    {#each glyphOptions as glyph}
+                                        <option value={glyph}>{glyph}</option>
+                                    {/each}
+                                </select>
+                            </div>
+                            <!--
+                            <select
+                            bind:value={pointRenderer}
+                            class="select select-bordered w-full"
+                        >
+                            {#each glyphOptions as glyph}
+                                <option value={glyph}>{glyph}</option>
+                            {/each}
+                        </select>
+                        -->
+                            <div class="form-control w-full py-4">
+                                <button
+                                    on:click={() => excluded.set([])}
+                                    class="btn text-primary btn-primary w-full"
+                                >
+                                    Reset Excluded
+                                </button>
+                            </div>
+                        </div>
+                    {/if}
+
+                    {#if activesection === "interpolation"}
+                        <input
+                            type="text"
+                            bind:value={textInput}
+                            maxlength="10"
+                            placeholder="Config Name"
+                            class="input input-bordered w-full"
+                        />
+                        <button
+                            class="btn btn-primary w-full mt-2"
+                            on:click={handleInterpolation}
+                            >Add as Reference</button
+                        >
+
+                        <label class="flex items-center gap-2">
+                            <span class="label-text">Send Whole</span>
+                            <input
+                                type="checkbox"
+                                bind:checked={$sysexInterpolation}
+                                class="toggle toggle-sm toggle-primary"
+                            />
+                        </label>
+                    {/if}
+
+                    {#if activesection === "reference"}
+                        <p class="text-sm">
+                            {#if sysexList.length > 0 && sysexIndex >= 0}
+                                {getNamefromConfig(sysexList[sysexIndex])}
+                            {:else}
+                                <span class="italic text-gray-500"
+                                    >No Reference Selected</span
+                                >
+                            {/if}
+                        </p>
+                        {#if sysexList.length > 0}
+                            <button
+                                class="btn btn-primary w-full mt-1"
+                                on:click={handleReference}
+                                >Add as Reference</button
                             >
                         {/if}
-                    </div>
+                    {/if}
+
+                    {#if activesection === "newWavFile"}
+                        <input
+                            type="file"
+                            accept=".wav"
+                            multiple
+                            on:change={importWavFile}
+                            class="file-input file-input-bordered w-full"
+                        />
+                    {/if}
+
+                    {#if activesection === "export"}
+                        <button
+                            class="btn btn-outline w-full"
+                            on:click={() => exportList.set([])}
+                            >Reset Export List</button
+                        >
+                        <button
+                            class="btn btn-primary w-full"
+                            on:click={() => writeSysEx(exportList)}
+                            >Export Config.syx</button
+                        >
+                        <button
+                            class="btn btn-secondary w-full"
+                            on:click={() => exportSession()}
+                            >Export Session</button
+                        >
+                    {/if}
                 </div>
             </div>
         </div>
 
-        <footer
-            class="p-4 bg-base-300 text-sm text-center text-gray-600 font-mono"
-        >
+        <footer class="text-sm text-center font-mono">
             <TextView
                 content="testOOD: {testOODtrigger} - points: {$data.length}"
                 parameters={Object.entries(dx7Parameters)}
@@ -893,6 +1085,7 @@
 </div>
 
 <style>
+    /*
     button {
         margin: 2px;
         padding: 5px 10px;
@@ -903,8 +1096,9 @@
         border-radius: 10px;
     }
 
+    */
     .active-tab {
-        background-color: var(--color-primary); /* Light primary background */
+        background-color: var(--color-primary);
     }
 
     .active-tab span {
@@ -917,6 +1111,7 @@
         margin: 0;
     }
 
+    /*
     button:hover {
         background: #525252;
         color: white;
@@ -927,6 +1122,7 @@
         border-radius: 5px;
         border: 1px solid #ccc;
     }
+    
 
     .container {
         display: grid;
@@ -935,6 +1131,7 @@
         height: 900px;
         gap: 10px;
     }
+    */
 
     .left {
         display: grid;
@@ -960,6 +1157,7 @@
         display: none; /* Safari and Chrome */
     }
 
+    /*
     p {
         margin-top: 0;
         color: rgb(0, 0, 0);
@@ -973,6 +1171,7 @@
     p:hover {
         background: #e5e5e5;
     }
+    */
 
     .center-wrapper {
         display: flex;
@@ -990,13 +1189,15 @@
         width: 85%;
     }
 
+    /*
     input {
-        width: 100%; /* Make input fill the wrapper */
-        max-width: 100%; /* Ensure it does not shrink */
-        text-align: center; /* Centers text inside the input */
+        width: 100%; 
+        max-width: 100%; 
+        text-align: center; 
         padding: 10px;
-        box-sizing: border-box; /* Ensures padding doesn't affect width */
+        box-sizing: border-box; 
     }
+    */
 
     .left-bottom {
         display: flex;
@@ -1019,7 +1220,9 @@
         grid-column: 3;
     }
 
+    /*
     p {
         color: black;
     }
+    */
 </style>

@@ -91,6 +91,7 @@
             .attr("x", (d, i) => margin + i * cellSize + cellSize / 2)
             .attr("y", margin - 5)
             .attr("text-anchor", "middle")
+            .attr("class", "text-primary")
             .attr("font-size", "10px")
             .text((d) => d);
 
@@ -102,6 +103,7 @@
             .attr("x", margin - 5)
             .attr("y", (d, i) => margin + i * cellSize + cellSize / 2)
             .attr("text-anchor", "end")
+            .attr("class", "text-primary")
             .attr("font-size", "10px")
             .text((d) => d);
 
@@ -232,7 +234,7 @@
 </script>
 
 <svg bind:this={svg} {width} {height}></svg>
-<label class="flex items-center gap-4 p-2 rounded-lg bg-base-200 shadow-md">
+<label class="flex items-center gap-2 p-2 rounded-lg bg-base-200 shadow-md">
     <!-- Bars Label with Icon -->
     <div class="flex items-center gap-1">
         <svg
@@ -246,10 +248,11 @@
             <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                color="primary"
                 d="M4 6h16M4 12h8m-8 6h16"
             ></path>
         </svg>
-        <span class="label-text font-medium">Bars</span>
+        <span class="label-text font-medium text-primary">Bars</span>
     </div>
 
     <!-- Toggle Switch -->
@@ -273,10 +276,11 @@
             <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                color="primary"
                 d="M12 3v1m0 16v1m8.66-11.66l-.71.71M4.05 4.05l-.71.71M21 12h1M3 12H2m16.95 4.95l-.71.71M6.34 17.66l-.71.71"
             ></path>
         </svg>
-        <span class="label-text font-medium">Opacity</span>
+        <span class="label-text font-medium text-primary">Opacity</span>
     </div>
 </label>
 

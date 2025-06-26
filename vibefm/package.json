@@ -26,10 +26,12 @@
   "dependencies": {
     "@observablehq/plot": "^0.6.16",
     "@saehrimnir/druidjs": "^0.7.3",
+    "@tailwindcss/vite": "^4.1.11",
     "angular": "^1.4.1",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "d3": "^7.9.0",
+    "daisyui": "^5.0.43",
     "express": "^4.21.1",
     "fs": "^0.0.1-security",
     "jsonstream": "^1.0.3",
