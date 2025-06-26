@@ -485,7 +485,7 @@
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
                         class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
-                        >SysEx</span
+                        >Sysex</span
                     >
                 </div>
             </li>
@@ -599,7 +599,7 @@
                     {#if activesection === "uploadSysEx"}
                         <div class="card bg-base-100 p-6">
                             <h2 class="text-l font-bold mb-6 pb-6">
-                                Upload SysEx File
+                                Upload Sysex File
                             </h2>
 
                             <div class="form-control w-full">
@@ -982,74 +982,146 @@
                     {/if}
 
                     {#if activesection === "interpolation"}
-                        <input
-                            type="text"
-                            bind:value={textInput}
-                            maxlength="10"
-                            placeholder="Config Name"
-                            class="input input-bordered w-full"
-                        />
-                        <button
-                            class="btn btn-primary w-full mt-2"
-                            on:click={handleInterpolation}
-                            >Add as Reference</button
-                        >
+                        <div class="card bg-base-100 pt-6">
+                            <h2 class="text-l font-bold mb-6 pb-4">
+                                Interpolation
+                            </h2>
+                            <div class="form-control items-center w-full">
+                                <label class="label">
+                                    <span class="label-text">Config Name</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    bind:value={textInput}
+                                    maxlength="10"
+                                    placeholder="Config Name"
+                                    class="input input-bordered w-full max-w-xs"
+                                />
+                            </div>
 
-                        <label class="flex items-center gap-2">
-                            <span class="label-text">Send Whole</span>
-                            <input
-                                type="checkbox"
-                                bind:checked={$sysexInterpolation}
-                                class="toggle toggle-sm toggle-primary"
-                            />
-                        </label>
+                            <!-- Add as Reference Button -->
+                            <div
+                                class="form-control items-center text-center w-full mt-4"
+                            >
+                                <button
+                                    class="btn text-primary btn-primary w-full max-w-xs"
+                                    on:click={handleInterpolation}
+                                >
+                                    Add as Reference
+                                </button>
+                            </div>
+
+                            <!-- Toggle: Send Whole -->
+                            <div
+                                class="form-control items-center text-center mt-4"
+                            >
+                                <label class="label flex flex-col items-center">
+                                    <span class="label-text mb-2"
+                                        >Send whole sysex message</span
+                                    >
+                                    <input
+                                        type="checkbox"
+                                        bind:checked={$sysexInterpolation}
+                                        class="toggle toggle-sm toggle-primary"
+                                    />
+                                </label>
+                            </div>
+                        </div>
                     {/if}
 
                     {#if activesection === "reference"}
-                        <p class="text-sm">
-                            {#if sysexList.length > 0 && sysexIndex >= 0}
-                                {getNamefromConfig(sysexList[sysexIndex])}
-                            {:else}
-                                <span class="italic text-gray-500"
-                                    >No Reference Selected</span
-                                >
-                            {/if}
-                        </p>
-                        {#if sysexList.length > 0}
-                            <button
-                                class="btn btn-primary w-full mt-1"
-                                on:click={handleReference}
-                                >Add as Reference</button
+                        <div class="card bg-base-100 pt-6">
+                            <h2 class="text-l font-bold mb-6 pb-4">
+                                Sysex Reference
+                            </h2>
+                            <div
+                                class="form-control items-center text-center w-full max-w-xs"
                             >
-                        {/if}
+                                <label class="label">
+                                    <span class="label-text text-sm">
+                                        {#if sysexList.length > 0 && sysexIndex >= 0}
+                                            {getNamefromConfig(
+                                                sysexList[sysexIndex],
+                                            )}
+                                        {:else}
+                                            <span class="italic text-gray-500"
+                                                >No Reference Selected</span
+                                            >
+                                        {/if}
+                                    </span>
+                                </label>
+                            </div>
+
+                            {#if sysexList.length > 0}
+                                <div
+                                    class="form-control items-center text-center w-full mt-4"
+                                >
+                                    <button
+                                        class="btn text-primary btn-primary w-full max-w-xs"
+                                        on:click={handleReference}
+                                    >
+                                        Add as Reference
+                                    </button>
+                                </div>
+                            {/if}
+                        </div>
                     {/if}
 
                     {#if activesection === "newWavFile"}
-                        <input
-                            type="file"
-                            accept=".wav"
-                            multiple
-                            on:change={importWavFile}
-                            class="file-input file-input-bordered w-full"
-                        />
+                        <div class="card bg-base-100 pt-6">
+                            <h2 class="text-l font-bold mb-6 pb-6">
+                                Wav Reference
+                            </h2>
+                            <div class="form-control w-full">
+                                <label class="label">
+                                    <span class="label-text"
+                                        >Select .wav file</span
+                                    >
+                                </label>
+                                <input
+                                    type="file"
+                                    accept=".wav"
+                                    on:change={importWavFile}
+                                    class="file-input file-input-lg file-input-primary file-input-bordered w-full"
+                                />
+                            </div>
+                        </div>
                     {/if}
 
                     {#if activesection === "export"}
-                        <button
-                            class="btn btn-outline w-full"
-                            on:click={() => exportList.set([])}
-                            >Reset Export List</button
-                        >
-                        <button
-                            class="btn btn-primary w-full"
-                            on:click={() => writeSysEx(exportList)}
-                            >Export Config.syx</button
-                        >
-                        <button
-                            class="btn btn-secondary w-full"
-                            on:click={() => exportSession()}
-                            >Export Session</button
-                        >
+                        <div class="card bg-base-100 pt-6">
+                            <h2 class="text-l font-bold mb-6 pb-6">Export</h2>
+                            <div
+                                class="form-control items-center text-center w-full mt-4"
+                            >
+                                <button
+                                    class="btn text-primary btn-primary w-full max-w-xs"
+                                    on:click={() => exportList.set([])}
+                                >
+                                    Reset Export List
+                                </button>
+                            </div>
+                            <div
+                                class="form-control items-center text-center w-full mt-4"
+                            >
+                                <button
+                                    class="btn text-primary btn-primary w-full max-w-xs"
+                                    on:click={() => writeSysEx(exportList)}
+                                >
+                                    Export Config.syx
+                                </button>
+                            </div>
+                            <div
+                                class="form-control items-center text-center w-full mt-4"
+                            >
+                                <button
+                                    class="btn text-primary btn-primary w-full max-w-xs"
+                                    on:click={() => exportSession()}
+                                >
+                                    Export Session
+                                </button>
+                            </div>
+                        </div>
                     {/if}
                 </div>
             </div>

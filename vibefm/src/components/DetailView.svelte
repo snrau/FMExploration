@@ -574,6 +574,67 @@
   });
 </script>
 
+<!-- Menu Inner Content (no outer card) -->
+<div class="flex flex-col sm:flex-row justify-between items-start gap-6 w-full">
+  <!-- Left: Toggles -->
+  <div class="flex flex-col gap-4 w-full sm:max-w-[40%]">
+    <div class="form-control items-center justify-center w-full max-w-xs">
+      <label class="label mb-1 justify-center">
+        <span class="label-text text-sm font-semibold text-center">Mode</span>
+      </label>
+      <div class="flex items-center justify-center gap-3">
+        <span class="text-sm">All</span>
+        <input
+          type="checkbox"
+          bind:checked={isSingle}
+          class="toggle toggle-sm toggle-primary"
+        />
+        <span class="text-sm">Single</span>
+      </div>
+    </div>
+
+    <!-- Toggle 2 -->
+    <div class="form-control w-full items-center justify-center max-w-xs">
+      <label class="label mb-1 justify-center">
+        <span class="label-text text-sm font-medium">Size</span>
+      </label>
+      <div class="flex items-center justify-center gap-3">
+        <span class="text-sm">Large</span>
+        <input
+          type="checkbox"
+          bind:checked={isSmall}
+          class="toggle toggle-sm toggle-primary"
+        />
+        <span class="text-sm">Small</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Buttons & Input -->
+  <div class="flex flex-col gap-4 w-full sm:max-w-[60%]">
+    <button
+      class="btn text-primary btn-primary btn-sm w-full"
+      on:click={handleButtonClick1}
+    >
+      Sample Similar
+    </button>
+
+    <button
+      class="btn text-primary btn-primary btn-sm w-full"
+      on:click={handleButtonClick2}
+    >
+      Add to Export List
+    </button>
+    <input
+      type="text"
+      bind:value={textInput}
+      maxlength="10"
+      placeholder="Config Name"
+      class="input input-primary input-bordered input-sm mt-2 w-full"
+    />
+  </div>
+</div>
+<!--
 <div class="menu">
   <div class="left">
     <label class="checkbox-label">
@@ -604,6 +665,7 @@
     </div>
   </div>
 </div>
+-->
 
 <div class="detail-container">
   {#if selectedPoint}
