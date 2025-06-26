@@ -458,11 +458,15 @@
         */
 
     function changeTab(name, element) {
-        activesection = name;
-        document
-            .querySelectorAll("ul > li")
-            .forEach((el) => el.classList.remove("active-tab"));
-        document.getElementById(name).classList.add("active-tab");
+        console.log(name);
+        if (activesection === name) activesection = "";
+        else activesection = name;
+        document.querySelectorAll("ul > li").forEach((el) => {
+            el.classList.remove("active-tab");
+            if (el.id === activesection) {
+                el.classList.add("active-tab");
+            }
+        });
     }
 </script>
 
@@ -471,28 +475,28 @@
 >
     <div class="flex h-full">
         <ul
-            class="bg-base-200 rounded-lg w-[30px] py-2 px-0 space-y-1 flex flex-col gap-2"
+            class="bg-base-200 rounded-lg w-[30px] py-2 px-0 space-y-0 flex flex-col gap-0"
         >
             <li
-                class="active-tab relative w-full h-[70px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                class="active-tab relative w-full h-[70px] bg-base-100 border border-base-300 shadow-md hover:border-primary transition-all duration-200 cursor-pointer"
                 id="uploadSysEx"
                 on:click={() => changeTab("uploadSysEx", this)}
             >
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
                         >SysEx</span
                     >
                 </div>
             </li>
             <li
-                class="relative w-full h-[70px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                class="relative w-full h-[70px] bg-base-100 border border-base-300 shadow-md hover:border-primary transition-all duration-200 cursor-pointer"
                 id="currentSession"
                 on:click={changeTab("currentSession", this)}
             >
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
                     >
                         Session
                     </span>
@@ -500,78 +504,78 @@
             </li>
 
             <li
-                class="relative w-full h-[70px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                class="relative w-full h-[70px] bg-base-100 border border-base-300 shadow-md hover:border-primary transition-all duration-200 cursor-pointer"
                 id="sample"
                 on:click={changeTab("sample", this)}
             >
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
                     >
                         Sample
                     </span>
                 </div>
             </li>
             <li
-                class="relative w-full h-[100px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                class="relative w-full h-[115px] bg-base-100 border border-base-300 shadow-md hover:border-primary transition-all duration-200 cursor-pointer"
                 id="visualization"
                 on:click={changeTab("visualization", this)}
             >
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
                     >
                         Visualization
                     </span>
                 </div>
             </li>
             <li
-                class="relative w-full h-[100px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                class="relative w-full h-[115px] bg-base-100 border border-base-300 shadow-md hover:border-primary transition-all duration-200 cursor-pointer"
                 id="interpolation"
                 on:click={changeTab("interpolation", this)}
             >
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
                     >
                         Interpolation
                     </span>
                 </div>
             </li>
             <li
-                class="relative w-full h-[105px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                class="relative w-full h-[115px] bg-base-100 border border-base-300 shadow-md hover:border-primary transition-all duration-200 cursor-pointer"
                 id="reference"
                 on:click={changeTab("reference", this)}
             >
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
                     >
                         SyxReference
                     </span>
                 </div>
             </li>
             <li
-                class="relative w-full h-[105px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                class="relative w-full h-[115px] bg-base-100 border border-base-300 shadow-md hover:border-primary transition-all duration-200 cursor-pointer"
                 id="newWavFile"
                 on:click={changeTab("newWavFile", this)}
             >
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
                     >
                         WavReference
                     </span>
                 </div>
             </li>
             <li
-                class="relative w-full h-[70px] bg-base-100 border border-base-300 rounded-lg shadow-md hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                class="relative w-full h-[70px] bg-base-100 border border-base-300 shadow-md hover:border-primary transition-all duration-200 cursor-pointer"
                 id="export"
                 on:click={changeTab("export", this)}
             >
                 <div class="absolute inset-0 flex items-center justify-center">
                     <span
-                        class="text-sm font-semibold rotate-90 text-primary-content"
+                        class="text-sm tracking-wide font-semibold rotate-90 text-primary/50"
                     >
                         Export
                     </span>
@@ -900,12 +904,13 @@
     }
 
     .active-tab {
-        background-color: hsl(var(--p));
-        color: white;
+        background-color: var(--color-primary); /* Light primary background */
     }
 
     .active-tab span {
-        color: white;
+        color: var(--color-primary-content);
+        font-weight: 800;
+        letter-spacing: 0.5px;
     }
 
     h2 {
